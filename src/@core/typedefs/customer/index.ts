@@ -1,0 +1,31 @@
+export interface CustomerData {
+  CardCode: string
+  CardName: string
+  CardType: string
+  Address: string
+  ZipCode?: string
+  MailAddres: string
+  MailZipCode?: string
+  Phone1?: string
+  Phone2?: string
+  Fax?: string
+  CntctPrsn: string
+  Balance?: number
+  ChecksBal?: number
+  DNotesBal?: number
+  OrdersBal?: number
+  Cellular?: string
+  City?: string
+  Country: string
+  MailCity?: string
+  MailCountry?: string
+  E_Mail?: string
+  ValidFor?: string
+  ValidFrom?: string
+  ValidTo?: string
+  FrozenFor?: string
+  FrozenFrom?: string
+  FrozenTo?: string
+  CreateDate?: Date
+  UpdateDate?: Date
+}
