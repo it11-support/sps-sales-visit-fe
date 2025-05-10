@@ -19,9 +19,8 @@ export const setupGuards = (router: _RouterTyped<RouteNamedMap & { [key: string]
     const isLoggedIn = !!(useCookie('userData').value && useCookie('accessToken').value)
     const role = useCookie<any>('userData').value?.role?.role
 
-    console.log(to ,role)
     if (to.meta.roles && !(to.meta.roles as string[]).includes(role)) {
-      console.log(to.meta.roles, role)
+      console.log("roles", to.meta.roles, role)
       return {
         name: 'unauthorized',
         query: {

@@ -1,3 +1,5 @@
+import { SalesPerson } from "../salesperson"
+
 export interface CustomerData {
   CardCode: string
   CardName: string
@@ -23,9 +25,10 @@ export interface CustomerData {
   ValidFor?: string
   ValidFrom?: string
   ValidTo?: string
-  FrozenFor?: string
-  FrozenFrom?: string
-  FrozenTo?: string
+  frozenFor?: string
+  frozenFrom?: string
+  frozenTo?: string
   CreateDate?: Date
   UpdateDate?: Date
+  sales_person?: SalesPerson
 }

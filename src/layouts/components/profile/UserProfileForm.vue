@@ -19,7 +19,7 @@ export default {
     try {
       this.toggleOverlay()
      
-      // Mendapatkan data roles dari API
+      // Get roles from api
       const { data: rolesData } = await useApi<any>(createUrl('role'), {
         method: 'GET',
       });

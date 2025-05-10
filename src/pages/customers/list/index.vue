@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useConfigStore } from '@/@core/stores/config'
+import { useConfigStore } from '@core/stores/config'
 import type { CustomerData, SortItem } from '@core/types'
 
 // 👉 Store
@@ -8,6 +8,9 @@ const selectedSalesPerson = ref()
 const selectedPlan = ref()
 const selectedStatus = ref()
 const debouncedQuery = ref('')
+const deleteModal = ref(false)
+const deleteId = ref('')
+
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 
 
@@ -47,6 +50,7 @@ const updateSelectedRows = (rows: CustomerData[]) => {
 const headers = [
   { title: 'Customer', key: 'CardName'},
   { title: 'PIC', key: 'CntctPrsn' },
+  { title: 'Status', key: 'status', sortable: false },
   { title: 'Address', key: 'Address', width: '50px' }, 
   { title: 'Phone 1', key: 'Phone1' },
   { title: 'Phone 2', key: 'Phone2' },
@@ -55,7 +59,7 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-// 👉 Fetching users
+// 👉 Fetching customers
 const { data: customerData, execute: fetchCustomers } = await useApi<any>(createUrl('customer', {
   query: {
     search: debouncedQuery,
@@ -68,40 +72,51 @@ const { data: customerData, execute: fetchCustomers } = await useApi<any>(create
   },
 }))
 
-const { data: salesPersonsData } = await useApi<any>(createUrl('sales'), {})
+const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {
+  query: {
+    per_page: -1,
+    page: 1
+  }
+}), {})
 
-const salesPersons = computed(() => salesPersonsData.value.data.map((salesPerson: any) => ({
+// Sales persons for filter
+const salesPersons = computed(() => salesPersonsData.value.data.data.map((salesPerson: any) => ({
   value: salesPerson.SlpCode,
   title: salesPerson.SlpName
 })))
-
 
 const totalCustomer = computed(() => customerData.value.data.total)
 
 const customers = computed((): CustomerData[] => customerData.value.data.data)
 
-
+console.log(customers.value)
 // 👉 search filters
 const status = [
   { title: 'Active', value: 'N' },
   { title: 'Inactive', value: 'Y' },
 ]
 
-// const isAddNewUserDrawerVisible = ref(false)
-
-// 👉 Add new user
-// const addNewUser = async (userData: UserProperties) => {
-//   await $api('/apps/users', {
-//     method: 'POST',
-//     body: userData,
-//   })
-
-//   // Refetch User
-//   fetchUsers()
-// }
+const showDeleteModal = (id: string) => {
+  deleteModal.value = true
+  deleteId.value = id
+}
 
 
+// Delete customer method
+const deleteCustomer = async(id: string) => {
+  await useApi<any>(createUrl(`customer/${id}`), {
+    method: 'DELETE',
+  })
+  deleteModal.value = false
 
+  // Remove deleted customer from selected rows
+  const index = selectedRows.value.findIndex(row => row.CardCode === id)
+  if (index !== -1)
+    selectedRows.value.splice(index, 1)
+
+  // Refetch customers
+  fetchCustomers()
+}
 </script>
 
 <template>
@@ -148,13 +163,7 @@ const status = [
         <div class="me-3 d-flex gap-3">
           <AppSelect
             :model-value="itemsPerPage"
-            :items="[
-              { value: 10, title: '10' },
-              { value: 25, title: '25' },
-              { value: 50, title: '50' },
-              { value: 100, title: '100' },
-              { value: -1, title: 'All' },
-            ]"
+            :items="PAGINATION_ITEMS"
             style="inline-size: 6.25rem;"
             @update:model-value="itemsPerPage = parseInt($event, 10)"
           />
@@ -180,14 +189,6 @@ const status = [
           >
             Export
           </VBtn>
-
-          <!-- 👉 Add user button -->
-          <!-- <VBtn
-            prepend-icon="tabler-plus"
-            @click="isAddNewUserDrawerVisible = true"
-          >
-            Add New User
-          </VBtn> -->
         </div>
       </VCardText>
 
@@ -221,6 +222,17 @@ const status = [
             </div>
           </div>
         </template>
+        <template #item.status="{ item }">
+          <div class="d-flex justify-content-between gap-x-4">
+            <VChip 
+              :color="item.frozenFor === 'Y' ? 'error' : 'success'"
+              label
+              size="small"
+            >
+            {{ item.frozenFor === 'Y' ? 'Inactive' : 'Active' }}
+            </VChip>
+          </div>
+        </template>
         <template #item.CntctPrsn="{ item }">
           <div class="d-flex align-center gap-x-4">          
             <div class="d-flex flex-column">
@@ -246,42 +258,6 @@ const status = [
             </div>
           </div>
         </template>
-
-
-        <!-- 👉 Role -->
-        <!-- <template #item.role="{ item }">
-          <div class="d-flex align-center gap-x-2">
-            <VIcon
-              :size="22"
-              :icon="resolveUserRoleVariant(item.role).icon"
-              :color="resolveUserRoleVariant(item.role).color"
-            />
-
-            <div class="text-capitalize text-high-emphasis text-body-1">
-              {{ item.role }}
-            </div>
-          </div>
-        </template> -->
-
-        <!-- Plan -->
-        <!-- <template #item.plan="{ item }">
-          <div class="text-body-1 text-high-emphasis text-capitalize">
-            {{ item.currentPlan }}
-          </div>
-        </template> -->
-
-        <!-- Status -->
-        <!-- <template #item.status="{ item }">
-          <VChip
-            :color="resolveUserStatusVariant(item.status)"
-            size="small"
-            label
-            class="text-capitalize"
-          >
-            {{ item.status }}
-          </VChip>
-        </template> -->
-
         <!-- Actions -->
         <template #item.actions="{ item }">
           <VBtn           
@@ -300,14 +276,7 @@ const status = [
                   <VListItemTitle>View</VListItemTitle>
                 </VListItem>
                 <div v-if="isAdmin()">
-                  <VListItem link >
-                    <template #prepend>
-                      <VIcon icon="tabler-pencil" />
-                    </template>
-                    <VListItemTitle>Edit</VListItemTitle>
-                  </VListItem>
-
-                  <VListItem @click="">
+                  <VListItem @click="showDeleteModal(item.CardCode)">
                     <template #prepend>
                       <VIcon icon="tabler-trash" />
                     </template>
@@ -330,11 +299,17 @@ const status = [
       </VDataTableServer>
       <!-- SECTION -->
     </VCard>
-    <!-- 👉 Add New User -->
-    <!-- <AddNewUserDrawer
-      v-model:is-drawer-open="isAddNewUserDrawerVisible"
-      @user-data="addNewUser"
-    /> -->
+    <VDialog v-model="deleteModal" max-width="300">
+      <VCard>
+        <VCardTitle> Delete Confirmation </VCardTitle>
+        <VCardText> Are you sure you want to delete this customer? </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn @click="deleteModal = false"> Cancel </VBtn>
+          <VBtn color="error" @click="deleteCustomer(deleteId)"> Delete </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </section>
 </template>
 

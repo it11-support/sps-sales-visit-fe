@@ -12,8 +12,6 @@ export const useConfigStore = defineStore('config', () => {
     loading.value = !loading.value
   }
 
-
-
   const toggleOverlay = () => {
     overlay.value = !overlay.value
   }

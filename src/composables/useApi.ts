@@ -1,4 +1,4 @@
-import { useConfigStore } from '@/@core/stores/config'
+import { useConfigStore } from '@core/stores/config'
 import { createFetch } from '@vueuse/core'
 import { destr } from 'destr'
 
@@ -41,6 +41,10 @@ export const useApi = createFetch({
       }
 
       return { data: parsedData, response }
+    },
+    onFetchError(ctx) {
+      configStore.loading = false
+      return ctx
     },
   },
 })
