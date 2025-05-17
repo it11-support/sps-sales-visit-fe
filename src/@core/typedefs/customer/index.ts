@@ -1,34 +1,30 @@
-import { SalesPerson } from "../salesperson"
+import { ISalesInvoice } from "../salesinvoice"
+import { ISalesPerson } from "../salesperson"
 
-export interface CustomerData {
+export interface ICustomerData {
   CardCode: string
   CardName: string
-  CardType: string
-  Address: string
+  GroupName: string
   ZipCode?: string
-  MailAddres: string
-  MailZipCode?: string
   Phone1?: string
-  Phone2?: string
-  Fax?: string
+  SlpName: string
+  SlpCode: number
   CntctPrsn: string
-  Balance?: number
-  ChecksBal?: number
-  DNotesBal?: number
-  OrdersBal?: number
   Cellular?: string
+  Territory?: string
+  Address?: string
+  SalesSpvWawan?: string
+  SalesSpvBuddy?: string
+  Block?: string
   City?: string
   Country: string
-  MailCity?: string
-  MailCountry?: string
-  E_Mail?: string
-  ValidFor?: string
-  ValidFrom?: string
-  ValidTo?: string
-  frozenFor?: string
-  frozenFrom?: string
-  frozenTo?: string
-  CreateDate?: Date
-  UpdateDate?: Date
-  sales_person?: SalesPerson
+  PaymentTerm?: string
+  PriceList?: string
+  JoinDate?: Date
+  NonActive?: string
+  dwh_created_at?: Date
+  dwh_updated_at?: Date
+  sales_person?: ISalesPerson
+  sales_invoice?: ISalesInvoice[]
+  invoice_count?: number
 }

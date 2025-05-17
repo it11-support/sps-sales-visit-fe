@@ -1,9 +1,3 @@
-const role = useCookie<any>('userData').value?.role?.role
-export const isAdmin = () => {
-  const userData = useCookie('userData') as { value: { role: { role: string } } };
-  return userData?.value?.role?.role === 'admin';
-}
-
 export const userMenu = {
     title: 'Users',
     icon: { icon: 'tabler-users' },
@@ -21,18 +15,7 @@ export const userMenu = {
     ]
   }
 
-export default [
-  {
-    title: 'Home',
-    to: { name: 'root' },
-    icon: { icon: 'tabler-smart-home' },
-  },
-  {
-    title: 'Second page',
-    to: { name: 'second-page' },
-    icon: { icon: 'tabler-file' },
-  },
-  ...(isAdmin() ? [userMenu] : []),
+export const defaultNavItems =  [
   {
     title: 'Customers',
     icon: { icon: 'tabler-users-group' },
@@ -45,3 +28,9 @@ export default [
     ]
   }
 ]
+
+export const getNavItems = (isAdmin: boolean) => {
+  return isAdmin ? [userMenu, ...defaultNavItems] : [...defaultNavItems];
+}
+
+export default getNavItems

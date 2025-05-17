@@ -8,6 +8,7 @@ export const PAGINATION_ITEMS = [
   { value: 50, title: '50' },
   { value: 100, title: '100' },
   { value: 150, title: '150' },
+  { value: -1, title: 'All' },
 ]
 
 export const DEFAULT_TOAST_TIMEOUT = 3000

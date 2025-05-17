@@ -3,7 +3,7 @@ import ConfirmDialog from '@/components/dialogs/ConfirmDialog.vue';
 import { handleUserBinding } from '@/utils/user/binding';
 import UserDrawer from '@/views/pages/user/UserDrawer.vue';
 import { useConfigStore } from '@core/stores/config';
-import type { SalesPerson, SortItem, User } from '@core/types';
+import type { ISalesPerson, IUser, SortItem } from '@core/types';
 
 const searchQuery = ref('')
 const selectedRole = ref()
@@ -25,7 +25,7 @@ let debouncedQueryTimeout: ReturnType<typeof setTimeout> | null = null
 const itemsPerPage = ref(DEFAULT_PER_PAGE)
 const page = ref(1)
 const sortOptions = ref<SortItem[]>([])
-const selectedRows = ref<User[]>([])
+const selectedRows = ref<IUser[]>([])
 const isConfirmDialogVisible = ref(false)
 const configStore = useConfigStore()
 
@@ -40,7 +40,7 @@ const headers = [
 ]
 
 // Add user
-const storeUser = async (userData: User) => {
+const storeUser = async (userData: IUser) => {
   configStore.overlay = true
 
   console.log(userData)
@@ -89,17 +89,17 @@ watch(salesPersonModal, async(newVal) => {
 const updateSalesPersonOptions = async () => {
   await fetchSalesPersons()
   salesPersonOptions.value = salesPersonsData.value.data.data
-    .filter((sales: SalesPerson) => sales.user == null)
-    .filter((sales: SalesPerson) => sales.user?.role?.role !== 'admin')
-    .map((sales: SalesPerson) => ({
+    .filter((sales: ISalesPerson) => sales.user == null)
+    .filter((sales: ISalesPerson) => sales.user?.role?.role !== 'admin')
+    .map((sales: ISalesPerson) => ({
       label: sales.SlpName,
       value: sales.SlpCode
     }))
 }
 
 // Update selected rows
-const updateSelectedRows = (rows: User[]) => {
-  selectedRows.value = rows.map((row: User) => ({ ...row }));
+const updateSelectedRows = (rows: IUser[]) => {
+  selectedRows.value = rows.map((row: IUser) => ({ ...row }));
 }
 
 // Link & unlink user to sales person api
@@ -118,7 +118,7 @@ const handleSalesPersonLink = async () => {
 }
 
 // Show delete modal
-const showDeleteModal = (item: User) => {
+const showDeleteModal = (item: IUser) => {
   selectedUser.value = item
   isConfirmDialogVisible.value = true
 }
@@ -127,7 +127,7 @@ const deleteSelectedUsers = async () => {
   console.log(selectedUser.value)
 }
 // Open link menu
-const handleClickLinkMenu = (item: User) => {
+const handleClickLinkMenu = (item: IUser) => {
   if (item.sales_person) {
     salesPersonModal.value = {show: true, type: 'unlink'}
   } else {
@@ -157,11 +157,11 @@ const roleOptions = rolesData.value.data.map((role: any) => ({
 }))
 
 const totalUser = computed(() => usersData.value.data.total)
-const users = computed((): User[] => usersData.value.data.data)
+const users = computed((): IUser[] => usersData.value.data.data)
 const isAdmin = computed(() => configStore.isAdmin())
 
 // Change selected item value and open drawer
-const handleSelectItem = (item?: User) => {
+const handleSelectItem = (item?: IUser) => {
   if (item) {
     selectedUser.value = { ...item }
     isEditMode.value = true

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { SalesPerson, User } from '@core/typedefs';
+import { ISalesPerson, IUser } from '@core/typedefs';
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 import { VForm } from 'vuetify/components/VForm';
 
 interface Emit {
   (e: 'update:isDrawerOpen', value: boolean): void
-  (e: 'userData', value: User): void
+  (e: 'userData', value: IUser): void
 }
 interface Props {
   isDrawerOpen: boolean
   isEditMode: boolean
-  user?: User
+  user?: IUser
 }
 
 const props = defineProps<Props>()
@@ -93,7 +93,7 @@ watch(props, async(newVal) => {
   if(newVal.user && newVal.isEditMode) {
     formData.value = newVal.user
     const currentSalesPerson = salesPersonsData.value.data.data
-      .find((sales: SalesPerson) => sales.SlpCode === props.user?.sales_person_id)
+      .find((sales: ISalesPerson) => sales.SlpCode === props.user?.sales_person_id)
     if(currentSalesPerson){      
       salesPersonsOptions.value.unshift({
         label: currentSalesPerson.SlpName,
@@ -163,13 +163,13 @@ const { data: rolesData } = await useApi<any>(createUrl('role'), {})
                 />
               </VCol>
               <!-- 👉 password -->
-               <template v-if="!props.isEditMode">
+               <!-- <template v-if="!props.isEditMode"> -->
                 <VCol cols="12">
                 <AppTextField
                   v-model="formData.password"
                   label="Password"
                   placeholder="············"
-                  :rules="[requiredValidator, passwordValidator]"
+                  :rules="formData.password ? [requiredValidator, passwordValidator] : []"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   autocomplete="password"
                   :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
@@ -188,7 +188,7 @@ const { data: rolesData } = await useApi<any>(createUrl('role'), {})
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
                 />
                 </VCol>
-              </template>
+              <!-- </template> -->
               <!-- 👉 Role -->
               <VCol cols="12">
                 <AppSelect

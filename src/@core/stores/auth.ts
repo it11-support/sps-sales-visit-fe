@@ -1,4 +1,4 @@
-import { AuthState, User } from '@core/types'
+import { AuthState, IUser } from '@core/types'
 import { defineStore } from 'pinia'
 
 export const useAuthStore = defineStore('auth', {
@@ -12,7 +12,7 @@ export const useAuthStore = defineStore('auth', {
       this.token = token
     },
 
-    setUser(user: User) {
+    setUser(user: IUser) {
       this.user = user
     },
 

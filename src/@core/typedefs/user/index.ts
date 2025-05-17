@@ -1,7 +1,7 @@
-import { Role } from "../role"
-import { SalesPerson } from "../salesperson"
+import { IRole } from "../role"
+import { ISalesPerson } from "../salesperson"
 
-export interface User {
+export interface IUser {
   id: number
   name: string
   username: string
@@ -9,7 +9,7 @@ export interface User {
   password?: string
   confirm_password?: string
   role_id?: number  
-  role?: Role
-  sales_person?: SalesPerson
+  role?: IRole
+  sales_person?: ISalesPerson
   sales_person_id?: number
 }

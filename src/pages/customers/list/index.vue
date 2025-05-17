@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { useConfigStore } from '@core/stores/config'
-import type { CustomerData, SortItem } from '@core/types'
+import type { ICustomerData, SortItem } from '@core/types'
 
 // 👉 Store
 const searchQuery = ref('')
-const selectedSalesPerson = ref()
-const selectedPlan = ref()
+const selectedSalesPerson = ref(useCookie<any>('userData')?.value?.sales_person?.SlpCode ?? null)
 const selectedStatus = ref()
 const debouncedQuery = ref('')
 const deleteModal = ref(false)
 const deleteId = ref('')
-
+const selectedGroupName = ref()
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 
 
@@ -18,9 +17,9 @@ let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 const itemsPerPage = ref(DEFAULT_PER_PAGE)
 const page = ref(1)
 const sortOptions = ref<SortItem[]>([])
-const selectedRows = ref<CustomerData[]>([])
+const selectedRows = ref<ICustomerData[]>([])
 const configStore = useConfigStore()
-
+const hideZeroInvoice = ref(false)
 
 // Delayed search
 watch(searchQuery, (newVal) => {
@@ -42,21 +41,23 @@ const updateOptions = (options: any) => {
 }
 
 // Update selected rows
-const updateSelectedRows = (rows: CustomerData[]) => {
-  selectedRows.value = rows.map((row: CustomerData) => ({ ...row }));
+const updateSelectedRows = (rows: ICustomerData[]) => {
+  selectedRows.value = rows.map((row: ICustomerData) => ({ ...row }));
 }
 
 // Headers
 const headers = [
+  { title: 'Actions', key: 'actions', sortable: false },
   { title: 'Customer', key: 'CardName'},
+  { title: 'Group Name', key: 'GroupName' },
   { title: 'PIC', key: 'CntctPrsn' },
   { title: 'Status', key: 'status', sortable: false },
   { title: 'Address', key: 'Address', width: '50px' }, 
-  { title: 'Phone 1', key: 'Phone1' },
-  { title: 'Phone 2', key: 'Phone2' },
-  { title: 'Fax', key: 'Fax' },
-  { title: 'Email', key: 'E_Mail' },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Phone', key: 'Phone' },
+  { title: 'Number of Invoices', key: 'invoice_count' },
+  { title: 'Payment Terms', key: 'PaymentTerms' },
+  { title: 'Price List', key: 'PriceList' },
+  // { title: 'Actions', key: 'actions', sortable: false },
 ]
 
 // 👉 Fetching customers
@@ -64,11 +65,12 @@ const { data: customerData, execute: fetchCustomers } = await useApi<any>(create
   query: {
     search: debouncedQuery,
     status: selectedStatus,
-    plan: selectedPlan,
+    group_name: selectedGroupName,   
     sales_person_id: selectedSalesPerson,
     per_page: itemsPerPage,
     page,
-    sort_options: sortOptions
+    sort_options: sortOptions,
+    hideZeroInvoice
   },
 }))
 
@@ -79,6 +81,13 @@ const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {
   }
 }), {})
 
+const {data: groupList} =  await useApi<any>(createUrl('customer/group-list'), {}) 
+
+const groupNameOptions = computed(() => groupList.value.data.map((group: any) => ({
+  value: group.GroupName,
+  title: group.GroupName
+})))
+
 // Sales persons for filter
 const salesPersons = computed(() => salesPersonsData.value.data.data.map((salesPerson: any) => ({
   value: salesPerson.SlpCode,
@@ -87,7 +96,7 @@ const salesPersons = computed(() => salesPersonsData.value.data.data.map((salesP
 
 const totalCustomer = computed(() => customerData.value.data.total)
 
-const customers = computed((): CustomerData[] => customerData.value.data.data)
+const customers = computed((): ICustomerData[] => customerData.value.data.data)
 
 console.log(customers.value)
 // 👉 search filters
@@ -125,7 +134,6 @@ const deleteCustomer = async(id: string) => {
       <VCardItem class="pb-4">
         <VCardTitle>Filters</VCardTitle>
       </VCardItem>
-
       <VCardText>
         <VRow>
           <!-- 👉 Select Role -->
@@ -140,8 +148,19 @@ const deleteCustomer = async(id: string) => {
               clearable
               clear-icon="tabler-x"
             />
-          </VCol>          
-          <!-- 👉 Select Status -->
+          </VCol>
+           <VCol
+            cols="12"
+            sm="4"
+          >
+            <AppSelect
+              v-model="selectedGroupName"
+              placeholder="Select Group Name"
+              :items="groupNameOptions"
+              clearable
+              clear-icon="tabler-x"
+            />
+          </VCol>
           <VCol
             cols="12"
             sm="4"
@@ -153,19 +172,23 @@ const deleteCustomer = async(id: string) => {
               clearable
               clear-icon="tabler-x"
             />
-          </VCol>
+          </VCol>          
         </VRow>
       </VCardText>
 
       <VDivider />
 
       <VCardText class="d-flex flex-wrap gap-4">
-        <div class="me-3 d-flex gap-3">
+        <div class="me-4 d-flex gap-3">
           <AppSelect
             :model-value="itemsPerPage"
             :items="PAGINATION_ITEMS"
             style="inline-size: 6.25rem;"
             @update:model-value="itemsPerPage = parseInt($event, 10)"
+          />
+          <VCheckbox
+            label="Hide Zero Invoice"
+            v-model="hideZeroInvoice"             
           />
         </div>
         <VSpacer />
@@ -213,6 +236,12 @@ const deleteCustomer = async(id: string) => {
         multi-sort
       >
         <!-- User -->
+        <template #item.actions="{ item }">
+          <a :href="`${'view/' + item.CardCode }`">
+            <VIcon small class="mr-1">tabler-eye</VIcon> 
+            View
+        </a>
+        </template>
         <template #item.CardName="{ item }">
           <div class="d-flex align-center gap-x-4">          
             <div class="d-flex flex-column">
@@ -225,11 +254,11 @@ const deleteCustomer = async(id: string) => {
         <template #item.status="{ item }">
           <div class="d-flex justify-content-between gap-x-4">
             <VChip 
-              :color="item.frozenFor === 'Y' ? 'error' : 'success'"
+              :color="item.NonActive === 'Y' ? 'error' : 'success'"
               label
               size="small"
             >
-            {{ item.frozenFor === 'Y' ? 'Inactive' : 'Active' }}
+            {{ item.NonActive === 'Y' ? 'Inactive' : 'Active' }}
             </VChip>
           </div>
         </template>
@@ -249,45 +278,11 @@ const deleteCustomer = async(id: string) => {
             </div>
           </div>
         </template>
-        <template #item.E_Mail="{ item }">
-          <div class="d-flex align-center gap-x-4">          
-            <div class="d-flex flex-column">
-                <a v-if="item.E_Mail" :href="`mailto:${item.E_Mail}`">
-                  {{ item.E_Mail }}
-                </a>
-            </div>
+        <template #item.invoice_count="{ item }">
+          <div class="d-flex justify-content-between gap-x-4">
+            {{ item.invoice_count }}
           </div>
         </template>
-        <!-- Actions -->
-        <template #item.actions="{ item }">
-          <VBtn           
-            icon
-            variant="text"
-            color="medium-emphasis"
-          >
-            <VIcon icon="tabler-dots-vertical" />
-            <VMenu activator="parent">
-              <VList>
-                <VListItem :to="{ name: 'customers-view-id', params: { id: item.CardCode } }">
-                  <template #prepend>
-                    <VIcon icon="tabler-eye" />
-                  </template>
-
-                  <VListItemTitle>View</VListItemTitle>
-                </VListItem>
-                <div v-if="isAdmin()">
-                  <VListItem @click="showDeleteModal(item.CardCode)">
-                    <template #prepend>
-                      <VIcon icon="tabler-trash" />
-                    </template>
-                    <VListItemTitle>Delete</VListItemTitle>
-                  </VListItem>
-              </div>
-              </VList>
-            </VMenu>
-          </VBtn>
-        </template>
-
         <!-- pagination -->
         <template #bottom>
           <TablePagination

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import navItems from '@/navigation/vertical'
+import getNavItems from '@/navigation/vertical'
 import { themeConfig } from '@themeConfig'
 
 // Components
@@ -9,9 +9,16 @@ import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 
 // @layouts plugin
+import { useConfigStore } from '@/@core/stores/config'
 import { VerticalNavLayout } from '@layouts'
 
-console.log(navItems)
+const configStore = useConfigStore()
+
+const isAdmin = configStore.isAdmin
+
+
+const navItems = getNavItems(isAdmin())
+
 </script>
 
 <template>

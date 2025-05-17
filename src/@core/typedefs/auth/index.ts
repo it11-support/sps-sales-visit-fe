@@ -1,6 +1,6 @@
-import { User } from "../user"
+import { IUser } from "../user"
 
 export interface AuthState {
   token: string | null
-  user: User | null
+  user: IUser | null
 }

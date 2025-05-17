@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { CustomerData } from '@/@core/typedefs';
+import { ICustomerData } from '@/@core/typedefs';
 import { SortItem } from '@/@core/types';
 import { useConfigStore } from '@core/stores/config';
 import { VForm } from 'vuetify/components/VForm';
@@ -10,18 +10,19 @@ const userData = useCookie<any>('userData')
 const roleOptions = ref([])
 const form = ref<VForm>()
 const salesPerson = useCookie<any>('userData')?.value?.sales_person ?? null
+const hasCustomer = useCookie<any>('userData')?.value?.hasCustomer ?? false
 const password = ref('')
 const confirm_password = ref('')
 const errors = ref([])
 const isPasswordVisible = ref(false)
 const itemsPerPage = ref(DEFAULT_PER_PAGE)
 const page = ref(1)
-const selectedRows = ref<CustomerData[]>([])
+const selectedRows = ref<ICustomerData[]>([])
 const sortOptions = ref<SortItem[]>([])
 const searchQuery = ref('')
-
-
-
+const selectedStatus = ref()
+const selectedGroupName = ref()
+const hideZeroInvoice = ref(false)
 
 onMounted(async() => {
   try {
@@ -74,44 +75,59 @@ const submitUserHandler = async () => {
     configStore.overlay = false
   } 
 }
-const { data: customerData, execute: fetchCustomers } = await useApi<any>(createUrl('customer', {
+
+const { data: customerData, execute: fetchCustomers } = salesPerson?.SlpCode ? await useApi<any>(createUrl('customer', {
   query: {
     search: searchQuery,
+    status: selectedStatus,
     sales_person_id: salesPerson.SlpCode,
+    group_name: selectedGroupName,   
     per_page: itemsPerPage,
     page,
-    sort_options: sortOptions
+    sort_options: sortOptions,
+    hideZeroInvoice
   },
-}))
+})) : { data: null, execute: null }
 
 
 
-const updateSelectedRows = (rows: CustomerData[]) => {
-  selectedRows.value = rows.map((row: CustomerData) => ({ ...row }));
+const updateSelectedRows = (rows: ICustomerData[]) => {
+  selectedRows.value = rows.map((row: ICustomerData) => ({ ...row }));
 }
 
 const updateOptions = (options: any) => {
   sortOptions.value = [options.sortBy]
 }
 
-const totalCustomer = computed(() => customerData.value.data.total)
-const customers = computed((): CustomerData[] => customerData.value.data.data)
+const totalCustomer = computed(() => customerData?.value.data.total)
+const customers = computed((): ICustomerData[] => customerData?.value.data.data)
 
 const headers = [
+  { title: 'Actions', key: 'actions', sortable: false },
   { title: 'Customer', key: 'CardName'},
+  { title: 'Group Name', key: 'GroupName' },
   { title: 'PIC', key: 'CntctPrsn' },
   { title: 'Status', key: 'status', sortable: false },
   { title: 'Address', key: 'Address', width: '50px' }, 
-  { title: 'Phone 1', key: 'Phone1' },
-  { title: 'Phone 2', key: 'Phone2' },
-  { title: 'Fax', key: 'Fax' },
-  { title: 'Email', key: 'E_Mail' },
-  { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Phone', key: 'Phone' },
+  { title: 'Number of Invoices', key: 'invoice_count' },
+  { title: 'Payment Terms', key: 'PaymentTerms' },
+  { title: 'Price List', key: 'PriceList' },
+  // { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-const isAdmin = () => {
-  return configStore.isAdmin()
-}
+const isAdmin = computed(() => userData.value.role.role === 'admin')
+const status = [
+  { title: 'Active', value: 'N' },
+  { title: 'Inactive', value: 'Y' },
+]
+const {data: groupList} =  await useApi<any>(createUrl('customer/group-list'), {}) 
+
+const groupNameOptions = computed(() => groupList.value.data.map((group: any) => ({
+  value: group.GroupName,
+  title: group.GroupName
+})))
+
 </script>
 
 
@@ -134,6 +150,7 @@ const isAdmin = () => {
               </VCol>
               <VCol cols="12" md="6">
                 <AppTextField
+                  :disabled="!isAdmin"
                   label="Username"
                   v-model="userData.username"
                   type="text"
@@ -141,13 +158,15 @@ const isAdmin = () => {
               </VCol>
               <VCol cols="12" md="6">
                 <AppTextField
+                  :disabled="!isAdmin"
                   label="Email"
                   v-model="userData.email"
                   type="text"
                 />
               </VCol>
               <VCol cols="12" md="6">
-                <AppSelect                 
+                <AppSelect
+                  :disabled="!isAdmin"            
                   v-model="userData.role_id"
                   :items="roleOptions"
                   item-title="label"
@@ -207,16 +226,49 @@ const isAdmin = () => {
       </VCard>
     </VCol>
   </VRow>
-  <VRow>
+  <VRow v-if="hasCustomer">
     <VCol cols="12">
       <VCard title="Customers">
-          <VCardText class="d-flex flex-wrap gap-4">
+        <VCardText>
+        <VRow>
+          <VCol
+            cols="12"
+            sm="4"
+          >
+            <AppSelect
+              v-model="selectedStatus"
+              placeholder="Select Status"
+              :items="status"
+              clearable
+              clear-icon="tabler-x"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            sm="4"
+          >
+            <AppSelect
+              v-model="selectedGroupName"
+              placeholder="Select Group Name"
+              :items="groupNameOptions"
+              clearable
+              clear-icon="tabler-x"
+            />
+          </VCol>
+        </VRow>
+      </VCardText>
+      <VDivider />
+      <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-3 d-flex gap-3">
           <AppSelect
             :model-value="itemsPerPage"
             :items="PAGINATION_ITEMS"
             style="inline-size: 6.25rem;"
             @update:model-value="itemsPerPage = parseInt($event, 10)"
+          />
+          <VCheckbox
+            label="Hide Zero Invoice"
+            v-model="hideZeroInvoice"             
           />
         </div>
         <VSpacer />
@@ -244,9 +296,6 @@ const isAdmin = () => {
       </VCardText>
 
       <VDivider />
-        <VCardSubtitle class="text-h5 ml-2 mb-2">
-          {{ customers.length }}
-        </VCardSubtitle>
         <VDataTableServer
         :loading="configStore.loading"
         v-model:items-per-page="itemsPerPage"
@@ -264,7 +313,12 @@ const isAdmin = () => {
         @update:model-value="updateSelectedRows"
         multi-sort
       >
-        <!-- User -->
+        <template #item.actions="{ item }">
+          <a :href="`${'customers/view/' + item.CardCode }`">
+            <VIcon small class="mr-1">tabler-eye</VIcon> 
+            View
+          </a>
+        </template>
         <template #item.CardName="{ item }">
           <div class="d-flex align-center gap-x-4">          
             <div class="d-flex flex-column">
@@ -277,12 +331,17 @@ const isAdmin = () => {
         <template #item.status="{ item }">
           <div class="d-flex justify-content-between gap-x-4">
             <VChip 
-              :color="item.frozenFor === 'Y' ? 'error' : 'success'"
+              :color="item.NonActive === 'Y' ? 'error' : 'success'"
               label
               size="small"
             >
-            {{ item.frozenFor === 'Y' ? 'Inactive' : 'Active' }}
+            {{ item.NonActive === 'Y' ? 'Inactive' : 'Active' }}
             </VChip>
+          </div>
+        </template>
+         <template #item.invoice_count="{ item }">
+          <div class="d-flex justify-content-between gap-x-4">
+            {{ item.invoice_count }}
           </div>
         </template>
         <template #item.CntctPrsn="{ item }">
@@ -301,45 +360,7 @@ const isAdmin = () => {
             </div>
           </div>
         </template>
-        <template #item.E_Mail="{ item }">
-          <div class="d-flex align-center gap-x-4">          
-            <div class="d-flex flex-column">
-                <a v-if="item.E_Mail" :href="`mailto:${item.E_Mail}`">
-                  {{ item.E_Mail }}
-                </a>
-            </div>
-          </div>
-        </template>
-        <!-- Actions -->
-        <template #item.actions="{ item }">
-          <VBtn           
-            icon
-            variant="text"
-            color="medium-emphasis"
-          >
-            <VIcon icon="tabler-dots-vertical" />
-            <VMenu activator="parent">
-              <VList>
-                <VListItem :to="{ name: 'customers-view-id', params: { id: item.CardCode } }">
-                  <template #prepend>
-                    <VIcon icon="tabler-eye" />
-                  </template>
-
-                  <VListItemTitle>View</VListItemTitle>
-                </VListItem>
-                <!-- <div v-if="isAdmin()">
-                  <VListItem @click="showDeleteModal(item.CardCode)">
-                    <template #prepend>
-                      <VIcon icon="tabler-trash" />
-                    </template>
-                    <VListItemTitle>Delete</VListItemTitle>
-                  </VListItem>
-              </div> -->
-              </VList>
-            </VMenu>
-          </VBtn>
-        </template>
-
+       
         <!-- pagination -->
         <template #bottom>
           <TablePagination
@@ -353,3 +374,23 @@ const isAdmin = () => {
     </VCol>
   </VRow>
 </template>
+
+<style scoped lang="scss">
+.trim-text-wrapper {
+  overflow: hidden;
+  inline-size: 200px;
+  max-inline-size: 200px;
+  white-space: normal;
+
+  .trim-text {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+</style>

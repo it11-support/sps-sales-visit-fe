@@ -1,6 +1,6 @@
-import { User } from "../user"
+import { IUser } from "../user"
 
-export interface SalesPerson {
+export interface ISalesPerson {
   SlpCode: number
   SlpName: string
   Commission: number
@@ -12,5 +12,5 @@ export interface SalesPerson {
   UserSign: number
   dwh_created_at: Date
   dwh_updated_at: Date
-  user?: User
+  user?: IUser
 }

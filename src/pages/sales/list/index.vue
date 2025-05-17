@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { handleUserBinding } from '@/utils/user/binding'
 import { useConfigStore } from '@core/stores/config'
-import { SalesPerson, User } from '@core/typedefs'
+import { ISalesPerson, IUser } from '@core/typedefs'
 import { SortItem } from '@core/types'
 
 
@@ -13,9 +13,9 @@ let debouncedQueryTimeout: ReturnType<typeof setTimeout> | null = null
 const itemsPerPage = ref(DEFAULT_PER_PAGE)
 const page = ref(1)
 const sortOptions = ref<SortItem[]>([])
-const selectedRows = ref<SalesPerson[]>([])
-const selectedItem = ref<SalesPerson | null>()
-const selectedUser = ref<User | null>()
+const selectedRows = ref<ISalesPerson[]>([])
+const selectedItem = ref<ISalesPerson | null>()
+const selectedUser = ref<IUser | null>()
 const salesPersonModal = ref<{type : 'link' | 'unlink', show: boolean}>({
   type : 'link',
   show: false
@@ -57,12 +57,12 @@ const { data: salesPersonsData, execute: fetchSalesPersons } = await useApi<any>
   }
 }))
 
-const updateSelectedRows = (rows: SalesPerson[]) => {
-  selectedRows.value = rows.map((row: SalesPerson) => ({ ...row }));
+const updateSelectedRows = (rows: ISalesPerson[]) => {
+  selectedRows.value = rows.map((row: ISalesPerson) => ({ ...row }));
 }
 
 const totalSalesPerson = computed(() => salesPersonsData.value.data.total)
-const salesPersons = computed((): SalesPerson[] => salesPersonsData.value.data.data)
+const salesPersons = computed((): ISalesPerson[] => salesPersonsData.value.data.data)
 
 const { data: usersData, execute: fetchUsers } = await useApi<any>(createUrl('user', {
   query: {
@@ -76,14 +76,14 @@ const { data: usersData, execute: fetchUsers } = await useApi<any>(createUrl('us
 const updateUsersOptions = async () => {
   await fetchUsers()
   usersOptions.value = usersData.value.data.data
-    .filter((user: User) => user.sales_person == null)
-    .filter((user: User) => user.role?.role !== 'admin')
-    .map((user: User) => ({
+    .filter((user: IUser) => user.sales_person == null)
+    .filter((user: IUser) => user.role?.role !== 'admin')
+    .map((user: IUser) => ({
       label: user.name,
       value: user.id
     }))
 }
-const handleShowSalesPersonModal = (item: SalesPerson) => {
+const handleShowSalesPersonModal = (item: ISalesPerson) => {
   salesPersonModal.value.show = true
   selectedItem.value = item
   if(item.user){
