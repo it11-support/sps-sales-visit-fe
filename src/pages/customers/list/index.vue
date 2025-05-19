@@ -20,6 +20,8 @@ const sortOptions = ref<SortItem[]>([])
 const selectedRows = ref<ICustomerData[]>([])
 const configStore = useConfigStore()
 const hideZeroInvoice = ref(false)
+const filterDormantCustomer = ref(false)
+const dormantMonth = ref(null)
 
 // Delayed search
 watch(searchQuery, (newVal) => {
@@ -54,8 +56,9 @@ const headers = [
   { title: 'Status', key: 'status', sortable: false },
   { title: 'Address', key: 'Address', width: '50px' }, 
   { title: 'Phone', key: 'Phone' },
+  { title: 'Last Invoice Date', key: 'last_transaction_date' },
   { title: 'Number of Invoices', key: 'invoice_count' },
-  { title: 'Payment Terms', key: 'PaymentTerms' },
+  { title: 'Payment Term', key: 'PaymentTerm' },
   { title: 'Price List', key: 'PriceList' },
   // { title: 'Actions', key: 'actions', sortable: false },
 ]
@@ -70,7 +73,8 @@ const { data: customerData, execute: fetchCustomers } = await useApi<any>(create
     per_page: itemsPerPage,
     page,
     sort_options: sortOptions,
-    hideZeroInvoice
+    hideZeroInvoice,
+    dormantMonth
   },
 }))
 
@@ -81,7 +85,7 @@ const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {
   }
 }), {})
 
-const {data: groupList} =  await useApi<any>(createUrl('customer/group-list'), {}) 
+const { data: groupList } =  await useApi<any>(createUrl('customer/group-list'), {}) 
 
 const groupNameOptions = computed(() => groupList.value.data.map((group: any) => ({
   value: group.GroupName,
@@ -105,11 +109,15 @@ const status = [
   { title: 'Inactive', value: 'Y' },
 ]
 
-const showDeleteModal = (id: string) => {
-  deleteModal.value = true
-  deleteId.value = id
-}
 
+// Last transaction
+const dormantOptions = [
+  { title: 'More than 1 month', value: 1 },
+  { title: 'More than 2 months', value: 2 },
+  { title: 'More than 3 months', value: 3 },
+  { title: 'More than 6 months', value: 6 },
+  { title: 'More than 12 months', value: 12 },
+]
 
 // Delete customer method
 const deleteCustomer = async(id: string) => {
@@ -143,7 +151,7 @@ const deleteCustomer = async(id: string) => {
           >
             <AppSelect
               v-model="selectedSalesPerson"
-              placeholder="Select Sales Person"
+              placeholder="Fitler by sales person"
               :items="salesPersons"
               clearable
               clear-icon="tabler-x"
@@ -155,29 +163,56 @@ const deleteCustomer = async(id: string) => {
           >
             <AppSelect
               v-model="selectedGroupName"
-              placeholder="Select Group Name"
+              placeholder="Filter by group name"
               :items="groupNameOptions"
               clearable
               clear-icon="tabler-x"
             />
           </VCol>
+                  
           <VCol
             cols="12"
             sm="4"
           >
             <AppSelect
               v-model="selectedStatus"
-              placeholder="Select Status"
+              placeholder="Filter by status"
               :items="status"
               clearable
               clear-icon="tabler-x"
             />
-          </VCol>          
+          </VCol>        
         </VRow>
+        <VRow class="d-flex justify-start">
+          <VCol
+            cols="8"
+          >
+            <VRow class="d-flex justify-start">
+              <VCol
+                cols="4"
+              >
+                <VCheckbox
+                  v-model="filterDormantCustomer"
+                  label="Dormant Customer"              
+                />
+              </VCol>
+              <VCol
+                v-if="filterDormantCustomer"
+                cols="4"                
+              >
+                <AppSelect
+                  :items="dormantOptions"
+                  v-model="dormantMonth"
+                  placeholder="Filter by last transaction"          
+                  clearable
+                  clear-icon="tabler-x"
+                />
+              </VCol>
+            </VRow>
+          </VCol>
+        </VRow> 
       </VCardText>
-
       <VDivider />
-
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-4 d-flex gap-3">
           <AppSelect
@@ -280,7 +315,12 @@ const deleteCustomer = async(id: string) => {
         </template>
         <template #item.invoice_count="{ item }">
           <div class="d-flex justify-content-between gap-x-4">
-            {{ item.invoice_count }}
+            {{ item.invoice_count ?? '-' }}
+          </div>
+        </template>
+        <template #item.last_transaction_date="{ item }">
+          <div class="d-flex justify-content-between gap-x-4">
+            {{ item.last_transaction_date ? formatDate(item.last_transaction_date) : '' }}
           </div>
         </template>
         <!-- pagination -->

@@ -27,4 +27,5 @@ export interface ICustomerData {
   sales_person?: ISalesPerson
   sales_invoice?: ISalesInvoice[]
   invoice_count?: number
+  last_transaction_date?: Date
 }

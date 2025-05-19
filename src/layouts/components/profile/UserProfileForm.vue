@@ -111,7 +111,7 @@ const headers = [
   { title: 'Address', key: 'Address', width: '50px' }, 
   { title: 'Phone', key: 'Phone' },
   { title: 'Number of Invoices', key: 'invoice_count' },
-  { title: 'Payment Terms', key: 'PaymentTerms' },
+  { title: 'Payment Terms', key: 'PaymentTerm' },
   { title: 'Price List', key: 'PriceList' },
   // { title: 'Actions', key: 'actions', sortable: false },
 ]
