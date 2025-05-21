@@ -11,7 +11,7 @@ const debouncedQuery = ref('')
 const itemsPerPage = ref(DEFAULT_PER_PAGE)
 const page = ref(1)
 const sortOptions = ref<SortItem[]>([])
-
+const groupBy = ref('DocNum')
 
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 const configStore = useConfigStore()
@@ -23,13 +23,14 @@ interface Props {
 const props = defineProps<Props>()
 
 const headers = [
+  { title: 'Invoice', value: 'DocNum', sortable: true },
   { title: 'Inv Date', value: 'DocDate' , sortable: true },
-  { title: 'Total', value: 'TotalSales' },
+  { title: 'Description', value: 'Dscription', sortable: true },
+  { title: 'Item Code', value: 'ItemCode' , sortable: true },
   { title: 'Qty (Kg)', value: 'QtyKg', sortable: true },
   { title: 'Unit', value: 'unitMsr', sortable: true },
   { title: 'Price', value: 'PriceBefDisc', sortable: true },
-  { title: 'Item Code', value: 'ItemCode' , sortable: true },
-  { title: 'Description', value: 'Dscription', sortable: true },
+  { title: 'Total', value: 'TotalSales' },
 ]
 
 const { data: salesInvoices } = await useApi<any>(createUrl(`invoice`, {
@@ -40,7 +41,8 @@ const { data: salesInvoices } = await useApi<any>(createUrl(`invoice`, {
     page,
     sort_options: sortOptions,
     start_date: startDate,
-    end_date: endDate
+    end_date: endDate,
+    group_by: groupBy
   }
 }))
 
@@ -79,6 +81,14 @@ const calculateTotalSales = (items: any): string => {
 
 const totalSales = computed(() => salesInvoices.value.data.total)
 
+const computedHeaders = computed(() => {
+  if(groupBy.value === 'ItemCode') {
+    return headers.filter(header => header.value !== 'Dscription' && header.value !== 'ItemCode')
+  }
+  // return headers.filter(header => header.value !== 'DocNum')
+  return headers.filter(header => header.value !== 'DocNum')
+  
+})
 </script>
 
 <template>
@@ -90,6 +100,18 @@ const totalSales = computed(() => salesInvoices.value.data.total)
         <VCardTitle class="text-lg text-disabled">SALES INVOICES</VCardTitle>
       </VCardItem>     
       <VCardText class="d-flex flex-wrap gap-4"> 
+        <VRow>
+          <VCol
+            cols="12"
+            lg="12"
+            md="12"
+          >
+           <v-radio-group inline v-model="groupBy"> 
+            <v-radio label="Invoice" value="DocNum"></v-radio>
+            <v-radio label="Item" value="ItemCode"></v-radio>
+           </v-radio-group>
+          </VCol>
+        </VRow>
         <VSpacer />       
         <div class="me-3 d-flex gap-3">
           <v-row>
@@ -141,10 +163,10 @@ const totalSales = computed(() => salesInvoices.value.data.total)
       <VDataTableServer
         :items="salesInvoicesData"
         :items-length="totalSales"
-        :headers="headers"
+        :headers="computedHeaders"
         :loading="configStore.loading"
-        item-value="DocNum"
-        :group-by="[{ key: 'DocNum' }]"
+        :item-value="groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum'"
+        :group-by="[groupBy === 'DocNum' ? { key: 'DocNum' } : { key: 'Dscription' }]"
         v-model:page="page"
         v-model:items-per-page="itemsPerPage"
         v-model:model-value="selectedRows"
@@ -161,10 +183,13 @@ const totalSales = computed(() => salesInvoices.value.data.total)
               <VIcon :icon="isGroupOpen(item) ? 'tabler-chevron-down' : 'tabler-chevron-right'" /> 
               {{ item.value }} ({{ item.items.length }})
             </td>
-            <td colspan="1" class="text-left">
-              {{ formatDate(item.items[0].value.DocDate, { day: '2-digit', month: '2-digit', year: 'numeric'})  }}
+            <td v-if="groupBy === 'ItemCode'" :colspan="1"  class="text-left">
+             {{  }}
             </td>
-            <td colspan="7" class="text-left font-weight-bold text-primary">
+            <td :colspan="groupBy === 'DocNum' ? 6 : 4"  class="text-left">
+              {{ formatDate(item.items[0].value.DocDate, { day: '2-digit', month: 'short', year: 'numeric'})  }}
+            </td>
+            <td class="text-left font-weight-bold text-primary">
               {{ calculateTotalSales(item.items) }}
             </td>
           </tr>
@@ -173,8 +198,14 @@ const totalSales = computed(() => salesInvoices.value.data.total)
         
         </template>
   
+        <template #item.ItemCode="{ item }">
+          <a :href="`${props.id}/item/${item.ItemCode}`">{{ item.ItemCode }}</a>
+        </template>
+        <template #item.DocNum="{ item }">
+          <a :href="`${props.id}/invoice/${item.DocNum}`">{{ item.DocNum }}</a>
+        </template>
         <template #item.DocDate="{ item }">
-          <!-- {{ formatDate(item.DocDate, { day: '2-digit', month: '2-digit', year: 'numeric'})  }} -->
+          {{ formatDate(item.DocDate, { day: '2-digit', month: 'short', year: 'numeric'})  }}
         </template>
         <template #item.QtyKg="{ item }">
           {{ Number(item.QtyKg).toFixed(2) }}

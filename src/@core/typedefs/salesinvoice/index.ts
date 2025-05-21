@@ -6,7 +6,7 @@ export interface ISalesInvoice {
   CardCode: string;
   CardName: string;
   ItemCode?: string;
-  Description: string;
+  Dscription: string;
   QtyKg: number;
   unitMsr?: string;
   PriceBefDisc: number

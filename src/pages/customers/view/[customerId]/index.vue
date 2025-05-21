@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import { ISalesInvoice } from '@/@core/typedefs/salesinvoice';
-import { SortItem } from '@/@core/types';
-import CustomerOverview from '@/views/pages/customer/CustomerOverview.vue';
-import SalesInvoice from '@/views/pages/customer/SalesInvoice.vue';
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useApi } from '../../../../../src/composables/useApi';
+import { ISalesInvoice } from '../../../../@core/typedefs/salesinvoice';
+import { SortItem } from '../../../../@core/types';
+import CustomerOverview from '../../../../views/pages/customer/CustomerOverview.vue';
+import SalesInvoice from '../../../../views/pages/customer/SalesInvoice.vue';
 
 
-const route = useRoute('customers-view-id')
+const route = useRoute('customers-view-customerId')
 const searchQuery = ref('')
 const debouncedQuery = ref('')
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 const startDate = ref(null)
 const endDate = ref(null)
-const { data: customerData } = await useApi<any>(`customer/${route.params.id}`)
+const { data: customerData } = await useApi<any>(`customer/${route.params.customerId}`)
 const sortOptions = ref<SortItem[]>([])
 
+const id = route.params.customerId as string
+console.log(customerData)
 // Delayed search
 watch(searchQuery, (newVal) => {
   if (debounceTimeout) clearTimeout(debounceTimeout)
@@ -41,15 +46,15 @@ const updateOptions = (options: any) => {
 <template>
   <section>
   <VRow v-if="customerData">    
-    <CustomerOverview :data="customerData.data" />
-    <SalesInvoice :id="route.params.id" />
+    <CustomerOverview :data="customerData.data.customer" />
+    <SalesInvoice :id="id" />
   </VRow>
   <div v-else>
     <VAlert
       type="error"
       variant="tonal"
     >
-      Customer with id  {{ route.params.id }} not found!
+      Customer with id  {{ id }} not found!
     </VAlert>
   </div>
   </section>

@@ -23,6 +23,10 @@ const searchQuery = ref('')
 const selectedStatus = ref()
 const selectedGroupName = ref()
 const hideZeroInvoice = ref(false)
+const selectedPaymentTerm = ref()
+const selectedPriceList = ref()
+const filterDormantCustomer = ref(false)
+const dormantMonth = ref(null)
 
 onMounted(async() => {
   try {
@@ -85,7 +89,10 @@ const { data: customerData, execute: fetchCustomers } = salesPerson?.SlpCode ? a
     per_page: itemsPerPage,
     page,
     sort_options: sortOptions,
-    hideZeroInvoice
+    hideZeroInvoice,
+    payment_term: selectedPaymentTerm,
+    price_list: selectedPriceList,
+    dormantMonth
   },
 })) : { data: null, execute: null }
 
@@ -121,102 +128,35 @@ const status = [
   { title: 'Active', value: 'N' },
   { title: 'Inactive', value: 'Y' },
 ]
-const {data: groupList} =  await useApi<any>(createUrl('customer/group-list'), {}) 
-
-const groupNameOptions = computed(() => groupList.value.data.map((group: any) => ({
+const {data: groupFilter} =  await useApi<any>(createUrl('customer/get-fitlers'), {}) 
+const groupNameOptions = computed(() => groupFilter.value.data.groupName.map((group: any) => ({
   value: group.GroupName,
   title: group.GroupName
 })))
+
+const paymentTermOptions = computed(() => groupFilter.value.data.paymentTerm.map((term: any) => ({
+  value: term.PaymentTerm,
+  title: term.PaymentTerm
+})))
+
+const priceListOptions = computed(() => groupFilter.value.data.priceList.map((list: any) => ({
+  value: list.PriceList,
+  title: list.PriceList
+})))
+
+// Last transaction
+const dormantOptions = [
+  { title: 'More than 1 month', value: 1 },
+  { title: 'More than 2 months', value: 2 },
+  { title: 'More than 3 months', value: 3 },
+  { title: 'More than 6 months', value: 6 },
+  { title: 'More than 12 months', value: 12 },
+]
 
 </script>
 
 
 <template>
-  <VRow>
-    <VCol cols="12">
-      <VCard title="User Profile">
-        <VCardText>
-          <VForm
-            ref="form"
-            @submit.prevent="submitUserHandler"
-          >
-            <VRow>
-              <VCol cols="12" md="6">
-                <AppTextField
-                  label="Name"
-                  v-model="userData.name"
-                  type="text"
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <AppTextField
-                  :disabled="!isAdmin"
-                  label="Username"
-                  v-model="userData.username"
-                  type="text"
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <AppTextField
-                  :disabled="!isAdmin"
-                  label="Email"
-                  v-model="userData.email"
-                  type="text"
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <AppSelect
-                  :disabled="!isAdmin"            
-                  v-model="userData.role_id"
-                  :items="roleOptions"
-                  item-title="label"
-                  item-value="value"
-                  label="Role"
-                  persistent-hint
-                  single-line
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-               <AppTextField
-                  v-model="password"
-                  label="Password"
-                  placeholder="············"
-                  :rules="password ? [requiredValidator, passwordValidator] : []"
-                  :type="isPasswordVisible ? 'text' : 'password'"
-                  autocomplete="password"
-                  
-                  :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                />
-                </VCol>
-              <VCol cols="12" md="6">
-                <AppTextField
-                  v-model="confirm_password"
-                  label="Password Confirmation"
-                  placeholder="············"
-                  :rules="[confirmedValidator(confirm_password, password)]"
-                  :type="isPasswordVisible ? 'text' : 'password'"
-                  autocomplete="password"
-                  
-                  :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                />
-              </VCol>
-              <VCol cols="12">
-                <VBtn
-                  type="submit"
-                  class="me-3"
-                >
-                  Submit
-                </VBtn>
-              </VCol>
-            </VRow>
-          </VForm>
-        </VCardText>
-      </VCard>
-    </VCol>
-  </VRow>
-
   <VRow v-if="salesPerson !== null">
     <VCol cols="12">
       <VCard title="Linked Sales Person">
@@ -229,15 +169,31 @@ const groupNameOptions = computed(() => groupList.value.data.map((group: any) =>
   <VRow v-if="hasCustomer">
     <VCol cols="12">
       <VCard title="Customers">
-        <VCardText>
+          <VCardText>
         <VRow>
+          <!-- 👉 Select Role -->        
+           <VCol
+            cols="12"
+            md="4"
+            sm="4"
+          >
+            <AppSelect
+              v-model="selectedGroupName"
+              placeholder="Filter by group name"
+              :items="groupNameOptions"
+              clearable
+              clear-icon="tabler-x"
+            />
+          </VCol>
+                  
           <VCol
             cols="12"
+            md="4"
             sm="4"
           >
             <AppSelect
               v-model="selectedStatus"
-              placeholder="Select Status"
+              placeholder="Filter by status"
               :items="status"
               clearable
               clear-icon="tabler-x"
@@ -245,17 +201,66 @@ const groupNameOptions = computed(() => groupList.value.data.map((group: any) =>
           </VCol>
           <VCol
             cols="12"
+            md="4"
             sm="4"
           >
             <AppSelect
-              v-model="selectedGroupName"
-              placeholder="Select Group Name"
-              :items="groupNameOptions"
+              v-model="selectedPaymentTerm"
+              placeholder="Filter by Payment Term"
+              :items="paymentTermOptions"
+              clearable
+              clear-icon="tabler-x"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            md="4"
+            sm="4"
+          >
+            <AppSelect
+              v-model="selectedPriceList"
+              placeholder="Filter by Price List"
+              :items="priceListOptions"
               clearable
               clear-icon="tabler-x"
             />
           </VCol>
         </VRow>
+        <VRow class="d-flex justify-start">
+          <VCol
+            cols="12"           
+            sm="12"
+          >
+            <VRow class="d-flex justify-start">
+              <VCol
+                cols="12"
+                lg="2"
+                sm="12"
+              >
+                <VCheckbox
+                  v-model="filterDormantCustomer"
+                  label="Dormant Customer"              
+                />
+              </VCol>
+              <VCol
+                v-if="filterDormantCustomer"
+                cols="12"
+                lg="3"
+                md="4"
+                sm="12"                
+              >
+                <AppSelect
+                  :items="dormantOptions"
+                  v-model="dormantMonth"
+                  placeholder="Filter by last transaction"          
+                  clearable
+                  clear-icon="tabler-x"
+                />
+              </VCol>
+              
+            </VRow>
+          </VCol>
+        </VRow> 
       </VCardText>
       <VDivider />
       <VCardText class="d-flex flex-wrap gap-4">
@@ -370,6 +375,90 @@ const groupNameOptions = computed(() => groupList.value.data.map((group: any) =>
           />
         </template>
       </VDataTableServer>
+      </VCard>
+    </VCol>
+  </VRow>
+    <VRow>
+    <VCol cols="12">
+      <VCard title="User Profile">
+        <VCardText>
+          <VForm
+            ref="form"
+            @submit.prevent="submitUserHandler"
+          >
+            <VRow>
+              <VCol cols="12" md="6">
+                <AppTextField
+                  label="Name"
+                  v-model="userData.name"
+                  type="text"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <AppTextField
+                  :disabled="!isAdmin"
+                  label="Username"
+                  v-model="userData.username"
+                  type="text"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <AppTextField
+                  :disabled="!isAdmin"
+                  label="Email"
+                  v-model="userData.email"
+                  type="text"
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+                <AppSelect
+                  :disabled="!isAdmin"            
+                  v-model="userData.role_id"
+                  :items="roleOptions"
+                  item-title="label"
+                  item-value="value"
+                  label="Role"
+                  persistent-hint
+                  single-line
+                />
+              </VCol>
+              <VCol cols="12" md="6">
+               <AppTextField
+                  v-model="password"
+                  label="Password"
+                  placeholder="············"
+                  :rules="password ? [requiredValidator, passwordValidator] : []"
+                  :type="isPasswordVisible ? 'text' : 'password'"
+                  autocomplete="password"
+                  
+                  :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                />
+                </VCol>
+              <VCol cols="12" md="6">
+                <AppTextField
+                  v-model="confirm_password"
+                  label="Password Confirmation"
+                  placeholder="············"
+                  :rules="[confirmedValidator(confirm_password, password)]"
+                  :type="isPasswordVisible ? 'text' : 'password'"
+                  autocomplete="password"
+                  
+                  :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
+                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                />
+              </VCol>
+              <VCol cols="12">
+                <VBtn
+                  type="submit"
+                  class="me-3"
+                >
+                  Submit
+                </VBtn>
+              </VCol>
+            </VRow>
+          </VForm>
+        </VCardText>
       </VCard>
     </VCol>
   </VRow>

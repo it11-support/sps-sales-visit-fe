@@ -22,7 +22,8 @@ const configStore = useConfigStore()
 const hideZeroInvoice = ref(false)
 const filterDormantCustomer = ref(false)
 const dormantMonth = ref(null)
-
+const selectedPaymentTerm = ref()
+const selectedPriceList = ref()
 // Delayed search
 watch(searchQuery, (newVal) => {
   if (debounceTimeout) clearTimeout(debounceTimeout)
@@ -56,6 +57,7 @@ const headers = [
   { title: 'Status', key: 'status', sortable: false },
   { title: 'Address', key: 'Address', width: '50px' }, 
   { title: 'Phone', key: 'Phone' },
+  { title: 'Total Sales', key: 'total_sales'},
   { title: 'Last Invoice Date', key: 'last_transaction_date' },
   { title: 'Number of Invoices', key: 'invoice_count' },
   { title: 'Payment Term', key: 'PaymentTerm' },
@@ -69,6 +71,8 @@ const { data: customerData, execute: fetchCustomers } = await useApi<any>(create
     search: debouncedQuery,
     status: selectedStatus,
     group_name: selectedGroupName,   
+    payment_term: selectedPaymentTerm,
+    price_list: selectedPriceList,
     sales_person_id: selectedSalesPerson,
     per_page: itemsPerPage,
     page,
@@ -85,11 +89,22 @@ const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {
   }
 }), {})
 
-const { data: groupList } =  await useApi<any>(createUrl('customer/group-list'), {}) 
+const { data: groupFilter } =  await useApi<any>(createUrl('customer/get-fitlers'), {}) 
 
-const groupNameOptions = computed(() => groupList.value.data.map((group: any) => ({
+const groupNameOptions = computed(() => groupFilter.value.data.groupName.map((group: any) => ({
   value: group.GroupName,
   title: group.GroupName
+})))
+
+console.log(groupFilter.value.data)
+const paymentTermOptions = computed(() => groupFilter.value.data.paymentTerm.map((term: any) => ({
+  value: term.PaymentTerm,
+  title: term.PaymentTerm
+})))
+
+const priceListOptions = computed(() => groupFilter.value.data.priceList.map((list: any) => ({
+  value: list.PriceList,
+  title: list.PriceList
 })))
 
 // Sales persons for filter
@@ -159,6 +174,7 @@ const deleteCustomer = async(id: string) => {
           </VCol>
            <VCol
             cols="12"
+            md="4"
             sm="4"
           >
             <AppSelect
@@ -172,6 +188,7 @@ const deleteCustomer = async(id: string) => {
                   
           <VCol
             cols="12"
+            md="4"
             sm="4"
           >
             <AppSelect
@@ -181,15 +198,44 @@ const deleteCustomer = async(id: string) => {
               clearable
               clear-icon="tabler-x"
             />
-          </VCol>        
+          </VCol>
+          <VCol
+            cols="12"
+            md="4"
+            sm="4"
+          >
+            <AppSelect
+              v-model="selectedPaymentTerm"
+              placeholder="Filter by Payment Term"
+              :items="paymentTermOptions"
+              clearable
+              clear-icon="tabler-x"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            md="4"
+            sm="4"
+          >
+            <AppSelect
+              v-model="selectedPriceList"
+              placeholder="Filter by Price List"
+              :items="priceListOptions"
+              clearable
+              clear-icon="tabler-x"
+            />
+          </VCol>
         </VRow>
         <VRow class="d-flex justify-start">
           <VCol
-            cols="8"
+            cols="12"           
+            sm="12"
           >
             <VRow class="d-flex justify-start">
               <VCol
-                cols="4"
+                cols="12"
+                lg="2"
+                sm="12"
               >
                 <VCheckbox
                   v-model="filterDormantCustomer"
@@ -198,7 +244,9 @@ const deleteCustomer = async(id: string) => {
               </VCol>
               <VCol
                 v-if="filterDormantCustomer"
-                cols="4"                
+                cols="12"
+                lg="3"
+                sm="12"                
               >
                 <AppSelect
                   :items="dormantOptions"
@@ -316,6 +364,11 @@ const deleteCustomer = async(id: string) => {
         <template #item.invoice_count="{ item }">
           <div class="d-flex justify-content-between gap-x-4">
             {{ item.invoice_count ?? '-' }}
+          </div>
+        </template>
+        <template #item.total_sales="{ item }">
+          <div class="d-flex justify-content-between gap-x-4">
+            {{ item.total_sales ? formatMoney(item.total_sales) : '' }}
           </div>
         </template>
         <template #item.last_transaction_date="{ item }">
