@@ -10,7 +10,7 @@
     "editor.autoClosingBrackets": "always"
   },
   "[markdown]": {
-    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+    // "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
   // SCSS
   "[scss]": {
@@ -25,7 +25,7 @@
   },
   // Vue
   "[vue]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "Vue.volar",
   },
   // Extension: Volar
   "volar.preview.port": 3000,
@@ -43,7 +43,6 @@
   },
   "eslint.alwaysShowStatus": true,
   "eslint.format.enable": true,
-  "eslint.packageManager": "pnpm",
   // Extension: Stylelint
   "stylelint.packageManager": "pnpm",
   "stylelint.validate": [
@@ -99,7 +98,7 @@
       {
         // "rangeBehavior": 1,
         "borderWidth": "1px",
-        "borderColor": "tomato",
+        "borderColor": "#FF2D00",
         "borderStyle": "solid"
       }
     ],
@@ -107,7 +106,7 @@
       {
         // "rangeBehavior": 1,
         "borderWidth": "1px",
-        "borderColor": "green",
+        "borderColor": "#50f358",
         "borderStyle": "solid"
       }
     ]

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SalesStatistic from '@/views/pages/customer/SalesStatistic.vue';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useApi } from '../../../../../src/composables/useApi';
@@ -14,7 +15,10 @@ const debouncedQuery = ref('')
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 const startDate = ref(null)
 const endDate = ref(null)
-const { data: customerData } = await useApi<any>(`customer/${route.params.customerId}`)
+
+const { data: customerData } = await useApi<any>(createUrl(`customer/${route.params.customerId}`))
+
+console.log(customerData)
 const sortOptions = ref<SortItem[]>([])
 
 const id = route.params.customerId as string
@@ -46,7 +50,8 @@ const updateOptions = (options: any) => {
 <template>
   <section>
   <VRow v-if="customerData">    
-    <CustomerOverview :data="customerData.data.customer" />
+    <CustomerOverview :data="customerData.data" />
+    <SalesStatistic :id="id" />
     <SalesInvoice :id="id" />
   </VRow>
   <div v-else>

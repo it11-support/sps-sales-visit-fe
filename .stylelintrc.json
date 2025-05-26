@@ -1,5 +1,6 @@
 {
   "extends": [
+    "stylelint-config-recommended",
     "stylelint-config-standard-scss",
     "stylelint-config-idiomatic-order",
     "@stylistic/stylelint-config"
@@ -29,6 +30,7 @@
         "ignore": "comments"
       }
     ],
+  
     "@stylistic/indentation": 2,
     "liberty/use-logical-spec": true,
     "selector-class-pattern": null,

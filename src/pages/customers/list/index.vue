@@ -1,52 +1,29 @@
 <script setup lang="ts">
+import { useCustomerStore } from '@/@core/stores/customer'
 import { useConfigStore } from '@core/stores/config'
-import type { ICustomerData, SortItem } from '@core/types'
+import type { SortItem } from '@core/types'
 
+const customerStore = useCustomerStore()
 // 👉 Store
 const searchQuery = ref('')
-const selectedSalesPerson = ref(useCookie<any>('userData')?.value?.sales_person?.SlpCode ?? null)
-const selectedStatus = ref()
-const debouncedQuery = ref('')
+// const debouncedQuery = ref('')
 const deleteModal = ref(false)
 const deleteId = ref('')
-const selectedGroupName = ref()
-let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 
+const debouncedQuery = useDebounce(searchQuery, 400)
 
 // Data table options
-const itemsPerPage = ref(DEFAULT_PER_PAGE)
-const page = ref(1)
 const sortOptions = ref<SortItem[]>([])
-const selectedRows = ref<ICustomerData[]>([])
+const selectedRows = customerStore.selectedRows
 const configStore = useConfigStore()
-const hideZeroInvoice = ref(false)
 const filterDormantCustomer = ref(false)
-const dormantMonth = ref(null)
-const selectedPaymentTerm = ref()
-const selectedPriceList = ref()
 // Delayed search
-watch(searchQuery, (newVal) => {
-  if (debounceTimeout) clearTimeout(debounceTimeout)
 
-  debounceTimeout = setTimeout(() => {
-    debouncedQuery.value = newVal
-    console.log('Search:', debouncedQuery.value)
-  }, 400) // delay 400ms
+watch(debouncedQuery, (val) => {
+  customerStore.updateFilters({ search: val })
 })
 
-const isAdmin = () => {
-  return configStore.isAdmin()
-}
-// Update data table options
-// Multiple sort
-const updateOptions = (options: any) => {
-  sortOptions.value = [options.sortBy]
-}
 
-// Update selected rows
-const updateSelectedRows = (rows: ICustomerData[]) => {
-  selectedRows.value = rows.map((row: ICustomerData) => ({ ...row }));
-}
 
 // Headers
 const headers = [
@@ -65,22 +42,11 @@ const headers = [
   // { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-// 👉 Fetching customers
-const { data: customerData, execute: fetchCustomers } = await useApi<any>(createUrl('customer', {
-  query: {
-    search: debouncedQuery,
-    status: selectedStatus,
-    group_name: selectedGroupName,   
-    payment_term: selectedPaymentTerm,
-    price_list: selectedPriceList,
-    sales_person_id: selectedSalesPerson,
-    per_page: itemsPerPage,
-    page,
-    sort_options: sortOptions,
-    hideZeroInvoice,
-    dormantMonth
-  },
-}))
+
+onMounted(() => {
+  customerStore.fetchCustomers()
+  customerStore.fetchCustomerById('C001508')
+})
 
 const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {
   query: {
@@ -90,7 +56,8 @@ const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {
 }), {})
 
 const { data: groupFilter } =  await useApi<any>(createUrl('customer/get-fitlers'), {}) 
-
+const details = computed(() => customerStore.customerDetail)
+console.log(details.value)
 const groupNameOptions = computed(() => groupFilter.value.data.groupName.map((group: any) => ({
   value: group.GroupName,
   title: group.GroupName
@@ -113,11 +80,9 @@ const salesPersons = computed(() => salesPersonsData.value.data.data.map((salesP
   title: salesPerson.SlpName
 })))
 
-const totalCustomer = computed(() => customerData.value.data.total)
 
-const customers = computed((): ICustomerData[] => customerData.value.data.data)
+const customers = customerStore.customers
 
-console.log(customers.value)
 // 👉 search filters
 const status = [
   { title: 'Active', value: 'N' },
@@ -142,12 +107,13 @@ const deleteCustomer = async(id: string) => {
   deleteModal.value = false
 
   // Remove deleted customer from selected rows
-  const index = selectedRows.value.findIndex(row => row.CardCode === id)
+  const index = selectedRows.findIndex(row => row.CardCode === id)
   if (index !== -1)
-    selectedRows.value.splice(index, 1)
+    selectedRows.splice(index, 1)
 
   // Refetch customers
-  fetchCustomers()
+  customerStore.fetchCustomers()
+  
 }
 </script>
 
@@ -165,7 +131,8 @@ const deleteCustomer = async(id: string) => {
             sm="4"
           >
             <AppSelect
-              v-model="selectedSalesPerson"
+              v-model="customerStore.filters.sales_person_id"
+              @update:model-value="customerStore.updateFilters({ sales_person_id: $event })"
               placeholder="Fitler by sales person"
               :items="salesPersons"
               clearable
@@ -178,7 +145,8 @@ const deleteCustomer = async(id: string) => {
             sm="4"
           >
             <AppSelect
-              v-model="selectedGroupName"
+              v-model="customerStore.filters.group_name"
+              @update:model-value="customerStore.updateFilters({ group_name: $event })"
               placeholder="Filter by group name"
               :items="groupNameOptions"
               clearable
@@ -192,7 +160,8 @@ const deleteCustomer = async(id: string) => {
             sm="4"
           >
             <AppSelect
-              v-model="selectedStatus"
+              v-model="customerStore.filters.status"
+              @update:model-value="customerStore.updateFilters({ status: $event })"
               placeholder="Filter by status"
               :items="status"
               clearable
@@ -205,7 +174,8 @@ const deleteCustomer = async(id: string) => {
             sm="4"
           >
             <AppSelect
-              v-model="selectedPaymentTerm"
+              v-model="customerStore.filters.payment_term"
+              @update:model-value="customerStore.updateFilters({ payment_term: $event })"
               placeholder="Filter by Payment Term"
               :items="paymentTermOptions"
               clearable
@@ -218,7 +188,8 @@ const deleteCustomer = async(id: string) => {
             sm="4"
           >
             <AppSelect
-              v-model="selectedPriceList"
+              v-model="customerStore.filters.price_list"
+              @update:model-value="customerStore.updateFilters({ price_list: $event })"
               placeholder="Filter by Price List"
               :items="priceListOptions"
               clearable
@@ -239,7 +210,12 @@ const deleteCustomer = async(id: string) => {
               >
                 <VCheckbox
                   v-model="filterDormantCustomer"
-                  label="Dormant Customer"              
+                  label="Dormant Customer"
+                  @update:model-value="customerStore.updateFilters({ 
+                    dormantMonth: filterDormantCustomer && customerStore.filters.dormantMonth 
+                    ? customerStore.filters.dormantMonth 
+                    : undefined
+                  })"
                 />
               </VCol>
               <VCol
@@ -250,7 +226,8 @@ const deleteCustomer = async(id: string) => {
               >
                 <AppSelect
                   :items="dormantOptions"
-                  v-model="dormantMonth"
+                  v-model="customerStore.filters.dormantMonth"
+                  @update:model-value="customerStore.updateFilters({ dormantMonth: $event })"
                   placeholder="Filter by last transaction"          
                   clearable
                   clear-icon="tabler-x"
@@ -264,14 +241,15 @@ const deleteCustomer = async(id: string) => {
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-4 d-flex gap-3">
           <AppSelect
-            :model-value="itemsPerPage"
+            :model-value="customerStore.filters.per_page"
             :items="PAGINATION_ITEMS"
             style="inline-size: 6.25rem;"
-            @update:model-value="itemsPerPage = parseInt($event, 10)"
+            @update:model-value="customerStore.setPerpage(parseInt($event, 10))"
           />
           <VCheckbox
             label="Hide Zero Invoice"
-            v-model="hideZeroInvoice"             
+            v-model="customerStore.filters.hideZeroInvoice"
+            @update:model-value="customerStore.updateFilters({ hideZeroInvoice: $event as boolean })"             
           />
         </div>
         <VSpacer />
@@ -302,20 +280,20 @@ const deleteCustomer = async(id: string) => {
 
       <!-- SECTION datatable -->
       <VDataTableServer
-        :loading="configStore.loading"
-        v-model:items-per-page="itemsPerPage"
-        v-model:model-value="selectedRows"
-        v-model:page="page"
-        :items="customers"
+        :loading="customerStore.loadingList"
+        v-model:items-per-page="customerStore.filters.per_page"
+        v-model:model-value="customerStore.selectedRows"
+        v-model:page="customerStore.filters.page"
+        :items="customerStore.customers"
         item-value="CardCode"
-        :items-length="totalCustomer"
+        :items-length="customerStore.pagination.total"
         :headers="headers"
         class="text-no-wrap"
         show-select
         :select-strategy="'all'"
         return-object
-        @update:options="updateOptions"
-        @update:model-value="updateSelectedRows"
+        @update:options="customerStore.updateSortOptions"
+        @update:model-value="customerStore.setSelectedRows"
         multi-sort
       >
         <!-- User -->
@@ -379,9 +357,10 @@ const deleteCustomer = async(id: string) => {
         <!-- pagination -->
         <template #bottom>
           <TablePagination
-            v-model:page="page"
-            :items-per-page="itemsPerPage"
-            :total-items="totalCustomer"
+            v-model:page="customerStore.pagination.current_page"
+            v-model:items-per-page="customerStore.pagination.per_page"
+            v-model:total-items="customerStore.pagination.total"
+            @update:page="customerStore.setPage($event)"
           />
         </template>
       </VDataTableServer>
