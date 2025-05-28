@@ -10,20 +10,26 @@ const items = [
   { title: 'Customer Name', value: data.CardName, icon: 'tabler-buildings' },
   { title: 'Group Name', value: data.GroupName, icon: 'tabler-users-group' },
   { title: 'Address', value: `${data.Address} ${data.ZipCode ?? ''} , ${data.City ?? ''}`, icon: 'tabler-map' },
+  { title: 'City', value: `${data.City}`, icon: 'tabler-map' },
   { title: 'Phone', value: `${data.Phone1}`, icon: 'tabler-phone' },
   { title: 'Cellular', value: `${data.Cellular ?? '-'}`, icon: 'tabler-device-mobile' },
+  { title: 'Join Date', value: `${data.JoinDate ? formatDate(data.JoinDate) : '-'}`, icon: 'tabler-calendar' },
   { title: 'Contact Person', value: `${data.CntctPrsn ?? '-'}`, icon: 'tabler-message-user' },
   { title: 'Sales Person', value: `${salesPersonName}`, icon: 'tabler-user' },
+  
 ]
+
+const title = computed(() => `CUSTOMER OVERVIEW - ${data.CardCode}`)
+
 </script>
 
 <template>
   <VCol cols="12">
-    <VCard>
-      <VCardText>
-        <p class="text-lg text-disabled">
-          CUSTOMER OVERVIEW - {{ data.CardCode }}
-        </p>
+    <AppCardActions
+      :title=title
+      action-collapsed      
+    >
+      <VCardText>       
         <span class="d-flex gap-2 pb-2">
           <VChip :color="data.NonActive === 'Y' ? 'error' : 'success'" label size="small">
             {{ data.NonActive === 'Y' ? 'Inactive' : 'Active' }}
@@ -33,7 +39,7 @@ const items = [
           <CustomerItemList v-for="item in items" :key="item.title" :data="item" />
         </VList>
       </VCardText>
-    </VCard>
+    </AppCardActions>
   </VCol>
 </template>
 

@@ -30,7 +30,6 @@
         "ignore": "comments"
       }
     ],
-  
     "@stylistic/indentation": 2,
     "liberty/use-logical-spec": true,
     "selector-class-pattern": null,

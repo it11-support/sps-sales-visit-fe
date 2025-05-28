@@ -4,7 +4,8 @@ module.exports = {
     es2021: true,
   },
   extends: [
-    '@antfu/eslint-config',
+    'plugin:dom/recommended',
+    '@antfu/eslint-config-vue',
     'plugin:vue/vue3-recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
@@ -194,6 +195,10 @@ module.exports = {
     //     props: false,
     //   },
     // }],
+
+    // Internal Rules
+    'valid-appcardcode-code-prop': 'error',
+    'valid-appcardcode-demo-sfc': 'error',
 
     // https://github.com/gmullerb/eslint-plugin-regex
     'regex/invalid': [

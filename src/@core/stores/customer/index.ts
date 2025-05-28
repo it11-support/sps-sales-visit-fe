@@ -13,9 +13,10 @@ interface Filters {
   search?: string
   status?: string
   sales_person_id?: number
-  group_name?: number
-  payment_term?: number
-  price_list?: number
+  group_name?: string
+  payment_term?: string
+  price_list?: string
+  city?: string
   per_page: number
   page: number
   sort_options: SortItem[]
@@ -50,6 +51,7 @@ export const useCustomerStore = defineStore('customer', {
       group_name: undefined,
       payment_term: undefined,
       price_list: undefined,
+      city: undefined,
       per_page: 10,
       page: 1,
       sort_options: [],

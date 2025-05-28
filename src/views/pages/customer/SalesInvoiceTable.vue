@@ -2,8 +2,6 @@
 import { useConfigStore } from '@/@core/stores/config';
 import { ISalesInvoice } from '@/@core/typedefs/salesinvoice';
 
-
-
 interface Props {  
   salesInvoicesData: ISalesInvoice[],
   groupBy?: string

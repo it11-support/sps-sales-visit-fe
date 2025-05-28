@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useConfigStore } from '@/@core/stores/config'
 import { ISalesInvoice } from '@/@core/typedefs/salesinvoice'
+import { SortItem } from '@/@core/types'
 import SalesInvoiceTable from './SalesInvoiceTable.vue'
 
 const startDate = ref('')
@@ -9,12 +10,13 @@ const searchQuery = ref('')
 const debouncedQuery = ref('')
 const itemsPerPage = ref(DEFAULT_PER_PAGE)
 const page = ref(1)
-const sortOptions = ref([{ "key": "DocDate", "order": "desc" }])
+const sortOptions = ref<SortItem[]>([{key: 'DocDate', order: 'desc'}])
 const groupBy = ref('DocNum')
 
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 const configStore = useConfigStore()
 const selectedRows = ref<ISalesInvoice[]>([])
+const collapsed = ref(false)
 
 interface Props {
   id: string
@@ -32,7 +34,7 @@ const headers = [
   { title: 'Total', value: 'TotalSales', sortable: true },
 ]
 
-const { data: salesInvoices } = await useApi<any>(createUrl(`invoice`, {
+const { data: salesInvoices, execute: fetchSalesInvoices } = await useApi<any>(createUrl(`invoice`, {
   query: {
     id: props.id,
     search: debouncedQuery,
@@ -60,11 +62,18 @@ const salesInvoicesData = computed((): ISalesInvoice[] => {
 })
 
 const updateOptions = (options: any) => {
-  if (JSON.stringify(options.sortBy) !== JSON.stringify(sortOptions.value)) {
-    sortOptions.value = [options.sortBy]
+  if(options.sortBy.length < 1) {
+     sortOptions.value = [{ "key": "DocDate", "order": "desc" }]
+  
   } else {
-    sortOptions.value = [{ "key": "DocDate", "order": "desc" }]
+    sortOptions.value = [options.sortBy]
   }
+}
+
+const handleRefresh = (stopLoading: () => void) => {
+  fetchSalesInvoices().finally(() => {
+    stopLoading();
+  });
 }
 
 const updateSelectedRows = (rows: ISalesInvoice[]) => {
@@ -90,11 +99,14 @@ const computedHeaders = computed(() => {
 
 <template>
   <VCol cols="12">
-    <VCard class="mb-6">
-      <VCardItem class="pb-4">
-        <VCardTitle class="text-lg text-disabled">SALES INVOICES</VCardTitle>
-      </VCardItem>
-      <VCardText class="d-flex flex-wrap gap-4">
+    <AppCardActions
+      :loading="configStore.loading"
+      action-refresh
+      action-collapsed
+      @refresh="handleRefresh"
+      title="SALES INVOICES"
+    >     
+    <VCardText class="d-flex flex-wrap gap-4">
         <VRow>
           <VCol cols="12" lg="12" md="12">
             <v-radio-group inline v-model="groupBy">
@@ -130,12 +142,22 @@ const computedHeaders = computed(() => {
           </VBtn>
         </div>
       </VCardText>
-
-      <SalesInvoiceTable :sales-invoices-data="salesInvoicesData" :customer-id="id" :headers="computedHeaders"
-        :items-length="totalSales" :group-by="groupBy" v-model:loading="configStore.loading"
-        :item-value="groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum'" v-model:page="page"
-        v-model:items-per-page="itemsPerPage" v-model:selected-rows="selectedRows" :on-update-options="updateOptions"
-        :on-update-selected-rows="updateSelectedRows" :grouped="true" />
-    </VCard>
+      <SalesInvoiceTable 
+        :sales-invoices-data="salesInvoicesData" 
+        :customer-id="id"
+        :loading="configStore.loading"
+        :headers="computedHeaders"
+        :items-length="totalSales" 
+        :group-by="groupBy" 
+        :item-value="groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum'" 
+        v-model:page="page"
+        v-model:items-per-page="itemsPerPage" 
+        v-model:selected-rows="selectedRows" 
+        :on-update-options="updateOptions"
+        :on-update-selected-rows="updateSelectedRows" 
+        :grouped="true" 
+      />
+    </AppCardActions>
+   
   </VCol>
 </template>

@@ -1,5 +1,5 @@
 {
-  "editor.formatOnSave": true,
+  // "editor.formatOnSave": true,
   "files.insertFinalNewline": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
   "[javascript]": {
@@ -25,7 +25,10 @@
   },
   // Vue
   "[vue]": {
-    "editor.defaultFormatter": "Vue.volar",
+    "editor.defaultFormatter": "stylelint.vscode-stylelint",
+  },
+  "vetur.format.defaultFormatterOptions": {
+    "scss": "none"
   },
   // Extension: Volar
   "volar.preview.port": 3000,
