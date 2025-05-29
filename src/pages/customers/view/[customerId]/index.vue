@@ -16,7 +16,7 @@ let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 const startDate = ref(null)
 const endDate = ref(null)
 
-const { data: customerData } = await useApi<any>(createUrl(`customer/${route.params.customerId}`))
+const { data: customerData, execute } = await useApi<any>(createUrl(`customer/${route.params.customerId}`))
 
 console.log(customerData)
 const sortOptions = ref<SortItem[]>([])
@@ -50,7 +50,7 @@ const updateOptions = (options: any) => {
 <template>
   <section>
   <VRow v-if="customerData">    
-    <CustomerOverview :data="customerData.data" />
+    <CustomerOverview :data="customerData.data" :onFinish="execute"/>
     <SalesStatistic :id="id" />
     <SalesInvoice :id="id" />
   </VRow>

@@ -45,7 +45,6 @@ const headers = [
 
 onMounted(() => {
   customerStore.fetchCustomers()
-  customerStore.fetchCustomerById('C001508')
 })
 
 const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {

@@ -31,7 +31,7 @@ const { data: salesInvoices, execute:fetchSalesInvoices } = await useApi<any>(cr
   }
 }))
 
-const { data: customerData } = await useApi<any>(`customer/${router.params.customerId}`)
+const { data: customerData, execute: fetchCustomer } = await useApi<any>(`customer/${router.params.customerId}`)
 
 const customer = computed(() => customerData.value.data)
 
