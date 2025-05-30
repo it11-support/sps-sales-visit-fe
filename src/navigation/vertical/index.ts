@@ -26,6 +26,17 @@ export const defaultNavItems =  [
         icon: { icon: 'tabler-user-square' },
       }
     ]
+  },
+  {
+    title: 'Activity',
+    icon: { icon: 'tabler-calendar' },
+    children: [
+      {
+        title: 'Activity List',
+        to: { name: 'activity-list' },
+        icon: { icon: 'tabler-calendar' },
+      }
+    ]
   }
 ]
 

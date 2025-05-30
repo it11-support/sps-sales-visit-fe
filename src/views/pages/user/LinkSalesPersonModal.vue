@@ -70,7 +70,7 @@ watch(modalProps, async(newVal) => {
     <VCard>
       <div v-if="modalProps.type === 'link'">
         <VCardTitle> Sales Person is not linked to any user </VCardTitle>
-        <VCardSubtitle class="text-h5 mb-2">Link sales person to user to continue</VCardSubtitle>
+        <VCardSubtitle class="text-h5 mb-2">Link sales person to user</VCardSubtitle>
         <VCardText>
           <AppSelect
             :disabled="configStore.loading"
@@ -81,7 +81,7 @@ watch(modalProps, async(newVal) => {
             item-title="label"
             item-value="value"
             :items="usersOptions"          
-            label="Sales Person"
+            label="User"
             retun-object
           />
         </VCardText>

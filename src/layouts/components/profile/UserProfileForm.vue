@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { ICustomerData } from '@/@core/typedefs';
-import { SortItem } from '@/@core/types';
+import { useCustomerStore } from '@/@core/stores/customer';
 import { useConfigStore } from '@core/stores/config';
 import { VForm } from 'vuetify/components/VForm';
 
 const configStore = useConfigStore()
+const customerStore = useCustomerStore()
 
 const userData = useCookie<any>('userData')
 const roleOptions = ref([])
@@ -15,19 +15,17 @@ const password = ref('')
 const confirm_password = ref('')
 const errors = ref([])
 const isPasswordVisible = ref(false)
-const itemsPerPage = ref(DEFAULT_PER_PAGE)
-const page = ref(1)
-const selectedRows = ref<ICustomerData[]>([])
-const sortOptions = ref<SortItem[]>([])
 const searchQuery = ref('')
-const selectedStatus = ref()
-const selectedGroupName = ref()
-const hideZeroInvoice = ref(false)
-const selectedPaymentTerm = ref()
-const selectedPriceList = ref()
-const selectedCity = ref()
 const filterDormantCustomer = ref(false)
-const dormantMonth = ref(null)
+const debouncedQuery = useDebounce(searchQuery, 400)
+
+watch(debouncedQuery, (val) => {
+  customerStore.updateFilters({ search: val })
+})
+
+onMounted(() => {
+  customerStore.updateFilters({ sales_person_id: salesPerson?.SlpCode})
+})
 
 onMounted(async () => {
   try {
@@ -75,44 +73,10 @@ const submitUserHandler = async () => {
     useCookie('userData').value = data
     configStore.overlay = false
 
-    console.log(data, customers.value)
   } catch (error) {
     configStore.overlay = false
   }
 }
-
-const { 
-  data: customerData,
-  execute: fetchCustomers 
-} = salesPerson?.SlpCode ? await useApi<any>(createUrl('customer', {
-  query: {
-    search: searchQuery,
-    status: selectedStatus,
-    sales_person_id: salesPerson.SlpCode,
-    group_name: selectedGroupName,
-    per_page: itemsPerPage,
-    city: selectedCity,
-    page,
-    sort_options: sortOptions,
-    hideZeroInvoice,
-    payment_term: selectedPaymentTerm,
-    price_list: selectedPriceList,
-    dormantMonth
-  },
-})) : { data: null, execute: null }
-
-
-
-const updateSelectedRows = (rows: ICustomerData[]) => {
-  selectedRows.value = rows.map((row: ICustomerData) => ({ ...row }));
-}
-
-const updateOptions = (options: any) => {
-  sortOptions.value = [options.sortBy]
-}
-
-const totalCustomer = computed(() => customerData?.value.data.total)
-const customers = computed((): ICustomerData[] => customerData?.value.data.data)
 
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
@@ -185,24 +149,49 @@ const dormantOptions = [
           <VRow>
             <!-- 👉 Select Role -->
             <VCol cols="12" md="4" sm="4">
-              <AppSelect v-model="selectedGroupName" placeholder="Filter by group name" :items="groupNameOptions"
-                clearable clear-icon="tabler-x" />
+              <AppSelect 
+                v-model="customerStore.filters.group_name" 
+                @update:model-value="customerStore.updateFilters({ group_name: $event })"
+                placeholder="Filter by group name" 
+                :items="groupNameOptions"
+                clearable clear-icon="tabler-x" 
+              />
             </VCol>
             <VCol cols="12" md="4" sm="4">
-              <AppSelect v-model="selectedStatus" placeholder="Filter by status" :items="status" clearable
-                clear-icon="tabler-x" />
+              <AppSelect 
+                v-model="customerStore.filters.status" 
+                @update:model-value="customerStore.updateFilters({ status: $event })" 
+                placeholder="Filter by status" 
+                :items="status" 
+                clearable
+                clear-icon="tabler-x" 
+              />
             </VCol>
             <VCol cols="12" md="4" sm="4">
-              <AppSelect v-model="selectedPaymentTerm" placeholder="Filter by Payment Term" :items="paymentTermOptions"
-                clearable clear-icon="tabler-x" />
+              <AppSelect 
+                v-model="customerStore.filters.payment_term" 
+                placeholder="Filter by Payment Term"
+                @update:model-value="customerStore.updateFilters({ payment_term: $event })"
+                :items="paymentTermOptions"
+                clearable clear-icon="tabler-x" 
+              />
             </VCol>
             <VCol cols="12" md="4" sm="4">
-              <AppSelect v-model="selectedPriceList" placeholder="Filter by Price List" :items="priceListOptions"
-                clearable clear-icon="tabler-x" />
+              <AppSelect 
+                v-model="customerStore.filters.price_list"
+                @update:model-value="customerStore.updateFilters({ price_list: $event })"
+                placeholder="Filter by Price List" 
+                :items="priceListOptions"
+                clearable clear-icon="tabler-x" 
+              />
             </VCol>
             <VCol cols="12" md="4" sm="4">
-              <AppSelect v-model="selectedCity" placeholder="Filter by City / Area" :items="cityOptions" clearable
-                clear-icon="tabler-x" />
+              <AppSelect v-model="customerStore.filters.city"
+                @update:model-value="customerStore.updateFilters({ city: $event })"
+                placeholder="Filter by City / Area" 
+                :items="cityOptions" clearable
+                clear-icon="tabler-x" 
+              />
             </VCol>
           </VRow>
           <VRow class="d-flex justify-start">
@@ -212,10 +201,14 @@ const dormantOptions = [
                   <VCheckbox v-model="filterDormantCustomer" label="Dormant Customer" />
                 </VCol>
                 <VCol v-if="filterDormantCustomer" cols="12" lg="3" md="4" sm="12">
-                  <AppSelect :items="dormantOptions" v-model="dormantMonth" placeholder="Filter by last transaction"
-                    clearable clear-icon="tabler-x" />
+                  <AppSelect 
+                    :items="dormantOptions"
+                    v-model="customerStore.filters.dormantMonth"
+                    @update:model-value="customerStore.updateFilters({ dormantMonth: $event })"
+                    placeholder="Filter by last transaction"
+                    clearable clear-icon="tabler-x" 
+                  />
                 </VCol>
-
               </VRow>
             </VCol>
           </VRow>
@@ -223,9 +216,16 @@ const dormantOptions = [
         <VDivider />
         <VCardText class="d-flex flex-wrap gap-4">
           <div class="me-3 d-flex gap-3">
-            <AppSelect :model-value="itemsPerPage" :items="PAGINATION_ITEMS" style="inline-size: 6.25rem;"
-              @update:model-value="itemsPerPage = parseInt($event, 10)" />
-            <VCheckbox label="Hide Zero Invoice" v-model="hideZeroInvoice" />
+            <AppSelect 
+              :model-value="customerStore.filters.per_page" 
+              :items="PAGINATION_ITEMS" style="inline-size: 6.25rem;"
+              @update:model-value="customerStore.setPerpage(parseInt($event, 10))" 
+            />
+            <VCheckbox 
+              label="Hide Zero Invoice" 
+              v-model="customerStore.filters.hideZeroInvoice" 
+              @update:model-value="customerStore.updateFilters({ hideZeroInvoice: $event as boolean })"
+            />
           </div>
           <VSpacer />
 
@@ -242,10 +242,21 @@ const dormantOptions = [
           </div>
         </VCardText>
         <VDivider />
-        <VDataTableServer :loading="configStore.loading" v-model:items-per-page="itemsPerPage"
-          v-model:model-value="selectedRows" v-model:page="page" :items="customers" item-value="CardCode"
-          :items-length="totalCustomer" :headers="headers" class="text-no-wrap" show-select :select-strategy="'all'"
-          return-object @update:options="updateOptions" @update:model-value="updateSelectedRows" multi-sort>
+        <VDataTableServer 
+          :loading="customerStore.loadingList" 
+          v-model:items-per-page="customerStore.filters.per_page"
+          v-model:model-value="customerStore.selectedRows"
+          v-model:page="customerStore.filters.page"
+          :items="customerStore.customers" 
+          item-value="CardCode"
+          :items-length="customerStore.pagination.total"
+          :headers="headers" class="text-no-wrap" 
+          show-select 
+          :select-strategy="'all'"
+          return-object 
+          @update:options="customerStore.updateSortOptions" 
+          @update:model-value="customerStore.setSelectedRows"
+          multi-sort>
           <template #item.actions="{ item }">
             <a :href="`${'customers/view/' + item.CardCode}`">
               <VIcon small class="mr-1">tabler-eye</VIcon>
@@ -297,7 +308,7 @@ const dormantOptions = [
 
           <!-- pagination -->
           <template #bottom>
-            <TablePagination v-model:page="page" :items-per-page="itemsPerPage" :total-items="totalCustomer" />
+            <TablePagination v-model:page="customerStore.filters.page" :items-per-page="customerStore.filters.per_page" :total-items="customerStore.pagination.total" />
           </template>
         </VDataTableServer>
       </VCard>

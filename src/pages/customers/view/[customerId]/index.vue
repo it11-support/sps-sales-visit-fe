@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import { useApi } from '@/composables/useApi';
 import SalesStatistic from '@/views/pages/customer/SalesStatistic.vue';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useApi } from '../../../../../src/composables/useApi';
-import { ISalesInvoice } from '../../../../@core/typedefs/salesinvoice';
-import { SortItem } from '../../../../@core/types';
-import CustomerOverview from '../../../../views/pages/customer/CustomerOverview.vue';
-import SalesInvoice from '../../../../views/pages/customer/SalesInvoice.vue';
+
+import { ISalesInvoice } from '@/@core/typedefs/salesinvoice';
+import { SortItem } from '@/@core/types';
+import CustomerOverview from '@/views/pages/customer/CustomerOverview.vue';
+import SalesInvoice from '@/views/pages/customer/SalesInvoice.vue';
 
 
 const route = useRoute('customers-view-customerId')
@@ -15,6 +16,7 @@ const debouncedQuery = ref('')
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 const startDate = ref(null)
 const endDate = ref(null)
+
 
 const { data: customerData, execute } = await useApi<any>(createUrl(`customer/${route.params.customerId}`))
 

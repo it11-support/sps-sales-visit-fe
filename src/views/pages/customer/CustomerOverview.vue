@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import AppDateTimePicker from '@/@core/components/app-form-elements/AppDateTimePicker.vue';
+import { useConfigStore } from '@/@core/stores';
 import type { ICustomerData } from '@core/types';
 import dayjs from 'dayjs';
 import LinkSalesPersonModal from '../user/LinkSalesPersonModal.vue';
@@ -8,6 +9,7 @@ const props = defineProps<{ data: ICustomerData, onFinish?: () => Promise<void> 
 const { data } = toRefs(props)
 const { onFinish } = props
 
+const configStore = useConfigStore()
 const userData = useCookie<any>('userData')
 const showScheduleForm = ref(false)
 const date = ref(new Date())
@@ -16,6 +18,8 @@ const selectedType = ref(null)
 const showLinkSalesPersonModal = ref(false)
 const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
+const _isAdmin = computed(() => configStore.isAdmin())
+
 
 const formData = ref({
   assigned_by: userData.value.id,
@@ -84,11 +88,6 @@ const updateNotes = (val: string) => {
   formData.value.notes = val
 }
 
-onMounted(() => {
-  if (data.value.sales_person?.user == null) {
-    showLinkSalesPersonModal.value = true
-  }
-})
 
 const handleSubmit = async () => {
   isLoading.value = true
@@ -123,14 +122,18 @@ const handleSubmit = async () => {
         <VList class="card-list text-medium-emphasis">
           <CustomerItemList v-for="item in items" :key="item.title" :data="item" />
         </VList>
-        <VDivider class="my-4" />
-        <VRow class="d-flex justify-end">
-          <VCol cols="12" lg="3" md="6" sm="12" class="d-flex justify-end">
-            <VBtn color="warning" @click="handleShowScheduleForm">
-              Create Activity <VIcon end icon="tabler-calendar-check" />
-            </VBtn>
-          </VCol>
-        </VRow>
+        <VRow class="d-flex justify-start" v-if="_isAdmin">
+          <VCol cols="12">
+            <VDivider class="my-4" />
+              <VRow class="d-flex justify-end">
+                <VCol cols="12" lg="3" md="6" sm="12" class="d-flex justify-end">
+                  <VBtn color="warning" @click="handleShowScheduleForm">
+                    Create Activity <VIcon end icon="tabler-calendar-check" />
+                  </VBtn>
+                </VCol>
+              </VRow>
+            </VCol>
+          </VRow>        
       </VCardText>
     </AppCardActions>
   </VCol>
