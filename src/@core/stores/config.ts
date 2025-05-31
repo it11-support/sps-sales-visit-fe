@@ -22,6 +22,11 @@ export const useConfigStore = defineStore('config', () => {
     return userData?.value?.role?.role === 'admin';
   }
 
+  const salesPersonId = () => {
+    const userData = useCookie('userData') as { value: { sales_person: { SlpCode: number } } };
+    return userData?.value?.sales_person?.SlpCode
+  }
+  
   // 👉 Theme
   const userPreferredColorScheme = usePreferredColorScheme()
   const cookieColorScheme = cookieRef<'light' | 'dark'>('color-scheme', 'light')
@@ -73,7 +78,8 @@ export const useConfigStore = defineStore('config', () => {
     toggleOverlay,
     loading,
     toggleLoading,
-    isAdmin
+    isAdmin,
+    salesPersonId
   }
 })
 // !SECTION

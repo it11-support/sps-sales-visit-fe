@@ -6,32 +6,37 @@ const configStore = useConfigStore()
 
 const _isAdmin = computed(() => configStore.isAdmin())
 const searchQuery = ref('')
-
+const salesPersonId = computed(() => configStore.salesPersonId())
 const debouncedQuery = useDebounce(searchQuery, 400)
 
-const headers = [
-  { title: 'Actions', key: 'actions', sortable: false },
-  { title: 'Schedule', key: 'scheduled_date', sortable: true },
-  { title: 'Customer', key: 'customer', sortable: true },
-  { title: 'Type', key: 'activity', sortable: true },
-  { title: 'Note', key: 'notes', sortable: true },
-  { title: 'Status', key: 'status', sortable: true },
-]
+const headers = computed(() => {
+  const headers = [
+    { title: 'Actions', key: 'actions', sortable: false },
+    { title: 'Schedule', key: 'scheduled_date', sortable: true },
+    { title: 'Customer', key: 'customer', sortable: true },
+    { title: 'Type', key: 'activity', sortable: true },
+    { title: 'Note', key: 'notes', sortable: true },
+    { title: 'Status', key: 'status', sortable: true },
+  ]
+  if (_isAdmin.value) {
+    headers.splice(1, 0, { title: 'Assigned To', key: 'assigned_to.sales_person', sortable: true })
+  }
+  return headers
+})
 
-if (_isAdmin) {
-  headers.splice(1, 0, { title: 'Assigned To', key: 'assigned_to.sales_person', sortable: true })
-}
 
 onMounted(async () => {
+  if(!_isAdmin.value && salesPersonId.value) {
+    activityStore.updateFilters({ sales_person_id: salesPersonId.value })
+  }
   await activityStore.fetchActivities()
   await activityStore.fetchSalesPersonOptions()
+  console.log(activityStore.filters)
 })
 
 watch(debouncedQuery, (val) => {
   activityStore.updateFilters({ search: val })
 })
-
-console.log(activityStore.salesPersonsOptions)
 
 
 </script>
@@ -43,7 +48,8 @@ console.log(activityStore.salesPersonsOptions)
     </VCardItem>
     <VCardText>
       <VRow>
-        <VCol
+        <VCol 
+          v-if="_isAdmin"
           cols="12"
           sm="4"
         >
@@ -80,7 +86,7 @@ console.log(activityStore.salesPersonsOptions)
             placeholder="Select start date"
             clearable
             clear-icon="tabler-x"
-            @update:model-value="activityStore.updateFilters({ start_date: $event })"           
+            @update:model-value="val => val && activityStore.updateFilters({ start_date: val })"           
           />
         </VCol>
          <VCol cols="12" sm="4">
@@ -89,7 +95,7 @@ console.log(activityStore.salesPersonsOptions)
             placeholder="Select end date"
             clearable
             clear-icon="tabler-x"
-            @update:model-value="activityStore.updateFilters({ end_date: $event })"          
+            @update:model-value="val => val && activityStore.updateFilters({ end_date: val })"
           />
         </VCol>
       </VRow>

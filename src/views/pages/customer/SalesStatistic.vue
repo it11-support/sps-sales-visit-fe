@@ -113,6 +113,8 @@ watch(range, async (newVal) => {
   }
 })
 
+console.log(data.value.data.monthly_summary)
+
 const datasetInvoice = computed(() => {
   if (!data.value?.data?.monthly_summary?.length) return []
 
@@ -171,16 +173,23 @@ const datasetRevenue = computed(() => {
 })
 
 const itemCounts = computed(() => {
- return data.value.data.monthly_summary.reduce((acc: { [month: string]: { count: number, totalSales: number } }, data: Summary) => {
+  return data.value.data.monthly_summary.reduce((acc: { [month: string]: { count: number, totalSales: number } }, data: Summary) => {
     const month = data.month;
     const totalSales = data.items.reduce((sum, item) => sum + item.total_sales, 0);
+    const itemCount = data.items.length;
+
+    // Lewati jika tidak ada data
+    if (itemCount === 0 && totalSales === 0) return acc;
+
     acc[month] = {
-      count: (acc[month] ? acc[month].count : 0) + data.items.length,
-      totalSales: (acc[month] ? acc[month].totalSales : 0) + totalSales
+      count: itemCount,
+      totalSales: totalSales
     };
     return acc;
-  }, {})
-})
+  }, {});
+});
+
+console.log(itemCounts.value)
 
 const changesData = computed(() => {
   const changes: Record<string, {
@@ -487,7 +496,7 @@ const calculateAverage = (val: number, avg: number): string => {
                           <td>{{ item.unit }}</td>
                           <td>{{ formatMoney(item.price) }}</td>
                           <td>{{ formatMoney(item.total_sales) }}</td>
-                          <td>{{ `${(item.total_sales / top5TotalSales * 100).toFixed(2)} % ` }}</td>
+                          <td>{{ `${item.contribution.toFixed(2)} % ` }}</td>
                           <td>{{ formatDate(item.last_invoice_date) }}</td>
                         </tr>
                       </tbody>
