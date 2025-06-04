@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { useActivityStore, useConfigStore } from '@/@core/stores';
+import { useActivityStore, useAuthStore } from '@/@core/stores';
 
 const activityStore = useActivityStore()
-const configStore = useConfigStore()
-
-const _isAdmin = computed(() => configStore.isAdmin())
+const authStore = useAuthStore()
+const user = useCookie<any>('userData')
+const isAdmin = computed(() => user.value.role.role === 'admin')
 const searchQuery = ref('')
-const salesPersonId = computed(() => configStore.salesPersonId())
+const salesPersonId = computed(() => user.value.sales_person?.SlpCode)
 const debouncedQuery = useDebounce(searchQuery, 400)
 
 const headers = computed(() => {
@@ -18,7 +18,7 @@ const headers = computed(() => {
     { title: 'Note', key: 'notes', sortable: true },
     { title: 'Status', key: 'status', sortable: true },
   ]
-  if (_isAdmin.value) {
+  if (isAdmin.value) {
     headers.splice(1, 0, { title: 'Assigned To', key: 'assigned_to.sales_person', sortable: true })
   }
   return headers
@@ -26,13 +26,23 @@ const headers = computed(() => {
 
 
 onMounted(async () => {
-  if(!_isAdmin.value && salesPersonId.value) {
+  if(!isAdmin.value && salesPersonId.value) {
     activityStore.updateFilters({ sales_person_id: salesPersonId.value })
   }
   await activityStore.fetchActivities()
   await activityStore.fetchSalesPersonOptions()
-  console.log(activityStore.filters)
 })
+
+watch(() =>isAdmin.value, (val) => {
+  if(val) {
+    activityStore.updateFilters({ sales_person_id: undefined })
+  } else {
+    const spId = authStore.user?.sales_person?.SlpCode
+    if (spId) {
+      activityStore.updateFilters({ sales_person_id: spId })
+    }
+  }
+}, { immediate: true })
 
 watch(debouncedQuery, (val) => {
   activityStore.updateFilters({ search: val })
@@ -49,7 +59,7 @@ watch(debouncedQuery, (val) => {
     <VCardText>
       <VRow>
         <VCol 
-          v-if="_isAdmin"
+          v-if="isAdmin"
           cols="12"
           sm="4"
         >

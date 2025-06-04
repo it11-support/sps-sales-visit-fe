@@ -19,6 +19,9 @@ const searchQuery = ref('')
 const filterDormantCustomer = ref(false)
 const debouncedQuery = useDebounce(searchQuery, 400)
 
+const user = useCookie<any>('userData')
+const isAdmin = computed(() => user.value.role.role === 'admin')
+
 watch(debouncedQuery, (val) => {
   customerStore.updateFilters({ search: val })
 })
@@ -93,7 +96,6 @@ const headers = [
   // { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-const isAdmin = computed(() => userData.value.role.role === 'admin')
 const status = [
   { title: 'Active', value: 'N' },
   { title: 'Inactive', value: 'Y' },

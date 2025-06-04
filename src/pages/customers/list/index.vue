@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { useCustomerStore } from '@/@core/stores/customer'
-import { useConfigStore } from '@core/stores/config'
-import type { SortItem } from '@core/types'
 
 const customerStore = useCustomerStore()
 // 👉 Store
@@ -13,11 +11,11 @@ const deleteId = ref('')
 const debouncedQuery = useDebounce(searchQuery, 400)
 
 // Data table options
-const sortOptions = ref<SortItem[]>([])
 const selectedRows = customerStore.selectedRows
-const configStore = useConfigStore()
 const filterDormantCustomer = ref(false)
 // Delayed search
+const user = useCookie<any>('userData')
+const isAdmin = computed(() => user.value.role.role === 'admin')
 
 watch(debouncedQuery, (val) => {
   customerStore.updateFilters({ search: val })
@@ -120,6 +118,17 @@ const deleteCustomer = async (id: string) => {
   customerStore.fetchCustomers()
 
 }
+
+watch(() =>isAdmin.value, (val) => {
+  if(val) {
+    customerStore.updateFilters({ sales_person_id: undefined })
+  } else {
+    const spId = user.value.sales_person?.SlpCode
+    if (spId) {
+      customerStore.updateFilters({ sales_person_id: spId })
+    }
+  }
+}, { immediate: true })
 </script>
 
 <template>
@@ -131,7 +140,7 @@ const deleteCustomer = async (id: string) => {
       <VCardText>
         <VRow>
           <!-- 👉 Select Role -->
-          <VCol cols="12" sm="4">
+          <VCol cols="12" sm="4" v-if="isAdmin">
             <AppSelect v-model="customerStore.filters.sales_person_id"
               @update:model-value="customerStore.updateFilters({ sales_person_id: $event })"
               placeholder="Fitler by sales person" :items="salesPersons" clearable clear-icon="tabler-x" />

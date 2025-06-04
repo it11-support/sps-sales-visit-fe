@@ -17,10 +17,6 @@ export const useConfigStore = defineStore('config', () => {
   }
 
 
-  const isAdmin = () => {
-    const userData = useCookie('userData') as { value: { role: { role: string } } };
-    return userData?.value?.role?.role === 'admin';
-  }
 
   const salesPersonId = () => {
     const userData = useCookie('userData') as { value: { sales_person: { SlpCode: number } } };
@@ -78,8 +74,7 @@ export const useConfigStore = defineStore('config', () => {
     toggleOverlay,
     loading,
     toggleLoading,
-    isAdmin,
-    salesPersonId
+    salesPersonId,
   }
 })
 // !SECTION

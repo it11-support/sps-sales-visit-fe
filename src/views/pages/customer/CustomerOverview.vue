@@ -9,7 +9,6 @@ const props = defineProps<{ data: ICustomerData, onFinish?: () => Promise<void> 
 const { data } = toRefs(props)
 const { onFinish } = props
 
-const configStore = useConfigStore()
 const userData = useCookie<any>('userData')
 const showScheduleForm = ref(false)
 const date = ref(new Date())
@@ -18,7 +17,8 @@ const selectedType = ref(null)
 const showLinkSalesPersonModal = ref(false)
 const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
-const _isAdmin = computed(() => configStore.isAdmin())
+const user = useCookie<any>('userData')
+const _isAdmin = computed(() => user.value.role.role === 'admin')
 
 
 const formData = ref({

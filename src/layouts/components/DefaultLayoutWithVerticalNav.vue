@@ -9,15 +9,11 @@ import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 
 // @layouts plugin
-import { useConfigStore } from '@/@core/stores/config'
 import { VerticalNavLayout } from '@layouts'
 
-const configStore = useConfigStore()
-
-const isAdmin = configStore.isAdmin
-
-
-const navItems = getNavItems(isAdmin())
+const user = useCookie<any>('userData')
+const isAdmin = computed(() => user.value.role.role === 'admin')
+const navItems = getNavItems(isAdmin.value)
 
 </script>
 

@@ -28,6 +28,8 @@ const sortOptions = ref<SortItem[]>([])
 const selectedRows = ref<IUser[]>([])
 const isConfirmDialogVisible = ref(false)
 const configStore = useConfigStore()
+const user = useCookie<any>('userData')
+const isAdmin = computed(() => user.value.role.role === 'admin')
 
 // Headers
 const headers = [
@@ -158,7 +160,6 @@ const roleOptions = rolesData.value.data.map((role: any) => ({
 
 const totalUser = computed(() => usersData.value.data.total)
 const users = computed((): IUser[] => usersData.value.data.data)
-const isAdmin = computed(() => configStore.isAdmin())
 
 // Change selected item value and open drawer
 const handleSelectItem = (item?: IUser) => {
