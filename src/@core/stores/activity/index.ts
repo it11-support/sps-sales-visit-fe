@@ -1,4 +1,4 @@
-import { IActivity, SortItem } from "@/@core/types"
+import { IActivity, IActivityReport, ICompetitor, ICustomerData, IProduct, IReasonQtyDrop, SortItem } from "@/@core/types"
 
 interface Filters {
   search?: string
@@ -14,12 +14,18 @@ interface Filters {
 
 export const useActivityStore = defineStore('activity', {
   state: () => ({
+    activity: {} as IActivity,
+    report: {} as IActivityReport,
+    loadingId: null as number | null,
     activities: [] as IActivity[],
     loadingList: false,
+    loadingAssignment: false,
     loading: false,
     loadingDetail: false,
     selectedRows: [] as IActivity[],
     salesPersonsOptions: [] as { title: string; value: number }[],
+    reasonQtyDropOptions: [] as { title: string; value: number }[],
+    activityPuposesOptions: [] as { title: string; value: number }[],
     pagination: {
       current_page: 1,
       last_page: 1,
@@ -42,7 +48,23 @@ export const useActivityStore = defineStore('activity', {
       start_date: '',
       end_date: '',
       activity_type_id: undefined,
-    } as Filters
+    } as Filters,
+    activityReport: {
+      products_offering: [] as IProduct[],
+      customer: {} as ICustomerData,
+      assignment_id: 0,
+      assignment: {} as IActivity,
+      reason_qty_drop_id: 0,
+      activity_purpose_id: 0,
+      non_active_product: '',
+      product_issue: '',
+      next_action: '',
+      additional_note: '',
+      competitors: [] as ICompetitor[],
+      reason: undefined,
+      purpose: undefined
+    } as IActivityReport,
+    allCompetitorOptions: ref<ICompetitor[]>([])
   }),
   actions: {
     async fetchActivities() {
@@ -59,14 +81,94 @@ export const useActivityStore = defineStore('activity', {
       this.loadingList = false
     },
     async fetchActivityById(id: string) {
-      this.loadingDetail = true
+      this.loadingAssignment = true
       const { data, error } = await useApi<any>(`activity/${id}`)
       if (error.value) {
         console.error('Error fetching activity detail:', error.value)
-        this.loadingDetail = false
+        this.loadingAssignment = false
         return
       }
-      this.loadingDetail = false
+      this.activity = data.value.data
+      this.loadingAssignment = false
+    },
+
+    async fetchActivityReport(id: string) {
+      this.loadingAssignment = true
+      const { data, error } = await useApi<any>(`activity/${id}/report`)
+      if (error.value) {
+        console.error('Error fetching activity detail:', error.value)
+        this.loadingAssignment = false
+        return
+      }
+      this.report = data.value.data
+      this.loadingAssignment = false
+    },
+    async updateActivityStatus(id: number, status: string) {
+      this.loadingId = id
+      await $api(`/activity/status/update/${id}`, {
+        method: 'PUT',
+        body: JSON.parse(JSON.stringify({
+          status
+        })),
+      })
+      this.loadingId = null
+      this.fetchActivities()
+    },
+    async fetchAllOptions() {
+      this.loading = true
+      const url = createUrl(`activity/get-options`)
+      const { data: competitorsData, error } = await useApi<any>(url)
+      if (error.value) {
+        console.error('Error fetching sales person options:', error.value)
+        return
+      }
+  
+      const uniqueCompetitors = new Map<string, ICompetitor>();
+      competitorsData.value.data.competitors.forEach((competitor: ICompetitor) => {
+        const key = `${competitor.name}-${competitor.address}`;
+        if (!uniqueCompetitors.has(key)) {
+          uniqueCompetitors.set(key, competitor);
+        }
+      });
+
+      this.allCompetitorOptions = Array.from(uniqueCompetitors.values()).map((competitor: ICompetitor) => ({
+        value: competitor.id,
+        title: `${competitor.name}`,
+        name: `${competitor.name} - ${competitor.address}`,
+        address: competitor.address,
+        product: competitor.product,
+        price: competitor.price,
+        qty: competitor.qty
+      }));
+
+      this.reasonQtyDropOptions = competitorsData.value.data.reasonQtyDrops.map((reason: IReasonQtyDrop) => ({
+        value: reason.id,
+        title: `${reason.reason}`
+      }))
+
+      this.activityPuposesOptions = competitorsData.value.data.purposes.map((activityPupose: any) => ({
+        value: activityPupose.id,
+        title: `${activityPupose.purpose}`
+      }))
+      this.loading = false
+    },
+    async storeActivityReport() {
+      this.loading = true
+      const payload = JSON.stringify(this.activityReport);
+
+      const { data, error } = await useApi<any>(`activity/report`, {
+        method: 'POST',
+        body: payload,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      if (error.value) {
+        console.error('Error fetching activity detail:', error.value)
+        this.loading = false
+        return
+      }
+      this.loading = false
     },
      updateFilters(newFilters: Partial<Filters>) {
       this.filters = {
@@ -110,6 +212,20 @@ export const useActivityStore = defineStore('activity', {
         value: sales.SlpCode
       }))
       this.loading = false
+    },
+    updateForm(form: Partial<IActivityReport>) {
+      this.activityReport = {
+        ...this.activityReport,
+        ...form
+      }
+
+      console.log(this.activityReport)
+    }, 
+    addCompetitor(competitor: ICompetitor) {
+      this.activityReport.competitors?.push(competitor)
+      if (!this.allCompetitorOptions.some(opt => opt.name === competitor.name)) {
+        this.allCompetitorOptions.push(competitor)
+      }
     }
   }
 })

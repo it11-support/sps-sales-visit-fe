@@ -1,10 +1,23 @@
+import { ICompetitor } from "../competitor"
 import { ICustomerData } from "../customer"
+import { IProduct } from "../product"
 import { IUser } from "../user"
+
+export interface IReasonQtyDrop {
+  id: number
+  reason: string
+}
+
+export interface IActivityPurpose {
+  id: number
+  purpose: string
+}
 
 export interface IActivityType {
   id: number
   name: string
 }
+
 export interface IActivity {
   id: number
   assigned_by: IUser
@@ -14,7 +27,29 @@ export interface IActivity {
   scheduled_date: Date
   notes: string
   status: string
-  customer: ICustomerData
+  customer: ICustomerData 
   activity: IActivityType
 }
 
+export interface IActivityReport {
+  products?: IProduct[]
+  customer: ICustomerData
+  assignment_id: number
+  assignment: IActivity
+  reason_qty_drop_id: number
+  activity_purpose_id: number
+  reason_qty_drop?: IReasonQtyDrop
+  non_active_product?: string
+  product_issue?: string
+  next_action?: string
+  additional_note?: string
+  competitors: ICompetitor[]
+  activity_purpose?: IActivityPurpose
+}
+
+export interface ISupplierProduct {
+  supplier: string
+  product: string
+  price?: number
+  quantity?: number  
+}

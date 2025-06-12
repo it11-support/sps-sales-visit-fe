@@ -194,7 +194,7 @@ const handleSelectItem = (item?: IUser) => {
             item-title="role"
             item-value="id"
             label="Role"
-            persistent-hint            
+            persistent-hint
             single-line
           />
           </VCol>  

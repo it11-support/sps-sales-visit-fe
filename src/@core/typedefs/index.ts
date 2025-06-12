@@ -1,8 +1,11 @@
 export * from './activity'
 export * from './auth'
+export * from './competitor'
 export * from './customer'
 export * from './emits'
+export * from './product'
 export * from './role'
+export * from './salesinvoice'
 export * from './salesperson'
 export * from './user'
 

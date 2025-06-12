@@ -88,17 +88,11 @@ export const useCustomerStore = defineStore('customer', {
         return
       }
 
-      console.log(data.value.data)
-      this.customerDetail = data.value.data.customer
+      this.customerDetail = data.value.data
       this.loadingDetail = false
-
-
-
-      console.log(this.customerDetail)
     },
 
     updateSortOptions(options: any) {
-
       this.updateFilters({
         sort_options: [options.sortBy]
       })

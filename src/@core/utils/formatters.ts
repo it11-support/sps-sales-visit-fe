@@ -29,6 +29,32 @@ export const formatDate = (value: string | Date, formatting: Intl.DateTimeFormat
   return new Intl.DateTimeFormat('en-US', formatting).format(new Date(value))
 }
 
+export const formatFullDateWithSuffix = (value: string | Date): string => {
+  if (!value) return ''
+
+  const date = new Date(value)
+
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' })
+  const day = date.getDate()
+  const month = date.toLocaleDateString('en-US', { month: 'long' })
+  const year = date.getFullYear()
+
+  const getOrdinalSuffix = (n: number): string => {
+    if (n >= 11 && n <= 13) return `${n}th`
+    switch (n % 10) {
+      case 1: return `${n}st`
+      case 2: return `${n}nd`
+      case 3: return `${n}rd`
+      default: return `${n}th`
+    }
+  }
+
+  const dayWithSuffix = getOrdinalSuffix(day)
+
+  return `${weekday}, ${dayWithSuffix} ${month} ${year}`
+}
+
+
 /**
  * Return short human friendly month representation of date
  * Can also convert date to only time if date is of today (Better UX)

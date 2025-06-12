@@ -8,6 +8,16 @@ const isAdmin = computed(() => user.value.role.role === 'admin')
 const searchQuery = ref('')
 const salesPersonId = computed(() => user.value.sales_person?.SlpCode)
 const debouncedQuery = useDebounce(searchQuery, 400)
+const router = useRouter()
+
+const STATUS = {
+  ASSIGNED: 'assigned',
+  ONGOING: 'ongoing',
+  SUBMITTED: 'submitted',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+  MISSED: 'misssed',
+}
 
 const headers = computed(() => {
   const headers = [
@@ -23,6 +33,7 @@ const headers = computed(() => {
   }
   return headers
 })
+
 
 
 onMounted(async () => {
@@ -48,7 +59,30 @@ watch(debouncedQuery, (val) => {
   activityStore.updateFilters({ search: val })
 })
 
+const getStatus = (status: string) => {
+    switch (status) {
+      case STATUS.ASSIGNED:
+        return {color: 'warning', content: 'Assigned'}
+      case STATUS.ONGOING:
+        return {color: 'primary', content: 'Ongoing'}
+      case STATUS.SUBMITTED:
+        return {color: 'success', content: 'Submitted'}
+      case STATUS.COMPLETED:
+        return {color: 'success', content: 'Completed'}
+      case STATUS.CANCELLED:
+        return {color: 'error', content: 'Cancelled'}
+      case STATUS.MISSED:
+        return {color: 'error', content: 'Missed'}
+    }
+}
 
+const handleClickReport = (id: number) => {
+  router.push({ path: createUrl(`/activity/${id}/report`).value })
+}
+
+const handleClickViewReport = (id: number) => {
+  router.push({ path: createUrl(`/activity/${id}/view-report`).value })
+}
 </script>
 
 <template>
@@ -80,8 +114,9 @@ watch(debouncedQuery, (val) => {
             @update:model-value="activityStore.updateFilters({ status: $event })"
             placeholder="Filter by status" 
             :items="[
-              { title: 'Pending', value: 'pending' },
               { title: 'Assigned', value: 'assigned' },
+              { title: 'On Going', value: 'ongoing' },
+              { title: 'Submitted', value: 'submitted' },
               { title: 'Completed', value: 'completed' },
               { title: 'Cancelled', value: 'cancelled' },
               { title: 'Overdue', value: 'misssed' },
@@ -109,7 +144,6 @@ watch(debouncedQuery, (val) => {
           />
         </VCol>
       </VRow>
-    
     </VCardText>
     <VDivider />
     
@@ -148,10 +182,45 @@ watch(debouncedQuery, (val) => {
       multi-sort
     >
       <template #item.actions="{ item }">
-        <a :href="`${'/activity/view/' + item.id}`">
-        <VIcon small class="mr-1">tabler-eye</VIcon>
-          View
-        </a>
+        <div class="d-flex justify-between gap-x-4" v-if="item.status === STATUS.ASSIGNED">     
+          <VBtn 
+            :key="item.id" 
+            :loading="activityStore.loadingId === item.id" 
+            @click="activityStore.updateActivityStatus(item.id, STATUS.ONGOING)" 
+            size="small"
+            variant="tonal"
+            color="primary"
+            prepend-icon="tabler-play"
+            >
+            Start
+          </VBtn>
+        </div>
+        <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.ONGOING">
+          <VBtn 
+            :key="item.id" 
+            :loading="activityStore.loadingId === item.id" 
+            @click="handleClickReport(item.id)" 
+            size="small"
+            variant="tonal"
+            color="primary"
+            prepend-icon="tabler-report"
+            >
+            Report
+          </VBtn>
+        </div>
+         <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.SUBMITTED">
+          <VBtn 
+            :key="item.id" 
+            :loading="activityStore.loadingId === item.id" 
+            @click="handleClickViewReport(item.id)" 
+            size="small"
+            variant="tonal"
+            color="primary"
+            prepend-icon="tabler-notes"
+            >
+            View Report
+          </VBtn>
+        </div>
       </template>
       <template #item.assigned_to.sales_person="{ item }">
         <div class="d-flex align-center gap-x-4">
@@ -185,6 +254,19 @@ watch(debouncedQuery, (val) => {
           <div class="d-flex flex-column">
             <div class="text-sm">
               {{ item.activity.name }}
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #item.status="{ item }">
+        <div class="d-flex align-center gap-x-4">
+          <div class="d-flex flex-column">
+            <div class="text-sm">
+              <VBadge 
+                :color="getStatus(item.status)?.color"
+                size="small"                
+                :content="getStatus(item.status)?.content" 
+              />
             </div>
           </div>
         </div>

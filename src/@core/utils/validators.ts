@@ -2,6 +2,7 @@ import { isEmpty, isEmptyArray, isNullOrUndefined } from './helpers'
 
 // 👉 Required Validator
 export const requiredValidator = (value: unknown) => {
+  console.log(value)
   if (isNullOrUndefined(value) || isEmptyArray(value) || value === false)
     return 'This field is required'
 

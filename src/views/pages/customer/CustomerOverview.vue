@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import AppDateTimePicker from '@/@core/components/app-form-elements/AppDateTimePicker.vue';
-import { useConfigStore } from '@/@core/stores';
 import type { ICustomerData } from '@core/types';
 import dayjs from 'dayjs';
 import LinkSalesPersonModal from '../user/LinkSalesPersonModal.vue';
@@ -28,7 +27,7 @@ const formData = ref({
   scheduled_date: '',
   activity_type_id: 0,
   notes: '',
-  status: 'pending',
+  status: 'assigned',
 })
 
 const salesPersonName = data.value.sales_person ? data.value.sales_person.SlpName : '-'
