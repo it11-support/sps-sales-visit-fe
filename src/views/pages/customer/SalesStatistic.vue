@@ -119,14 +119,6 @@ const datasetVolume = computed(() => {
   })
 })
 
-const volumeUnits = computed(() => {
-  return topFiveSales.value.map((desc:any) => {
-    return statStore.monthly_summary.map((monthData: IMonthlySummary) => {
-      const item = monthData.items.find(i => i.description === desc.description)
-      return item?.unit ?? ''
-    })
-  })
-})
 
 const datasetRevenue = computed(() => {
   return topFiveSales.value.map((desc: any, index: number) => {
@@ -277,8 +269,7 @@ function getColor(index: number) {
                     callbacks: {
                       label: function (context) {
                         const volume = (context.raw as number).toFixed(2) ?? 0
-                        const unit = volumeUnits[context.datasetIndex]?.[context.dataIndex] ?? ''
-                        return `${context.dataset.label}: ${volume} ${unit}`
+                        return `${context.dataset.label}: ${volume} Kg`
                       }
                     }
                   }

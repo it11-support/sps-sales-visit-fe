@@ -64,6 +64,11 @@ const calculateTotalSales = (items: any): string => {
   return formatMoney(totalSales)
 }
 
+const calculateTotalWeight = (items: any): string => {
+  const totalWeight = items.reduce((sum: number, item: any) => sum + parseFloat(item.value.total_weight), 0);
+  return totalWeight.toFixed(2)
+}
+
 </script>
 
 <template>
@@ -97,10 +102,14 @@ const calculateTotalSales = (items: any): string => {
             </td>
             <td v-if="groupBy === 'ItemCode'" :colspan="1"  class="text-left">
              {{  }}
-            </td>
-            <td :colspan="groupBy === 'DocNum' ? 6 : 4"  class="text-left">
+            </td>            
+            <td :colspan="groupBy === 'DocNum' ? 3 : 2"  class="text-left">
               {{ formatDate(item.items[0].value.DocDate, { day: '2-digit', month: 'short', year: 'numeric'})  }}
             </td>
+            <td class="text-left font-weight-bold text-primary">
+              {{ calculateTotalWeight(item.items) }}
+            </td>
+            <td></td>
             <td class="text-left font-weight-bold text-primary">
               {{ calculateTotalSales(item.items) }}
             </td>
@@ -118,6 +127,9 @@ const calculateTotalSales = (items: any): string => {
         </template>
         <template #item.QtyKg="{ item }">
           {{ Number(item.QtyKg).toFixed(2) }}
+        </template>
+         <template #item.total_weight="{ item }">
+          {{ Number(item.total_weight).toFixed(2) }}
         </template>
         <template #item.PriceBefDisc="{ item }">
           {{ formatMoney(item.PriceBefDisc) }}

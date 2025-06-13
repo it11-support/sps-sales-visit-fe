@@ -5,6 +5,7 @@ import { SortItem } from '@/@core/types'
 import CustomerOverview from '@/views/pages/customer/CustomerOverview.vue'
 import SalesInvoiceTable from '@/views/pages/customer/SalesInvoiceTable.vue'
 import SalesStatistic from '@/views/pages/customer/SalesStatistic.vue'
+import { title } from 'node:process'
 
 
 const router = useRoute('customers-view-customerId-item-itemId' as any)
@@ -41,8 +42,7 @@ const headers = [
   { title: 'Inv Date', value: 'DocDate', sortable: true },
   { title: 'Description', value: 'Dscription', sortable: true },
   { title: 'Item Code', value: 'ItemCode', sortable: true },
-  { title: 'Qty', value: 'QtyKg', sortable: true },
-  { title: 'Unit', value: 'unitMsr', sortable: true },
+  { title: 'Volume (Kg)', value:'total_weight', sortable: true },
   { title: 'Price', value: 'PriceBefDisc', sortable: true },
   { title: 'Total', value: 'TotalSales', sortable: true },
 ]
@@ -130,12 +130,21 @@ const handleRefresh = (stopLoading: () => void) => {
         </div>
       </VCardText>
 
-      <SalesInvoiceTable :sales-invoices-data="salesInvoicesData" :customer-id="router.params.customerId"
-        :headers="computedHeaders" :items-length="totalSales" :group-by="groupBy" v-model:loading="configStore.loading"
-        :item-value="groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum'" v-model:page="page"
-        v-model:items-per-page="itemsPerPage" v-model:selected-rows="selectedRows"
-        v-model:on-update-options="updateOptions" v-model:on-update-selected-rows="updateSelectedRows"
-        :grouped="false" />
+      <SalesInvoiceTable 
+        :sales-invoices-data="salesInvoicesData" 
+        :customer-id="router.params.customerId"
+        :headers="computedHeaders" 
+        :items-length="totalSales" 
+        :group-by="groupBy"
+        v-model:loading="configStore.loading"
+        :item-value="groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum'" 
+        v-model:page="page"
+        v-model:items-per-page="itemsPerPage" 
+        v-model:selected-rows="selectedRows"
+        v-model:on-update-options="updateOptions" 
+        v-model:on-update-selected-rows="updateSelectedRows"
+        :grouped="false" 
+      />
     </AppCardActions>
   </VCol>
 </template>

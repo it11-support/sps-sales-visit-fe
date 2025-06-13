@@ -85,10 +85,7 @@ const itemCounts = computed(() => {
 
     const totalSales = data.items.reduce((sum, item) => sum + item.total_sales, 0);
 
-    // Only add volume if the unit is 'Kg'
-    const totalVolume = data.items.reduce((sum, item) => {
-      return item.unit.toLowerCase() === 'kg' ? sum + item.volume : sum;
-    }, 0);
+    const totalVolume = data.items.reduce((sum, item) => sum + item.volume, 0);
 
     const itemCount = data.items.length;
 
@@ -253,7 +250,7 @@ const widgetData = computed(() => ([
                     Item Changes
                   </th>
                   <th class="text-left">
-                    Volume
+                    Volume (Kg)
                   </th>
                   <th class="text-left">
                     Volume Changes

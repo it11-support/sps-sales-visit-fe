@@ -8,6 +8,7 @@ export interface ISalesInvoice {
   ItemCode?: string;
   Dscription: string;
   QtyKg: number;
+  total_weight?: number;
   unitMsr?: string;
   PriceBefDisc: number
   DiscLine: number;

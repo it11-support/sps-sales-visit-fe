@@ -125,7 +125,7 @@ const widgetData = computed(() => ([
                     Item Changes
                   </th>
                   <th class="text-left">
-                    Volume
+                    Volume (Kg)
                   </th>
                   <th class="text-left">
                     Volume Changes
