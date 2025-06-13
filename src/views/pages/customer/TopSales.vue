@@ -54,11 +54,8 @@ const topSales = computed(() => statStore.top_items)
                       Description
                     </th>
                     <th class="text-left">
-                      QTY
-                    </th>
-                    <th class="text-left">
-                      Unit
-                    </th>
+                      Volume (Kg)
+                    </th>                  
                     <th class="text-left">
                       Price
                     </th>
@@ -78,7 +75,6 @@ const topSales = computed(() => statStore.top_items)
                     <td>{{ item.item_code }}</td>
                     <td>{{ item.description }}</td>
                     <td>{{ item.volume.toFixed(2) }}</td>
-                    <td>{{ item.unit }}</td>
                     <td>{{ formatMoney(item.price) }}</td>
                     <td>{{ formatMoney(item.total_sales) }}</td>
                     <td>{{ `${item.contribution.toFixed(2)} % ` }}</td>

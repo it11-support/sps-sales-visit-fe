@@ -28,8 +28,7 @@ const headers = [
   { title: 'Inv Date', value: 'DocDate', sortable: true },
   { title: 'Description', value: 'Dscription', sortable: true },
   { title: 'Item Code', value: 'ItemCode', sortable: true },
-  { title: 'Qty', value: 'QtyKg', sortable: true },
-  { title: 'Unit', value: 'unitMsr', sortable: true },
+  { title: 'Volume (Kg)', value:'total_weight', sortable: true },
   { title: 'Price', value: 'PriceBefDisc', sortable: true },
   { title: 'Total', value: 'TotalSales', sortable: true },
 ]
