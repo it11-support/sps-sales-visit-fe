@@ -4,7 +4,8 @@ export const useProductStore = defineStore('products', {
   
   state: () => ({
     loading: false,
-    products: [] as IProduct[]
+    products: [] as IProduct[],
+    productOptions: [] as { title: string; value: string }[]
   }),
   actions: {
   
@@ -16,8 +17,10 @@ export const useProductStore = defineStore('products', {
         console.error('Error fetching sales person options:', error.value)
         return
       }
-  
+
       this.products = invoicesData.value.data
+  
+      this.productOptions = invoicesData.value.data
       .map((product: IProduct) => ({
         value: product.ItemCode,
         title: product.ItemName

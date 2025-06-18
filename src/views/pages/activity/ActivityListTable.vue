@@ -83,6 +83,10 @@ const handleClickReport = (id: number) => {
 const handleClickViewReport = (id: number) => {
   router.push({ path: createUrl(`/activity/${id}/view-report`).value })
 }
+
+const handleClickEdit = (id: number) => {
+  router.push({ path: createUrl(`/activity/${id}/report/edit`).value })
+}
 </script>
 
 <template>
@@ -219,6 +223,17 @@ const handleClickViewReport = (id: number) => {
             prepend-icon="tabler-notes"
             >
             View Report
+          </VBtn>
+          <VBtn 
+            :key="item.id" 
+            :loading="activityStore.loadingId === item.id" 
+            @click="handleClickEdit(item.id)"
+            size="small"
+            variant="tonal"
+            color="primary"
+            prepend-icon="tabler-edit"
+            >
+            Edit Report
           </VBtn>
         </div>
       </template>

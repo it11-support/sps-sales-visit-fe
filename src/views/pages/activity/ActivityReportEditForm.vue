@@ -1,50 +1,58 @@
 <script lang="ts" setup>
-import AppSelect from '@/@core/components/app-form-elements/AppSelect.vue';
 import { useActivityStore, useConfigStore, useCustomerStore, useProductStore, useStatisticStore } from '@/@core/stores';
-import { ICompetitor } from '@/@core/typedefs';
-import { nextTick } from 'vue';
-import { VForm } from 'vuetify/components';
+import { ICompetitor, IProduct } from '@/@core/typedefs';
+import { VForm } from 'vuetify/components/VForm';
 
 interface Props {
   assignmentId: string  
 }
 
-export type CompetitorOption = ICompetitor & {
-  isNew?: boolean
-  rawName?: string
-}
 const props = defineProps<Props>()
-const activityStore = useActivityStore()
-const statStore = useStatisticStore()
-const customerStore = useCustomerStore()
-const productStore = useProductStore()
+const router = useRouter()
+const form = ref<VForm>()
 const loading = ref(true)
+const activityStore = useActivityStore()
+const customerStore = useCustomerStore()
+const statStore = useStatisticStore()
+const configStore = useConfigStore()
+const productStore = useProductStore()
+
 const competitors = ref<ICompetitor[]>([
   {name: '', address: '', product: '', price: undefined, qty: undefined},
 ])
+
+const selectedProducts = ref<IProduct[]>([])
 const search = ref('')
 const isSelecting = ref(false)
-const form = ref<VForm>()
-const configStore = useConfigStore()
-const router = useRouter()
 
 const loadAll = async () => {
   await activityStore.fetchActivityById(props.assignmentId)
   await statStore.fetchMoMSummary(activityStore.activity.customer_id)
   await customerStore.fetchCustomerById(activityStore.activity.customer_id)
   await activityStore.fetchAllOptions()
+  await activityStore.fetchActivityReport(props.assignmentId)
+  await productStore.fetchProductOptions()
+
+  competitors.value = activityStore.report.competitors
+  selectedProducts.value = activityStore.report.products ?? []
   loading.value = false
 }
 
 onMounted(() => {
-  productStore.fetchProductOptions()
   loadAll()
-  activityStore.activityReport.assignment_id = Number(props.assignmentId)
 })
 
+console.log(activityStore.activity)
 const activity = computed(() => activityStore.activity)
 const monthly_summary = computed(() => statStore.monthly_summary)
 const customer = computed(() => customerStore.customerDetail)
+
+
+watch(competitors, (newValue) => {
+  if(newValue.length > 0) {
+    activityStore.updateForm({competitors: newValue})
+  }
+}, {deep: true})
 
 const summary = computed(() => {
   if (!monthly_summary.value?.length) return []
@@ -96,23 +104,25 @@ const missingItems = computed(() => {
   return missing
 })
 
-watch(missingItems, (newValue) => {
-  const missingItem = JSON.stringify(newValue)
-  activityStore.updateForm({non_active_product: missingItem})
-}, {deep: true})
-
-watch(competitors, (newValue) => {
-  if(newValue.length > 0) {
-    activityStore.updateForm({competitors: newValue})
+const submitHandler = async () => {
+  configStore.overlay = true
+  try {
+    const validation = await form.value?.validate()
+    if (validation) {
+      const { valid, errors } = validation
+      if (!valid) {
+        console.log(errors)
+        configStore.overlay = false
+        return
+      }
+    }
+    await activityStore.updateReport(props.assignmentId as unknown as number).then(() => {
+      router.push({ path: createUrl(`/activity/list`).value })
+    })
+  } catch (error) {
+    console.log(error)
   }
-}, {deep: true})
-
-const handleAddCompetitor = () => {
-  competitors.value.push({name: '', address: '', product: '', price: undefined, qty: undefined})
-}
-
-const handleRemoveCompetitor = (index: number) => {
-  competitors.value.splice(index, 1)
+  configStore.overlay = false
 }
 
 const computedItems = computed<ICompetitor[]>(() => {
@@ -129,7 +139,6 @@ const computedItems = computed<ICompetitor[]>(() => {
     return [
       ...baseItems,
       {
-        id: `new-${trimmed}`,
         name: `+ Add "${trimmed}"`,
         address: '',
         isNew: true,
@@ -141,17 +150,16 @@ const computedItems = computed<ICompetitor[]>(() => {
   return baseItems
 })
 
-
-function onSelect(val: ICompetitor, index: number) {
+const onSelect = (val: ICompetitor, index: number) => {
   isSelecting.value = true
   const newName = val.name.split(' - ')[0]
+  console.log(val)
   if (val?.isNew) {
     const newItem: ICompetitor = {
-      id: Date.now(),
+      // id: Date.now(),
       name: val.rawName || val.name,
       address: '',
     }
-
     activityStore.allCompetitorOptions.push(newItem)
     competitors.value[index] = { ...newItem }
   } else {
@@ -164,29 +172,32 @@ function onSelect(val: ICompetitor, index: number) {
   })
 }
 
-const submitHandler = async () => {
-  configStore.overlay = true
-  try {
-    const validation = await form.value?.validate()
-    if (validation) {
-      const { valid, errors } = validation
-      if (!valid) {
-        console.log(errors)
-        return
-      }
-    }
-    await activityStore.storeActivityReport().then(() => {
-      router.push({ path: createUrl(`/activity/list`).value })
-    })
-  } catch (error) {
-    console.log(error)
+const handleRemoveCompetitor = (index: number) => {
+  activityStore.activityReport.competitors.splice(index, 1)
+  if(activityStore.activityReport.competitors.length === 0) {
+    activityStore.activityReport.competitors.push({name: '', address: '', product: '', price: undefined, qty: undefined})      
   }
-  configStore.overlay = false
 }
+
+const handleAddCompetitor = () => {
+  activityStore.activityReport.competitors.push({name: '', address: '', product: '', price: undefined, qty: undefined})
+}
+
+const shouldShowRemoveButton = (index: number) => {
+  const competitors = activityStore.activityReport.competitors;
+
+  if (competitors.length > 1) return true;
+
+  const c = competitors[0];
+  const hasValue = c?.name || c?.address || c?.product || c?.price || c?.qty;
+  return !!hasValue;
+}
+
+
 </script>
 
 <template>
-<VCard class="mb-6">
+  <VCard class="mb-6">
   <VCardItem class="pb-4">
     <VCardTitle>CUSTOMER SUMMARY</VCardTitle>
   </VCardItem>
@@ -373,8 +384,8 @@ const submitHandler = async () => {
       </VCol>
     </VRow>
   </VCardText> 
-</VCard>
-<VForm ref="form" @submit.prevent="submitHandler">
+  </VCard>
+  <VForm ref="form" @submit.prevent="submitHandler">
   <VCard class="mb-6">
     <VCardItem>
       <VCardTitle>
@@ -386,7 +397,7 @@ const submitHandler = async () => {
           <VCol cols="12" lg="6" md="6" sm="12">
             <AppSelect
               @update:model-value="activityStore.updateForm({ reason_qty_drop_id: $event })"
-              v-model="activityStore.activityReport.reason_qty_drop"
+              v-model="activityStore.activityReport.reason_qty_drop_id"
               :items="activityStore.reasonQtyDropOptions"
               label="Reason Quantity Drop"
               placeholder="Reason Quantity Drop"
@@ -397,7 +408,7 @@ const submitHandler = async () => {
           </VCol>
           <VCol cols="12" lg="6" md="6" sm="12">
             <AppSelect              
-              v-model="activityStore.activityReport.activity_purpose"
+              v-model="activityStore.activityReport.activity_purpose_id"
               @update:model-value="activityStore.updateForm({ activity_purpose_id: $event })"
               :items="activityStore.activityPuposesOptions"
               label="Activity Purpose"
@@ -415,12 +426,14 @@ const submitHandler = async () => {
               closable-chips
               multiple
               @update:model-value="activityStore.updateForm({ products: $event })"
-              v-model="activityStore.activityReport.products"
+              v-model="selectedProducts"
               :items="productStore.products"
               label="Product Offering"
               placeholder="Product Offering"
               clearable
               clear-icon="tabler-x"
+              item-title="ItemName"
+              item-value="ItemCode"              
               :rules="[requiredValidator]"
             />
           </VCol>
@@ -463,7 +476,7 @@ const submitHandler = async () => {
   </VCard>
   <VCard class="mb-6" title="Competitors" subtitle="Add Competitors">
    <VCardText>
-     <VRow v-for="(item, index) in competitors" :key="index">
+     <VRow v-for="(item, index) in activityStore.activityReport.competitors" :key="index">
       <VCol>
         <VRow>
            <VCol cols="12" lg="4" md="4" sm="12">           
@@ -477,7 +490,7 @@ const submitHandler = async () => {
               placeholder="Competitors"
               @update:model-value="val => {
                 if(!val) {
-                  competitors[index] = {name: '', address: '', product: '', price: undefined, qty: undefined}
+                  activityStore.activityReport.competitors[index] = {name: '', address: '', product: '', price: undefined, qty: undefined}
                 } else { 
                   onSelect(val, index)
                   isSelecting = true
@@ -488,27 +501,27 @@ const submitHandler = async () => {
                 isSelecting = false
               }"
               clearable
-              :rules="[v => !!(v && v.value || v.id) || 'Competitor is required']"
+              :rules="[v => !!(v && v.name) || 'Competitor is required']"
             />
             </VCol>
             <VCol cols="12" lg="4" md="4" sm="12">
               <VTextField
-                v-model="competitors[index].address"
+                v-model="activityStore.activityReport.competitors[index].address"
                 label="Address"
                 placeholder="Address"
                 @update:model-value="val => {
-                  competitors[index].address = val
+                  activityStore.activityReport.competitors[index].address = val
                 }"
                 :rules="[requiredValidator]"
               />
             </VCol>
             <VCol cols="12" lg="3" md="4" sm="12">
               <VTextField
-                v-model="competitors[index].product"
+                v-model="activityStore.activityReport.competitors[index].product"
                 label="Product"
                 placeholder="Product"
                 @update:model-value="val => {
-                  competitors[index].product = val
+                  activityStore.activityReport.competitors[index].product = val
                 }"
               />
             </VCol>
@@ -516,12 +529,12 @@ const submitHandler = async () => {
           <VRow>
             <VCol cols="12" lg="4" md="4" sm="12">              
               <CurrencyInput
-                :model-value="Number(competitors[index].price) ?? undefined"
+                :model-value="Number(activityStore.activityReport.competitors[index].price) ?? undefined"
                 label="Price"
                 placeholder="Price"
                 :options="{ locale: 'id-ID', currency: 'IDR'}"
                 @update:model-value="(val: number) => {
-                  competitors[index].price = val
+                  activityStore.activityReport.competitors[index].price = val
                 }"
                 :rules="[(val:number) => regexValidator(val, /^Rp\s?\d{1,3}(\.\d{3})*$/)]"
 
@@ -529,28 +542,32 @@ const submitHandler = async () => {
             </VCol>
             <VCol cols="12" lg="4" md="4" sm="12">
               <VTextField
-                :model-value="competitors[index].qty ?? undefined"
+                :model-value="activityStore.activityReport.competitors[index].qty ?? undefined"
                 hide-details="auto"
                 label="Quantity"
                 type="number"
                 placeholder="Quantity"          
-                @update:model-value="(val) => competitors[index].qty = Number(val)"
+                @update:model-value="(val) => activityStore.activityReport.competitors[index].qty = Number(val)"
               />
             </VCol>
             </VRow>
             <VRow>
-            <VCol cols="12" lg="6" md="6" sm="12" class="d-flex gap-2">
-               <VBtn icon color="error" @click="handleRemoveCompetitor(index)" v-if="competitors.length > 1" >
-                <VIcon icon="tabler-trash" />
-              </VBtn>
-              <VBtn icon color="success" @click="handleAddCompetitor" v-if="index === competitors.length - 1">
-                <VIcon icon="tabler-plus" /> 
-              </VBtn>
-             
-            </VCol>
+              <VCol cols="12" lg="6" md="6" sm="12" class="d-flex gap-2">
+                <VBtn icon color="error" @click="handleRemoveCompetitor(index)" v-if="shouldShowRemoveButton" >
+                  <VIcon icon="tabler-trash" />
+                </VBtn>
+                <VBtn icon color="success" @click="handleAddCompetitor" v-if="index === activityStore.activityReport.competitors.length - 1">
+                  <VIcon icon="tabler-plus" /> 
+                </VBtn>
+              </VCol>             
             </VRow>
         </VCol>
-     </VRow>
+    </VRow>
+    <template v-if="activityStore.activityReport.competitors.length === 0">
+      <VBtn icon color="success" @click="handleAddCompetitor">
+        <VIcon icon="tabler-plus" />
+      </VBtn>
+    </template>
    </VCardText>
     <VCardText>
       <VRow>
@@ -564,14 +581,3 @@ const submitHandler = async () => {
   </VCard>
 </VForm>
 </template>
-<style>
-.app-autocomplete .v-field__input {
-  min-block-size: 135px !important;
-}
-
-@media (max-width: 768px) {
-  .app-autocomplete .v-field__input {
-    min-block-size: unset !important;
-  }
-}
-</style>

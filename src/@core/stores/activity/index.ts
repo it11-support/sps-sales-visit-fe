@@ -50,7 +50,7 @@ export const useActivityStore = defineStore('activity', {
       activity_type_id: undefined,
     } as Filters,
     activityReport: {
-      products_offering: [] as IProduct[],
+      products: [] as IProduct[],
       customer: {} as ICustomerData,
       assignment_id: 0,
       assignment: {} as IActivity,
@@ -101,6 +101,9 @@ export const useActivityStore = defineStore('activity', {
         return
       }
       this.report = data.value.data
+      this.activityReport = data.value.data
+
+      console.log(this.report.products)
       this.loadingAssignment = false
     },
     async updateActivityStatus(id: number, status: string) {
@@ -170,6 +173,23 @@ export const useActivityStore = defineStore('activity', {
       }
       this.loading = false
     },
+    async updateReport(id: number) {
+      this.loading = true
+      const payload = JSON.stringify(this.activityReport);
+      const { data, error } = await useApi<any>(`activity/report/${id}`, {
+        method: 'PUT',
+        body: payload,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      if (error.value) {
+        console.error('Error fetching activity detail:', error.value)
+        this.loading = false
+        return
+      }
+      this.loading = false
+    },
      updateFilters(newFilters: Partial<Filters>) {
       this.filters = {
         ...this.filters,
@@ -213,7 +233,9 @@ export const useActivityStore = defineStore('activity', {
       }))
       this.loading = false
     },
+    
     updateForm(form: Partial<IActivityReport>) {
+      console.log(form)
       this.activityReport = {
         ...this.activityReport,
         ...form

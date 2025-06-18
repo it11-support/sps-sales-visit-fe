@@ -18,3 +18,16 @@ export interface ISalesInvoice {
   dwh_updated_at: Date;
   customer?: ICustomerData
 }
+
+export interface ISalesSummary {
+  month: string
+  active_customers: number
+  mom_active_customers: number
+  mom_revenue: number
+  revenue: number
+  volume: number
+  mom_volume: number
+  yoy_active_customers: number
+  yoy_revenue: number
+  yoy_volume: number
+}
