@@ -6,9 +6,10 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-
+const baseDomain = import.meta.env.VITE_BASE_DOMAIN
 const activityStore = useActivityStore()
 const statStore = useStatisticStore()
+
 onMounted(async () => {
   await activityStore.fetchActivityReport(props.assignmentId)
   await statStore.fetchMoMSummary(activityStore.report.assignment.customer_id)
@@ -66,6 +67,16 @@ const missingItems = computed(() => {
   return missing
 })
 
+const viewMap = computed(() => {
+  if(!activityStore.report.assignment) return
+
+  const {lat, lng} = activityStore.report.assignment  
+  return `https://www.google.com/maps?q=${lat},${lng}`
+})
+
+const handleViewOnMap = () => {
+  window.open(viewMap.value, '_blank')
+}
 </script>
 
 <template>
@@ -81,7 +92,7 @@ const missingItems = computed(() => {
               </VCol>
           </VRow>
           <VRow>
-            <VCol cols="6" md="6" sm="12" lg="6">
+            <VCol cols="12" md="6" sm="12" lg="6">
               <VCardText>
                 <VRow>
                   <VCol class="text-no-wrap" cols="12">
@@ -94,30 +105,47 @@ const missingItems = computed(() => {
                       />
                     </template>
                     <VListItem v-if="!activityStore.loadingAssignment">
-                      <VListItemTitle class="d-flex">
-                        <span class="me-4" style="min-inline-size: 120px;">Sales Person</span>
+                      <VListItemTitle class="d-flex mb-1">
+                        <span class="me-2" style="min-inline-size: 120px;">Sales Person</span>
                         <span>{{ activityStore.report?.assignment?.assigned_to?.sales_person?.SlpName }}</span>
                       </VListItemTitle>
 
-                      <VListItemTitle class="d-flex">
-                        <span class="me-4" style="min-inline-size: 120px;">Outlet Name</span>
+                      <VListItemTitle class="d-flex mb-1">
+                        <span class="me-2" style="min-inline-size: 120px;">Outlet Name</span>
                         <span>{{ activityStore.report?.assignment?.customer?.CardName }}</span>
                       </VListItemTitle>
 
-                      <VListItemTitle class="d-flex">
-                        <span class="me-4" style="min-inline-size: 120px;">Outlet PIC</span>
+                      <VListItemTitle class="d-flex"> <VListItemTitle class="d-flex"></VListItemTitle>
+                        <span class="me-2" style="min-inline-size: 120px;">Outlet PIC</span>
                         <span>{{ activityStore.report?.assignment?.customer?.CntctPrsn }}</span>
                       </VListItemTitle>
 
                       <VListItemTitle class="d-flex">
-                        <span class="me-4" style="min-inline-size: 120px;">Status</span>
+                        <span class="me-2" style="min-inline-size: 120px;">Status</span>
                         <span>{{ activityStore.report.assignment?.customer?.NonActive === "Y" ? 'Inactive' : 'Active' }}</span>
                       </VListItemTitle>
                     </VListItem>
+                   
+                  </VCol>
+                  <VCol class="text-no-wrap" cols="12">
+                    <VImg                      
+                      :width="$vuetify.display.smAndDown ? 200 : 400"
+                      aspect-ratio="4/3"
+                      cover
+                      :src="`${baseDomain}/storage/${activityStore.report?.assignment?.image_path}`"
+                    />
+                  </VCol>
+                  <VCol class="text-no-wrap" cols="12">
+                    <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
+                    <span>{{ formatDate(activityStore.report.assignment?.check_in as unknown as  string, true ) }}</span>
+                  </VCol>
+                  <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
+                    <VBtn color="success" size="small" @click="handleViewOnMap">
+                      <VIcon icon="tabler-map-2 mr-2" /> View Location
+                    </VBtn>
                   </VCol>
                 </VRow>
-              </VCardText>              
-            
+              </VCardText>
               <VCardText v-if="missingItems.length">
                 <VRow class="print-row mb-2">
                   <VCol class="text-no-wrap" cols="12">
@@ -195,7 +223,7 @@ const missingItems = computed(() => {
               </VCardText>
               <VCardText>            
                 <VRow class="print-row mb-2">
-                  <VCol class="text-no-wrap" cols="12">
+                  <VCol class="text-no-wrap" cols="12" sm="12" md="6" lg="6">
                     <h6 class="text-h6 mb-4">
                       PRODUCT ISSUE
                     </h6>
@@ -257,7 +285,7 @@ const missingItems = computed(() => {
                 </VRow>
               </VCardText>
             </VCol>
-            <VCol cols="6" md="6" sm="12" lg="6">
+            <VCol cols="12" md="6" sm="12" lg="6">
               <VCardText>
                 <VRow class="print-row mb-2">
                   <VCol class="text-no-wrap" cols="12">

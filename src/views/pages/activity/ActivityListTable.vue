@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useActivityStore, useAuthStore } from '@/@core/stores';
+import CheckIn from './CheckIn.vue';
 
 const activityStore = useActivityStore()
 const authStore = useAuthStore()
@@ -9,6 +10,7 @@ const searchQuery = ref('')
 const salesPersonId = computed(() => user.value.sales_person?.SlpCode)
 const debouncedQuery = useDebounce(searchQuery, 400)
 const router = useRouter()
+const showCheckIn = reactive<Record<number, boolean>>({})
 
 const STATUS = {
   ASSIGNED: 'assigned',
@@ -17,6 +19,7 @@ const STATUS = {
   COMPLETED: 'completed',
   CANCELLED: 'cancelled',
   MISSED: 'misssed',
+  DRAFT: 'draft'
 }
 
 const headers = computed(() => {
@@ -33,7 +36,6 @@ const headers = computed(() => {
   }
   return headers
 })
-
 
 
 onMounted(async () => {
@@ -73,6 +75,8 @@ const getStatus = (status: string) => {
         return {color: 'error', content: 'Cancelled'}
       case STATUS.MISSED:
         return {color: 'error', content: 'Missed'}
+      case STATUS.DRAFT:
+        return {color: 'warning', content: 'Draft'}
     }
 }
 
@@ -186,7 +190,7 @@ const handleClickEdit = (id: number) => {
       multi-sort
     >
       <template #item.actions="{ item }">
-        <div class="d-flex justify-between gap-x-4" v-if="item.status === STATUS.ASSIGNED">     
+        <div class="d-flex justify-between gap-x-4" v-if="item.status === STATUS.ASSIGNED && !isAdmin">     
           <VBtn 
             :key="item.id" 
             :loading="activityStore.loadingId === item.id" 
@@ -195,12 +199,25 @@ const handleClickEdit = (id: number) => {
             variant="tonal"
             color="primary"
             prepend-icon="tabler-play"
-            >
+          >
             Start
-          </VBtn>
+          </VBtn>        
         </div>
         <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.ONGOING">
-          <VBtn 
+           <VBtn
+            v-if="!isAdmin && item.image_path  === null"
+            :key="item.id" 
+            :loading="activityStore.loadingId === item.id" 
+            @click="showCheckIn[item.id] = true" 
+            size="small"
+            variant="tonal"
+            color="primary"
+            prepend-icon="tabler-camera"
+            >
+            Take Photo
+          </VBtn>
+          <VBtn
+            v-if="!isAdmin"
             :key="item.id" 
             :loading="activityStore.loadingId === item.id" 
             @click="handleClickReport(item.id)" 
@@ -224,7 +241,8 @@ const handleClickEdit = (id: number) => {
             >
             View Report
           </VBtn>
-          <VBtn 
+          <VBtn
+            v-if="!isAdmin"
             :key="item.id" 
             :loading="activityStore.loadingId === item.id" 
             @click="handleClickEdit(item.id)"
@@ -236,6 +254,21 @@ const handleClickEdit = (id: number) => {
             Edit Report
           </VBtn>
         </div>
+        <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.DRAFT">
+          <VBtn
+            v-if="!isAdmin"
+            :key="item.id" 
+            :loading="activityStore.loadingId === item.id" 
+            @click="handleClickEdit(item.id)"
+            size="small"
+            variant="tonal"
+            color="primary"
+            prepend-icon="tabler-edit"
+            >
+            Edit Report
+          </VBtn>
+        </div>
+       <CheckIn :assignment-id="item.id" v-model:show="showCheckIn[item.id]"/>
       </template>
       <template #item.assigned_to.sales_person="{ item }">
         <div class="d-flex align-center gap-x-4">
@@ -286,6 +319,7 @@ const handleClickEdit = (id: number) => {
           </div>
         </div>
       </template>
+      
     </VDataTableServer>
-  </VCard>
+  </VCard>  
 </template>

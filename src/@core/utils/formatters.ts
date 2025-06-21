@@ -22,14 +22,32 @@ export const kFormatter = (num: number) => {
  * @param {string} value date to format
  * @param {Intl.DateTimeFormatOptions} formatting Intl object to format with
  */
-export const formatDate = (value: string | Date, formatting: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' }) => {
-  if (!value)
-    return value
+export const formatDate = (
+  value: string | Date,
+  withTime: boolean = false,
+  formatting: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  }
+) => {
+  if (!value) return ''
 
-  return new Intl.DateTimeFormat('en-US', formatting).format(new Date(value))
+  const options: Intl.DateTimeFormatOptions = { ...formatting }
+
+  if (withTime) {
+    options.hour = '2-digit'
+    options.minute = '2-digit'
+    options.hour12 = false
+  }
+
+  return new Intl.DateTimeFormat('en-US', options).format(new Date(value))
 }
 
-export const formatFullDateWithSuffix = (value: string | Date): string => {
+export const formatFullDateWithSuffix = (
+  value: string | Date,
+  withTime = false
+): string => {
   if (!value) return ''
 
   const date = new Date(value)
@@ -51,8 +69,17 @@ export const formatFullDateWithSuffix = (value: string | Date): string => {
 
   const dayWithSuffix = getOrdinalSuffix(day)
 
-  return `${weekday}, ${dayWithSuffix} ${month} ${year}`
+  let result = `${weekday}, ${dayWithSuffix} ${month} ${year}`
+
+  if (withTime) {
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    result += ` ${hours}:${minutes}`
+  }
+
+  return result
 }
+
 
 
 /**

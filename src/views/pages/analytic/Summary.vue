@@ -772,22 +772,39 @@ const chartConfigs = computed(() => {
         </div>
       </VSlideGroupItem>
     </VSlideGroup>
-    <VueApexCharts
-      ref="refVueApexChart"
-      :key="currentTab"
-      :options="chartConfigs[Number(currentTab)].chartOptions"
-      :series="chartConfigs[Number(currentTab)].series"
-      height="400"
-      class="mt-3"
-    />
-    <VueApexCharts
-      ref="yoyRefVueApexChart"
-      :key="currentTab"
-      :options="chartConfigs[Number(currentTab)].yoyChartOptions"
-      :series="chartConfigs[Number(currentTab)].yoySeries"
-      height="400"
-      width="50%"
-      class="mt-3"
-    />
+    <div class="chart-scroll-wrapper">
+      <div class="chart-column">
+        <VueApexCharts
+          ref="refVueApexChart"
+          :key="currentTab"
+          :options="chartConfigs[Number(currentTab)].chartOptions"
+          :series="chartConfigs[Number(currentTab)].series"
+          height="400"
+          width="800"
+        />
+        <VueApexCharts
+          ref="yoyRefVueApexChart"
+          :key="'yoy-' + currentTab"
+          :options="chartConfigs[Number(currentTab)].yoyChartOptions"
+          :series="chartConfigs[Number(currentTab)].yoySeries"
+          height="400"
+          width="400"
+          class="mt-6"
+        />
+      </div>
+    </div>
   </template>
 </template>
+<style lang="css" scoped>
+.chart-scroll-wrapper {
+  overflow-x: auto;
+  padding-block-end: 1rem;
+}
+
+.chart-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-inline-size: max-content;
+}
+</style>

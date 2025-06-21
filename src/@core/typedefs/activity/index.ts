@@ -29,6 +29,12 @@ export interface IActivity {
   status: string
   customer: ICustomerData 
   activity: IActivityType
+  lat?: number
+  lng?: number
+  accuracy?: number
+  check_in?: Date
+  check_out?: Date
+  image_path?: string
 }
 
 export interface IActivityReport {

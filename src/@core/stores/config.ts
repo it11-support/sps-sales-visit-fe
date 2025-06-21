@@ -6,7 +6,7 @@ import { useTheme } from 'vuetify'
 // SECTION Store
 export const useConfigStore = defineStore('config', () => {
 
-  const overlay = cookieRef('overlay', false)
+  const overlay = ref(false)
   const loading = cookieRef('loading', false)
   const toggleLoading = () => {
     loading.value = !loading.value
@@ -15,8 +15,6 @@ export const useConfigStore = defineStore('config', () => {
   const toggleOverlay = () => {
     overlay.value = !overlay.value
   }
-
-
 
   const salesPersonId = () => {
     const userData = useCookie('userData') as { value: { sales_person: { SlpCode: number } } };

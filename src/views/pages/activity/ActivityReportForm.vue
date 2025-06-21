@@ -27,6 +27,8 @@ const isSelecting = ref(false)
 const form = ref<VForm>()
 const configStore = useConfigStore()
 const router = useRouter()
+const isDraft = ref(false)
+
 
 const loadAll = async () => {
   await activityStore.fetchActivityById(props.assignmentId)
@@ -171,14 +173,40 @@ const submitHandler = async () => {
     if (validation) {
       const { valid, errors } = validation
       if (!valid) {
+        configStore.overlay = false
         console.log(errors)
         return
       }
     }
-    await activityStore.storeActivityReport().then(() => {
+    await activityStore.storeActivityReport(false).then(() => {
       router.push({ path: createUrl(`/activity/list`).value })
     })
   } catch (error) {
+    configStore.overlay = false
+    console.log(error)
+  }
+  configStore.overlay = false
+}
+
+const handleSaveAsDraft = async () => {
+  isDraft.value = true
+  configStore.overlay = true
+  try {
+    const validation = await form.value?.validate()
+    if (validation) {
+      const { valid, errors } = validation
+      if (!valid) {
+        configStore.overlay = false
+        console.log(errors)
+        return
+      }
+      await activityStore.storeActivityReport(true).then(() => {
+        router.push({ path: createUrl(`/activity/list`).value })
+      })
+    }
+    
+  } catch (error) {
+    configStore.overlay = false
     console.log(error)
   }
   configStore.overlay = false
@@ -421,7 +449,9 @@ const submitHandler = async () => {
               placeholder="Product Offering"
               clearable
               clear-icon="tabler-x"
-              :rules="[requiredValidator]"
+              item-title="ItemName"
+              item-value="ItemCode"
+              :rules="isDraft ? [] : [requiredValidator]"
             />
           </VCol>
           <VCol cols="12" lg="6" md="6" sm="12">
@@ -432,7 +462,7 @@ const submitHandler = async () => {
               placeholder="Product Issues"
               clearable
               clear-icon="tabler-x"
-              :rules="[requiredValidator]"
+              :rules="isDraft ? [] : [requiredValidator]"
             />
           </VCol>
         </VRow>
@@ -445,7 +475,7 @@ const submitHandler = async () => {
               placeholder="Next actions"
               clearable
               clear-icon="tabler-x"
-              :rules="[requiredValidator]"
+              :rules="isDraft ? [] : [requiredValidator]"
             />
           </VCol>
           <VCol cols="12" lg="6" md="6" sm="12">
@@ -488,7 +518,7 @@ const submitHandler = async () => {
                 isSelecting = false
               }"
               clearable
-              :rules="[v => !!(v && v.value || v.id) || 'Competitor is required']"
+              :rules="isDraft ? [] : [v => !!(v && v.value || v.id) || 'Competitor is required']"
             />
             </VCol>
             <VCol cols="12" lg="4" md="4" sm="12">
@@ -499,7 +529,7 @@ const submitHandler = async () => {
                 @update:model-value="val => {
                   competitors[index].address = val
                 }"
-                :rules="[requiredValidator]"
+                :rules="isDraft ? [] : [requiredValidator]"
               />
             </VCol>
             <VCol cols="12" lg="3" md="4" sm="12">
@@ -554,11 +584,14 @@ const submitHandler = async () => {
    </VCardText>
     <VCardText>
       <VRow>
-        <VCol cols="12" lg="6" md="6" sm="12">
+        <VCol cols="12" lg="6" md="6" sm="12" class="d-flex gap-2">
+          <VBtn color="warning" type="button" @click="handleSaveAsDraft">
+            Save As Draft <VIcon end icon="tabler-pencil-check" />
+          </VBtn>
           <VBtn color="success" type="submit">
             Submit Report <VIcon end icon="tabler-device-floppy" />
           </VBtn>
-        </VCol>
+        </VCol>        
       </VRow>
     </VCardText>
   </VCard>

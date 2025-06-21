@@ -155,9 +155,15 @@ export const useActivityStore = defineStore('activity', {
       }))
       this.loading = false
     },
-    async storeActivityReport() {
+    async storeActivityReport(isDraft = false) {
       this.loading = true
-      const payload = JSON.stringify(this.activityReport);
+      
+      const reportPayload = {
+        ...this.activityReport,
+        status: isDraft ? 'draft' : 'submitted'
+      }
+
+      const payload = JSON.stringify(reportPayload);
 
       const { data, error } = await useApi<any>(`activity/report`, {
         method: 'POST',
@@ -190,12 +196,28 @@ export const useActivityStore = defineStore('activity', {
       }
       this.loading = false
     },
-     updateFilters(newFilters: Partial<Filters>) {
+    async photoUpload(formData: FormData): Promise<boolean> {
+      try {
+        const { data, error } = await useApi<any>('activity/photoUpload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (error.value) {
+          console.error('Check-in error:', error.value);
+          return false;
+        }
+        return true;
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        return false;
+      }
+    },
+    updateFilters(newFilters: Partial<Filters>) {
       this.filters = {
         ...this.filters,
         ...newFilters
       }
-      
+        
       this.fetchActivities()      
       console.log(newFilters)
     },
@@ -205,7 +227,7 @@ export const useActivityStore = defineStore('activity', {
       })
     },
     setPage(page: number) {
-     this.updateFilters({page})
+    this.updateFilters({page})
     },
     setPerpage(perpage: number) {
       this.pagination.per_page = perpage
@@ -225,7 +247,7 @@ export const useActivityStore = defineStore('activity', {
         console.error('Error fetching sales person options:', error.value)
         return
       }
-  
+
       console.log(salesPersonsData.value.data.salesPersons)
       this.salesPersonsOptions = salesPersonsData.value.data.salesPersons.map((sales: any) => ({
         title: sales.SlpName,
