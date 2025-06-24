@@ -54,8 +54,8 @@ export const useActivityStore = defineStore('activity', {
       customer: {} as ICustomerData,
       assignment_id: 0,
       assignment: {} as IActivity,
-      reason_qty_drop_id: 0,
-      activity_purpose_id: 0,
+      reason_qty_drop_id: undefined,
+      activity_purpose_id: undefined,
       non_active_product: '',
       product_issue: '',
       next_action: '',
@@ -102,8 +102,6 @@ export const useActivityStore = defineStore('activity', {
       }
       this.report = data.value.data
       this.activityReport = data.value.data
-
-      console.log(this.report.products)
       this.loadingAssignment = false
     },
     async updateActivityStatus(id: number, status: string) {
@@ -114,8 +112,16 @@ export const useActivityStore = defineStore('activity', {
           status
         })),
       })
+      this.fetchActivityById(id.toString())
       this.loadingId = null
-      this.fetchActivities()
+    },
+    async checkOut(id: number) {
+      this.loadingId = id
+      await $api(`/activity/check-out/${id}`, {
+        method: 'PUT',
+      })
+      this.loadingId = null
+      this.fetchActivityById(id.toString())
     },
     async fetchAllOptions() {
       this.loading = true
@@ -160,7 +166,7 @@ export const useActivityStore = defineStore('activity', {
       
       const reportPayload = {
         ...this.activityReport,
-        status: isDraft ? 'draft' : 'submitted'
+        status: isDraft ? 'draft' : 'completed'
       }
 
       const payload = JSON.stringify(reportPayload);
@@ -179,9 +185,13 @@ export const useActivityStore = defineStore('activity', {
       }
       this.loading = false
     },
-    async updateReport(id: number) {
+    async updateReport(id: number, final: boolean = false) {
       this.loading = true
-      const payload = JSON.stringify(this.activityReport);
+      const reportPayload = {
+        ...this.activityReport,
+        status: final ? 'completed' : 'draft'
+      }
+      const payload = JSON.stringify(reportPayload);
       const { data, error } = await useApi<any>(`activity/report/${id}`, {
         method: 'PUT',
         body: payload,

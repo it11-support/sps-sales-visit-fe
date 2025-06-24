@@ -18,7 +18,7 @@ export interface IActivityType {
   name: string
 }
 
-export interface IActivity {
+export interface IActivity extends FormData {
   id: number
   assigned_by: IUser
   assigned_to: IUser
@@ -32,9 +32,10 @@ export interface IActivity {
   lat?: number
   lng?: number
   accuracy?: number
-  check_in?: Date
-  check_out?: Date
+  check_in?: string
+  check_out?: string
   image_path?: string
+  file?: File
 }
 
 export interface IActivityReport {
@@ -42,8 +43,8 @@ export interface IActivityReport {
   customer: ICustomerData
   assignment_id: number
   assignment: IActivity
-  reason_qty_drop_id: number
-  activity_purpose_id: number
+  reason_qty_drop_id?: number
+  activity_purpose_id?: number
   reason_qty_drop?: IReasonQtyDrop
   non_active_product?: string
   product_issue?: string

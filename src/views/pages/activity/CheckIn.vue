@@ -4,7 +4,7 @@ import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
 
 const modalProps = defineProps<{
   show: boolean
-  assignmentId: number
+  assignmentId: number 
 }>()
 
 const emit = defineEmits<{
@@ -77,7 +77,6 @@ const checkCameraSupport = async (): Promise<boolean> => {
   }
 }
 
-
 const getLocation = async (): Promise<GeolocationPosition> => {
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(pos => {
@@ -142,6 +141,7 @@ const handleSubmit = async () => {
   configStore.overlay = true
 
   try {
+    await activityStore.storeActivityReport(true)
     const blob = dataUrlToBlob(canvas.value.toDataURL('image/jpeg'))
     const file = new File([blob], `${Date.now()}.jpg`, { type: 'image/jpeg' })
     const body = new FormData()
@@ -155,7 +155,8 @@ const handleSubmit = async () => {
     const result = await activityStore.photoUpload(body)
     if (result) {
       toggleModal()
-      await activityStore.fetchActivities()
+      await activityStore.fetchActivityReport(modalProps.assignmentId.toString())
+      await activityStore.fetchActivityById(modalProps.assignmentId.toString())
     }
   } catch (err) {
     console.error(err)

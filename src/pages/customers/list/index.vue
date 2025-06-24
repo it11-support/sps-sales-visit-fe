@@ -119,16 +119,16 @@ const deleteCustomer = async (id: string) => {
 
 }
 
-watch(() =>isAdmin.value, (val) => {
-  if(val) {
-    customerStore.updateFilters({ sales_person_id: undefined })
-  } else {
-    const spId = user.value.sales_person?.SlpCode
-    if (spId) {
-      customerStore.updateFilters({ sales_person_id: spId })
-    }
-  }
-}, { immediate: true })
+// watch(() =>isAdmin.value, (val) => {
+//   if(val) {
+//     customerStore.updateFilters({ sales_person_id: undefined })
+//   } else {
+//     const spId = user.value.sales_person?.SlpCode
+//     if (spId) {
+//       customerStore.updateFilters({ sales_person_id: spId })
+//     }
+//   }
+// }, { immediate: true })
 </script>
 
 <template>

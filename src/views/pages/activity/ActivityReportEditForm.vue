@@ -2,6 +2,7 @@
 import { useActivityStore, useConfigStore, useCustomerStore, useProductStore, useStatisticStore } from '@/@core/stores';
 import { ICompetitor, IProduct } from '@/@core/typedefs';
 import { VForm } from 'vuetify/components/VForm';
+import CheckIn from './CheckIn.vue';
 
 interface Props {
   assignmentId: string  
@@ -16,6 +17,8 @@ const customerStore = useCustomerStore()
 const statStore = useStatisticStore()
 const configStore = useConfigStore()
 const productStore = useProductStore()
+const isDraft = ref(false)
+const showCheckIn = ref(false)
 
 const competitors = ref<ICompetitor[]>([
   {name: '', address: '', product: '', price: undefined, qty: undefined},
@@ -116,7 +119,7 @@ const submitHandler = async () => {
         return
       }
     }
-    await activityStore.updateReport(props.assignmentId as unknown as number).then(() => {
+    await activityStore.updateReport(props.assignmentId as unknown as number, true).then(() => {
       router.push({ path: createUrl(`/activity/list`).value })
     })
   } catch (error) {
@@ -193,6 +196,56 @@ const shouldShowRemoveButton = (index: number) => {
   return !!hasValue;
 }
 
+const handleSaveAsDraft = async () => {
+  isDraft.value = true
+  configStore.overlay = true
+  try {
+    const validation = await form.value?.validate()
+    if (validation) {
+      const { valid, errors } = validation
+      if (!valid) {
+        configStore.overlay = false
+        console.log(errors)
+        const firstError = Object.keys(errors)[0]
+        console.log(firstError)
+        return
+      }
+      await activityStore.updateReport(props.assignmentId as unknown as number, false).then(() => {
+        activityStore.fetchActivityById(props.assignmentId)
+      })
+    }
+    
+  } catch (error) {
+    configStore.overlay = false
+    console.log(error)
+  }
+  configStore.overlay = false
+}
+const handleBackToList = () => {
+  router.push({ path: createUrl(`/activity/list`).value })
+}
+
+const handleCheckOut = async() => {
+  await activityStore.updateReport(props.assignmentId as unknown as number, false).then(async() => {
+     await activityStore.checkOut(Number(props.assignmentId))
+  }) 
+}
+
+const baseDomain = import.meta.env.VITE_BASE_DOMAIN
+
+const viewMap = computed(() => {
+  if(!activityStore.report.assignment) return
+
+  const {lat, lng} = activityStore.report.assignment
+
+  if(!lat || !lng) return
+
+  return `https://www.google.com/maps?q=${lat},${lng}`
+})
+
+const handleViewOnMap = () => {
+  window.open(viewMap.value, '_blank')
+}
 
 </script>
 
@@ -434,7 +487,7 @@ const shouldShowRemoveButton = (index: number) => {
               clear-icon="tabler-x"
               item-title="ItemName"
               item-value="ItemCode"              
-              :rules="[requiredValidator]"
+            
             />
           </VCol>
           <VCol cols="12" lg="6" md="6" sm="12">
@@ -445,7 +498,7 @@ const shouldShowRemoveButton = (index: number) => {
               placeholder="Product Issues"
               clearable
               clear-icon="tabler-x"
-              :rules="[requiredValidator]"
+            
             />
           </VCol>
         </VRow>
@@ -458,7 +511,6 @@ const shouldShowRemoveButton = (index: number) => {
               placeholder="Next actions"
               clearable
               clear-icon="tabler-x"
-              :rules="[requiredValidator]"
             />
           </VCol>
           <VCol cols="12" lg="6" md="6" sm="12">
@@ -501,7 +553,7 @@ const shouldShowRemoveButton = (index: number) => {
                 isSelecting = false
               }"
               clearable
-              :rules="[v => !!(v && v.name) || 'Competitor is required']"
+              :rules="isDraft ? [] : [v => !!(v && v.value || v.id) || 'Competitor is required']"
             />
             </VCol>
             <VCol cols="12" lg="4" md="4" sm="12">
@@ -512,7 +564,7 @@ const shouldShowRemoveButton = (index: number) => {
                 @update:model-value="val => {
                   activityStore.activityReport.competitors[index].address = val
                 }"
-                :rules="[requiredValidator]"
+                :rules="isDraft ? [] : [requiredValidator]"
               />
             </VCol>
             <VCol cols="12" lg="3" md="4" sm="12">
@@ -568,16 +620,60 @@ const shouldShowRemoveButton = (index: number) => {
         <VIcon icon="tabler-plus" />
       </VBtn>
     </template>
-   </VCardText>
+    </VCardText>
+    <VCardText v-if="activityStore.report.assignment?.image_path?.length !== null">
+      <VCol class="text-no-wrap" cols="12">
+        <VImg
+          :width="$vuetify.display.smAndDown ? 200 : 400"
+          aspect-ratio="4/3"
+          cover
+          :src="`${baseDomain}/storage/${activityStore.report?.assignment?.image_path}`"
+        />
+      </VCol>
+      <VCol class="text-no-wrap" cols="12">
+        <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
+        <span>{{ formatDate(activityStore.report.assignment?.check_in as unknown as  string, true ) }}</span>
+      </VCol>
+      <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
+        <VBtn color="success" size="small" @click="handleViewOnMap">
+          <VIcon icon="tabler-map-2 mr-2" /> View Location
+        </VBtn>
+      </VCol>
+    </VCardText> 
     <VCardText>
-      <VRow>
-        <VCol cols="12" lg="6" md="6" sm="12">
-          <VBtn color="success" type="submit">
-            Submit Report <VIcon end icon="tabler-device-floppy" />
-          </VBtn>
-        </VCol>
+    <VRow class="flex-wrap">
+      <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start">
+        <VBtn color="warning" type="button" @click="handleBackToList">
+          <VIcon end icon="tabler-arrow-big-left" class="mr-1"/> Back To List 
+        </VBtn>
+      </VCol>
+      <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" v-if="activityStore.activity.status !== 'completed'">
+        <VBtn color="warning" type="button" @click="handleSaveAsDraft">
+          Save As Draft <VIcon end icon="tabler-pencil-check" />
+        </VBtn>
+      </VCol>
+      <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" v-if="activityStore.activity.image_path === null">
+        <VBtn color="warning" type="button" @click="showCheckIn = true">
+          Take Photo <VIcon end icon="tabler-camera" />
+        </VBtn>
+      </VCol>
+      <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start"
+        :loading="activityStore.loadingId === Number(props.assignmentId)" 
+       v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out === null">
+        <VBtn color="success" type="button" @click="handleCheckOut" :loading="activityStore.loadingId === Number(props.assignmentId)">
+          Check Out <VIcon end icon="tabler-home-check" />
+        </VBtn>
+      </VCol>      
+      <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" 
+        v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out !== null && activityStore.activity.status !== 'completed'">
+        <VBtn color="success" type="submit">
+          Submit Report <VIcon end icon="tabler-device-floppy" />
+        </VBtn>
+      </VCol>
       </VRow>
     </VCardText>
   </VCard>
 </VForm>
+<CheckIn :show="showCheckIn" :assignmentId="Number(props.assignmentId)" @update:show="showCheckIn = $event"/>
+
 </template>

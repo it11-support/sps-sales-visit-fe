@@ -4,6 +4,7 @@ import { useActivityStore, useConfigStore, useCustomerStore, useProductStore, us
 import { ICompetitor } from '@/@core/typedefs';
 import { nextTick } from 'vue';
 import { VForm } from 'vuetify/components';
+import CheckIn from './CheckIn.vue';
 
 interface Props {
   assignmentId: string  
@@ -28,7 +29,7 @@ const form = ref<VForm>()
 const configStore = useConfigStore()
 const router = useRouter()
 const isDraft = ref(false)
-
+const showCheckIn = ref(false)
 
 const loadAll = async () => {
   await activityStore.fetchActivityById(props.assignmentId)
@@ -173,16 +174,15 @@ const submitHandler = async () => {
     if (validation) {
       const { valid, errors } = validation
       if (!valid) {
-        configStore.overlay = false
         console.log(errors)
+        configStore.overlay = false
         return
       }
     }
-    await activityStore.storeActivityReport(false).then(() => {
+    await activityStore.updateReport(props.assignmentId as unknown as number, true).then(() => {
       router.push({ path: createUrl(`/activity/list`).value })
     })
   } catch (error) {
-    configStore.overlay = false
     console.log(error)
   }
   configStore.overlay = false
@@ -197,11 +197,17 @@ const handleSaveAsDraft = async () => {
       const { valid, errors } = validation
       if (!valid) {
         configStore.overlay = false
-        console.log(errors)
+        if(errors) {
+          const firstError = Object.values(errors)[0]
+          const el = document.getElementById(firstError.id as string)
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }
         return
       }
       await activityStore.storeActivityReport(true).then(() => {
-        router.push({ path: createUrl(`/activity/list`).value })
+        router.push({ path: createUrl(`/activity/${props.assignmentId}/report/edit`).value })
       })
     }
     
@@ -211,6 +217,32 @@ const handleSaveAsDraft = async () => {
   }
   configStore.overlay = false
 }
+const handleBackToList = () => {
+  router.push({ path: createUrl(`/activity/list`).value })
+} 
+
+const handleCheckOut = async() => {
+   await activityStore.updateReport(props.assignmentId as unknown as number, false).then(async() => {
+     await activityStore.checkOut(Number(props.assignmentId))
+  }) 
+}
+
+const baseDomain = import.meta.env.VITE_BASE_DOMAIN
+
+const viewMap = computed(() => {
+  if(!activityStore.activity) return
+
+  const {lat, lng} = activityStore.activity
+  
+  if(!lat || !lng) return
+
+  return `https://www.google.com/maps?q=${lat},${lng}`
+})
+
+const handleViewOnMap = () => {
+  window.open(viewMap.value, '_blank')
+}
+
 </script>
 
 <template>
@@ -582,20 +614,58 @@ const handleSaveAsDraft = async () => {
         </VCol>
      </VRow>
    </VCardText>
+    <VCardText v-if="activityStore.activity.image_path !== null">
+      <VCol class="text-no-wrap" cols="12">
+        <VImg
+          :width="$vuetify.display.smAndDown ? 200 : 400"
+          aspect-ratio="4/3"
+          cover
+          :src="`${baseDomain}/storage/${activityStore.activity.image_path}`"
+        />
+      </VCol>
+      <VCol class="text-no-wrap" cols="12" v-if="activityStore.activity.check_in">
+        <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
+        <span>{{ formatDate(activityStore.activity.check_in as unknown as  string, true ) }}</span>
+      </VCol>
+      <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
+        <VBtn color="success" size="small" @click="handleViewOnMap">
+          <VIcon icon="tabler-map-2 mr-2" /> View Location
+        </VBtn>
+      </VCol>
+    </VCardText> 
     <VCardText>
-      <VRow>
-        <VCol cols="12" lg="6" md="6" sm="12" class="d-flex gap-2">
+      <VRow class="flex-wrap">
+        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start">
+          <VBtn color="warning" type="button" @click="handleBackToList">
+            <VIcon end icon="tabler-arrow-big-left" class="mr-1"/> Back To List 
+          </VBtn>
+        </VCol>
+        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start">
           <VBtn color="warning" type="button" @click="handleSaveAsDraft">
             Save As Draft <VIcon end icon="tabler-pencil-check" />
           </VBtn>
+        </VCol>
+        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" v-if="activityStore.activity.image_path === null">
+          <VBtn color="warning" type="button" @click="showCheckIn = true">
+            Take Photo <VIcon end icon="tabler-camera" />
+          </VBtn>
+        </VCol>
+        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" :loading="activityStore.loadingId === Number(props.assignmentId)" v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out === null">
+          <VBtn color="success" type="button" @click="handleCheckOut">
+            Check Out <VIcon end icon="tabler-home-check" />
+          </VBtn>
+        </VCol>
+        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out !== null">
           <VBtn color="success" type="submit">
             Submit Report <VIcon end icon="tabler-device-floppy" />
           </VBtn>
-        </VCol>        
+        </VCol>
       </VRow>
     </VCardText>
   </VCard>
 </VForm>
+
+<CheckIn :show="showCheckIn" :assignmentId="Number(props.assignmentId)" @update:show="showCheckIn = $event" />
 </template>
 <style>
 .app-autocomplete .v-field__input {

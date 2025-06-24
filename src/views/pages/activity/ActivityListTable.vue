@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { useActivityStore, useAuthStore } from '@/@core/stores';
-import CheckIn from './CheckIn.vue';
 
 const activityStore = useActivityStore()
 const authStore = useAuthStore()
@@ -91,6 +90,11 @@ const handleClickViewReport = (id: number) => {
 const handleClickEdit = (id: number) => {
   router.push({ path: createUrl(`/activity/${id}/report/edit`).value })
 }
+
+const handleCheckIn = async(id: number) => {
+  await activityStore.updateActivityStatus(id, STATUS.ONGOING)
+  router.push({ path: createUrl(`/activity/${id}/report`).value })
+}
 </script>
 
 <template>
@@ -127,6 +131,7 @@ const handleClickEdit = (id: number) => {
               { title: 'Submitted', value: 'submitted' },
               { title: 'Completed', value: 'completed' },
               { title: 'Cancelled', value: 'cancelled' },
+              { title: 'Draft', value: 'draft' },
               { title: 'Overdue', value: 'misssed' },
             ]"
             clearable 
@@ -194,42 +199,16 @@ const handleClickEdit = (id: number) => {
           <VBtn 
             :key="item.id" 
             :loading="activityStore.loadingId === item.id" 
-            @click="activityStore.updateActivityStatus(item.id, STATUS.ONGOING)" 
+            @click="handleCheckIn(item.id)" 
             size="small"
             variant="tonal"
             color="primary"
             prepend-icon="tabler-play"
           >
-            Start
-          </VBtn>        
-        </div>
-        <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.ONGOING">
-           <VBtn
-            v-if="!isAdmin && item.image_path  === null"
-            :key="item.id" 
-            :loading="activityStore.loadingId === item.id" 
-            @click="showCheckIn[item.id] = true" 
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-camera"
-            >
-            Take Photo
-          </VBtn>
-          <VBtn
-            v-if="!isAdmin"
-            :key="item.id" 
-            :loading="activityStore.loadingId === item.id" 
-            @click="handleClickReport(item.id)" 
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-report"
-            >
-            Report
+            Check In
           </VBtn>
         </div>
-         <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.SUBMITTED">
+         <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.COMPLETED">
           <VBtn 
             :key="item.id" 
             :loading="activityStore.loadingId === item.id" 
@@ -240,7 +219,9 @@ const handleClickEdit = (id: number) => {
             prepend-icon="tabler-notes"
             >
             View Report
-          </VBtn>
+          </VBtn>         
+        </div>
+        <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.DRAFT || item.status === STATUS.ONGOING && !isAdmin">
           <VBtn
             v-if="!isAdmin"
             :key="item.id" 
@@ -254,21 +235,6 @@ const handleClickEdit = (id: number) => {
             Edit Report
           </VBtn>
         </div>
-        <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.DRAFT">
-          <VBtn
-            v-if="!isAdmin"
-            :key="item.id" 
-            :loading="activityStore.loadingId === item.id" 
-            @click="handleClickEdit(item.id)"
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-edit"
-            >
-            Edit Report
-          </VBtn>
-        </div>
-       <CheckIn :assignment-id="item.id" v-model:show="showCheckIn[item.id]"/>
       </template>
       <template #item.assigned_to.sales_person="{ item }">
         <div class="d-flex align-center gap-x-4">
