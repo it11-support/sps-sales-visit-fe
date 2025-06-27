@@ -136,9 +136,9 @@ const computedHeaders = computed(() => {
           </div>
 
           <!-- 👉 Export button -->
-          <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+          <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
             Export
-          </VBtn>
+          </VBtn> -->
         </div>
       </VCardText>
       <SalesInvoiceTable 

@@ -1,11 +1,11 @@
-import { breakpointsVuetify } from '@vueuse/core'
 import { AppContentLayoutNav, ContentWidth, FooterType, HorizontalNavType, NavbarType } from '@layouts/enums'
 import type { LayoutConfig } from '@layouts/types'
+import { breakpointsVuetify } from '@vueuse/core'
 
 export const layoutConfig: LayoutConfig = {
   app: {
-    title: 'my-layout',
-    logo: h('img', { src: '/src/assets/logo.svg' }),
+    title: import.meta.env.VITE_APP_TITLE || 'Visitrack',
+    logo: h('img', { src: '/src/assets/vt.svg' }),
     contentWidth: ContentWidth.Boxed,
     contentLayoutNav: AppContentLayoutNav.Vertical,
     overlayNavFromBreakpoint: breakpointsVuetify.md,

@@ -44,7 +44,6 @@ watch(searchQuery, (newVal) => {
 })
 
 watch(salesPersonModal, async(newVal) => {
-  console.log(newVal)
   newVal.show && newVal.type === 'link' && await updateUsersOptions()
 }, { deep: true })
 
@@ -112,12 +111,7 @@ const handleSalesPersonLink = async () => {
 
 <template>
   <section>
-    <VCard class="mb-6">
-      <VCardItem class="pb-4">
-        <VCardTitle>Filters</VCardTitle>
-      </VCardItem>
-      
-      <VDivider />
+    <VCard class="mb-6">       
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-3 d-flex gap-3">
           <AppSelect
@@ -140,13 +134,13 @@ const handleSalesPersonLink = async () => {
           </div>
 
           <!-- 👉 Export button -->
-          <VBtn
+          <!-- <VBtn
             variant="tonal"
             color="secondary"
             prepend-icon="tabler-upload"
           >
             Export
-          </VBtn>
+          </VBtn> -->
         </div>
       </VCardText>
       <VDivider />
@@ -185,13 +179,13 @@ const handleSalesPersonLink = async () => {
           </div>
         </template> 
 
-        <template #bottom>
+        <!-- <template #bottom>
           <TablePagination
             v-model:page="page"
             :items-per-page="itemsPerPage"
             :total-items="totalSalesPerson"
           />
-        </template>
+        </template> -->
       </VDataTableServer>
     </VCard>
     <VDialog v-model="salesPersonModal.show" max-width="500">

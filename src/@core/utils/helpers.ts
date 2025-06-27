@@ -31,5 +31,17 @@ export const isToday = (date: Date) => {
   )
 }
 
-export const formatMoney = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount)
+export const formatMoney = (amount: number, short: boolean = false): string => {
+  if (short && Math.abs(amount) >= 1_000_000) {
+    const millions = amount / 1_000_000
+    const rounded = millions % 1 === 0 ? millions.toFixed(0) : millions.toFixed(1)
+    return `Rp ${rounded}M`
+  }
+
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
 // export const formatDate = (value: string | Date, formatting: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' }) => new Intl.DateTimeFormat('en-US', formatting).format(new Date(value))

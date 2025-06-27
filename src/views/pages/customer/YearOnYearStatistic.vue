@@ -18,10 +18,6 @@ const props = defineProps<Props>()
 
 onMounted(async () => {
   await statStore.fetchYoySummary(props.id)
-
-  changesData.value.map((item: any) => {
-    console.log(item.items_yoy_percent != null)
-  })
 })
 const changesData = computed(() => statStore.yoy_summary)
 const maxItems = computed(() => statStore.maxItems)
@@ -44,9 +40,9 @@ const calculateAverage = (val: number, avg: number): string => {
 
 const widgetData = computed(() => ([
   { title: 'Average Purchased Items', value: averageItems.value.toFixed(2), icon: 'tabler-timeline' },
-  { title: 'Average Sales', value: formatMoney(avgSales.value), icon: 'tabler-coin' },
+  { title: 'Average Sales', value: formatMoney(avgSales.value, true), icon: 'tabler-coin' },
   { title: 'Max Purchased Items', value: maxItems.value, icon: 'tabler-shopping-cart-star' },
-  { title: 'Max Sales', value: formatMoney(maxSales.value), icon: 'tabler-shopping-cart-dollar' },
+  { title: 'Max Sales', value: formatMoney(maxSales.value, true), icon: 'tabler-shopping-cart-dollar' },
 ]))
 
 </script>

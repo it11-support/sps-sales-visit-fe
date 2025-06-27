@@ -4,7 +4,6 @@ import ActivityReportDetail from '@/views/pages/activity/ActivityReportDetail.vu
 const router = useRoute('activity-id-view-report' as any)
 const assignmentId = router.params.id
 
-console.log(assignmentId)
 </script>
 
 

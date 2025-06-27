@@ -1,0 +1,7 @@
+<svg width="50" height="50" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <!-- Outer Circle (smaller and bolder) -->
+  <circle cx="40" cy="40" r="25" stroke="rgb(115, 103, 240)" stroke-width="8" />
+
+  <!-- Bold V -->
+  <path d="M25 28 L40 55 L55 28" stroke="rgb(115, 103, 240)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

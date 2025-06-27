@@ -89,8 +89,7 @@ export const useStatisticStore = defineStore('statistic', {
           ...newFilters
         }
         
-        this.fetchMoMSummary(id)      
-        console.log(newFilters)
+        this.fetchMoMSummary(id)        
       },
     },
     

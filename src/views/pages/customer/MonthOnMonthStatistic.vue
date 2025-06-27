@@ -167,9 +167,9 @@ const changesData = computed(() => {
 
 const widgetData = computed(() => ([
   { title: 'Average Purchased Items', value: averageItems.value.toFixed(2), icon: 'tabler-timeline' },
-  { title: 'Average Sales', value: formatMoney(averageSales.value), icon: 'tabler-coin' },
+  { title: 'Average Sales', value: formatMoney(averageSales.value, true), icon: 'tabler-coin' },
   { title: 'Max Purchased Items', value: maxPurchasedItems.value, icon: 'tabler-shopping-cart-star' },
-  { title: 'Max Sales', value: formatMoney(maxSales.value), icon: 'tabler-shopping-cart-dollar' },
+  { title: 'Max Sales', value: formatMoney(maxSales.value, true), icon: 'tabler-shopping-cart-dollar' },
 ]))
 
 </script>
@@ -190,8 +190,7 @@ const widgetData = computed(() => ([
                     <VCol
                       cols="12"
                       sm="6"
-                      md="3"
-                      class="px-6"
+                      md="3"                      
                     >
                       <div
                         class="d-flex justify-space-between"
@@ -214,11 +213,11 @@ const widgetData = computed(() => ([
                         <VAvatar
                           variant="tonal"
                           rounded
-                          size="42"
+                          size="46"
                         >
                           <VIcon
                             :icon="data.icon"
-                            size="26"
+                            size="28"
                             class="text-high-emphasis"
                           />
                         </VAvatar>

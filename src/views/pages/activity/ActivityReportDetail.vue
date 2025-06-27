@@ -157,7 +157,7 @@ const handleViewOnMap = () => {
                         type="article"
                       />
                     </template>
-                    <VTable v-if="!statStore.loadingState && !activityStore.loadingAssignment" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
+                    <VTable v-if="!statStore.loadingState && !activityStore.loadingAssignment && missingItems.length" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
                       <thead>
                         <tr>
                           <th scope="col">
@@ -208,7 +208,7 @@ const handleViewOnMap = () => {
                         type="article"
                       />
                     </template>
-                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
+                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.products.length" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
                       <VListItem
                         v-for="(item, index) in activityStore.report?.products"
                         :key="index"
@@ -232,7 +232,7 @@ const handleViewOnMap = () => {
                         type="article"
                       />
                     </template>
-                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
+                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.product_issue" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
                       <VListItem>
                         <VListItemTitle>
                           {{ activityStore.report?.product_issue }}
@@ -253,7 +253,7 @@ const handleViewOnMap = () => {
                         type="article"
                       />
                     </template>
-                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
+                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.next_action" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
                       <VListItem>
                         <VListItemTitle>
                           {{ activityStore.report?.next_action }}
@@ -274,7 +274,7 @@ const handleViewOnMap = () => {
                         type="article"
                       />
                     </template>
-                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
+                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.additional_note" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
                       <VListItem>
                         <VListItemTitle>
                           {{ activityStore.report?.additional_note }}
@@ -302,23 +302,23 @@ const handleViewOnMap = () => {
                         <tr>
                           <th scope="col">
                             MONTH
-                            </th>
-                            <th scope="col">
-                              TOTAL ITEMS
-                            </th>
-                            <th
-                              scope="col"
-                              class="text-center"
-                            >
-                              TOTAL REVENUE
-                            </th>
-                            <th
-                              colspan="2"
-                              scope="col"
-                              class="text-center"
-                            >
-                              PERCENTAGE
-                            </th>
+                          </th>
+                          <th scope="col">
+                            TOTAL ITEMS
+                          </th>
+                          <th
+                            scope="col"
+                            class="text-center"
+                          >
+                            TOTAL REVENUE
+                          </th>
+                          <th
+                            colspan="2"
+                            scope="col"
+                            class="text-center"
+                          >
+                            PERCENTAGE
+                          </th>
                         </tr>
                       </thead>
                       <tbody class="text-base">
@@ -402,7 +402,7 @@ const handleViewOnMap = () => {
                       />
                     </template>
                     
-                      <VTable v-if="!statStore.loadingState && !activityStore.loadingAssignment" class="border text-high-emphasis mb-6">
+                      <VTable v-if="!statStore.loadingState && !activityStore.loadingAssignment && competitors.length" class="border text-high-emphasis mb-6">
                       <thead>
                         <tr>
                           <th scope="col">

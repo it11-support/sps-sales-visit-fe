@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { IMonthlySummary, IMonthlySummaryItem, useStatisticStore } from '@/@core/stores/statistic';
+import { IMonthlySummary, useStatisticStore } from '@/@core/stores/statistic';
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -12,6 +12,7 @@ import {
   Tooltip
 } from 'chart.js';
 import { Line } from 'vue-chartjs';
+import { VOverlay } from 'vuetify/components';
 import MonthOnMonthStatistic from './MonthOnMonthStatistic.vue';
 import TopSales from './TopSales.vue';
 import YearOnYearStatistic from './YearOnYearStatistic.vue';
@@ -147,140 +148,173 @@ function getColor(index: number) {
 </script>
 
 <template>
-  <VCol cols="12">
+  <VCol cols="12" v-if="!props.id">
+    <VSkeletonLoader
+      type="article"
+    >
+    </VSkeletonLoader>
+  </VCol>
+  <VCol cols="12"  v-else>
     <AppCardActions
       title="SALES STATISTIC"
       action-collapsed
       action-refresh
       @refresh="statStore.fetchYoySummary(id)"
     >
-      <VOverlay v-model="statStore.loadingState" class="justify-center align-center" contained>
+      <VOverlay
+        v-model="statStore.loadingState"
+        class="justify-center align-center" 
+        contained
+      >
         <VProgressCircular size="32" indeterminate />
       </VOverlay>
       <VCardText>
-        <VRow class="d-flex justify-start">
-          <!-- Chart 1: Sales Chart -->
+        <VRow class="d-flex justify-start mb-4">
+          <!-- Filter Dropdown -->
           <VCol cols="12" lg="3" md="6" sm="12">
-            <AppSelect v-model="range" placeholder="Filter by range" label="Select range" :items="[
-              { value: 3, title: '3 Months' },
-              { value: 6, title: '6 Months' },
-              { value: 12, title: '12 Months' },
-              { value: 18, title: '18 Months' },
-              { value: 24, title: '24 Months' },
-            ]" 
-            @update:model-value="statStore.updateFilters(id, { range: $event })" />
+            <AppSelect
+              v-model="range"
+              placeholder="Filter by range"
+              label="Select range"
+              :items="[
+                { value: 3, title: '3 Months' },
+                { value: 6, title: '6 Months' },
+                { value: 12, title: '12 Months' },
+                { value: 18, title: '18 Months' },
+                { value: 24, title: '24 Months' },
+              ]"
+              @update:model-value="statStore.updateFilters(id, { range: $event })"
+            />
           </VCol>
         </VRow>
-        <VRow class="d-flex justify-start">
-          <!-- Chart 1: Sales Chart -->
-          <VCol cols="12" lg="6" md="8" sm="12">
-            <div style="block-size: 400px;"> <!-- Define fixed height for parent -->
-              <Line id="sales-chart" :options="{
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: { beginAtZero: true, title: { display: true, text: 'Total Sales' } },
-                  x: { title: { display: true, text: 'Month' } }
-                },
-                plugins: {
-                  title: {
-                    display: true,
-                    text: 'Total Sales',
-                    font: {
-                      size: 14
-                    }
-                  }
-                }
-              }" :data="datasetSales" />
-            </div>
-          </VCol>
-            <!-- Chart 2: Items revenue Chart -->
-          <VCol cols="12" lg="6" md="8" sm="12">
-            <div style="block-size: 400px;"> <!-- Define fixed height for parent -->
-              <Line id="items-revenue-chart" :options="{
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: { beginAtZero: true, title: { display: true, text: 'Sales by Item' } },
-                  x: { title: { display: true, text: 'Month' } }
-                },
-                plugins: {
-                  title: {
-                    display: true,
-                    text: 'Sales by Item',
-                    font: {
-                      size: 14
-                    }
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: function (context) {
-                        const volume = context.raw
-                        return `${context.dataset.label}: ${formatMoney(volume as number)}`
-                      }
-                    }
-                  }
-                }
-              }
-                " :data="{ labels, datasets: datasetRevenue }" />
-            </div>
-          </VCol>
 
-          <!-- Chart 3: Items Volume Chart -->
-          <VCol cols="12" lg="6" md="8" sm="12">
-            <div style="block-size: 400px;"> <!-- Define fixed height for parent -->
-              <Line id="items-invoice-chart" :options="{
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: { beginAtZero: true, title: { display: true, text: 'Invoice Count' } },
-                  x: { title: { display: true, text: 'Month' } }
-                },
-                plugins: {
-                  title: {
-                    display: true,
-                    text: 'Invoice Count by Item',
-                    font: {
-                      size: 14
-                    }
-                  }
-                }
-              }" :data="{ labels, datasets: datasetInvoice }" />
-            </div>
-          </VCol>
-          <VCol cols="12" lg="6" md="8" sm="12">
-            <div style="block-size: 400px;"> <!-- Define fixed height for parent -->
-              <Line id="items-volume-chart" :options="{
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: { beginAtZero: true, title: { display: true, text: 'Quantity in unit' } },
-                  x: { title: { display: true, text: 'Month' } }
-                },
-                plugins: {
-                  title: {
-                    display: true,
-                    text: 'Quantity by Item',
-                    font: {
-                      size: 14
-                    }
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: function (context) {
-                        const volume = (context.raw as number).toFixed(2) ?? 0
-                        return `${context.dataset.label}: ${volume} Kg`
+        <!-- Chart container with horizontal scroll on small screens -->
+        <div class="scroll-x-on-mobile">
+          <div class="scroll-container">
+            <VRow class="d-flex justify-start flex-wrap gap-4">
+              <!-- Chart 1 -->
+              <VCol cols="12" lg="6" md="8" sm="12">
+                <div style="block-size: 400px;">
+                  <Line
+                    id="sales-chart"
+                    :options="{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Total Sales' } },
+                        x: { title: { display: true, text: 'Month' } }
+                      },
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Total Sales',
+                          font: { size: 14 }
+                        }
                       }
-                    }
-                  }
-                }
-              }" :data="{ labels, datasets: datasetVolume }" />
-            </div>
-          </VCol>
-        </VRow>
-        <TopSales :id="props.id"/>
-        <MonthOnMonthStatistic :id="props.id"/>
-        <YearOnYearStatistic :id="props.id"/>
+                    }"
+                    :data="datasetSales"
+                  />
+                </div>
+              </VCol>
+
+              <!-- Chart 2 -->
+              <VCol cols="12" lg="6" md="8" sm="12">
+                <div style="block-size: 400px;">
+                  <Line
+                    id="items-revenue-chart"
+                    :options="{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Sales by Item' } },
+                        x: { title: { display: true, text: 'Month' } }
+                      },
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Sales by Item',
+                          font: { size: 14 }
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function (context) {
+                              const volume = context.raw
+                              return `${context.dataset.label}: ${formatMoney(volume as number)}`
+                            }
+                          }
+                        }
+                      }
+                    }"
+                    :data="{ labels, datasets: datasetRevenue }"
+                  />
+                </div>
+              </VCol>
+
+              <!-- Chart 3 -->
+              <VCol cols="12" lg="6" md="8" sm="12">
+                <div style="block-size: 400px;">
+                  <Line
+                    id="items-invoice-chart"
+                    :options="{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Invoice Count' } },
+                        x: { title: { display: true, text: 'Month' } }
+                      },
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Invoice Count by Item',
+                          font: { size: 14 }
+                        }
+                      }
+                    }"
+                    :data="{ labels, datasets: datasetInvoice }"
+                  />
+                </div>
+              </VCol>
+
+              <!-- Chart 4 -->
+              <VCol cols="12" lg="6" md="8" sm="12">
+                <div style="block-size: 400px;">
+                  <Line
+                    id="items-volume-chart"
+                    :options="{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Quantity in unit' } },
+                        x: { title: { display: true, text: 'Month' } }
+                      },
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Quantity by Item',
+                          font: { size: 14 }
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function (context) {
+                              const volume = (context.raw as number).toFixed(2)
+                              return `${context.dataset.label}: ${volume} Kg`
+                            }
+                          }
+                        }
+                      }
+                    }"
+                    :data="{ labels, datasets: datasetVolume }"
+                  />
+                </div>
+              </VCol>
+            </VRow>
+          </div>
+        </div>
+
+        <!-- Other statistic components -->
+        <TopSales :id="props.id" />
+        <MonthOnMonthStatistic :id="props.id" />
+        <YearOnYearStatistic :id="props.id" />
       </VCardText>
     </AppCardActions>
   </VCol> 
@@ -294,5 +328,23 @@ function getColor(index: number) {
 
 .v-expansion-panel-text__wrapper {
   padding-block: 0.5rem !important;
+}
+
+.scroll-x-on-mobile {
+  overflow-x: auto;
+}
+
+.scroll-container {
+  min-inline-size: 600px;
+}
+
+@media (min-width: 992px) {
+  .scroll-x-on-mobile {
+    overflow-x: unset;
+  }
+
+  .scroll-container {
+    min-inline-size: unset;
+  }
 }
 </style>

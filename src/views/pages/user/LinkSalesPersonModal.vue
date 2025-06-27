@@ -1,7 +1,7 @@
 
 
 <script lang="ts" setup>
-import { useConfigStore } from '@/@core/stores';
+import { useConfigStore, useUserStore } from '@/@core/stores';
 import { IUser } from '@/@core/typedefs';
 import { SortItem } from '@/@core/types';
 import { handleUserBinding } from '@/utils/user/binding';
@@ -23,7 +23,8 @@ const page = ref(1)
 const selectedSalesPerson = ref()
 const configStore = useConfigStore()
 const selectedUser = ref()
-const usersOptions = ref([])
+const usersOptions = ref<{label: string, value: number}[]>([])
+const userStore = useUserStore()
 
 const handleSalesPersonLink = async () => {
   await handleUserBinding({
@@ -40,17 +41,10 @@ const handleSalesPersonLink = async () => {
   })
 }
 
-const { data: usersData, execute: fetchUsers } = await useApi<any>(createUrl('user', {
-  query: {
-    page,
-    per_page: -1,
-    sort_options: sortOptions
-  },
-}))
-
 const updateUsersOptions = async () => {
-  await fetchUsers()
-  usersOptions.value = usersData.value.data.data
+  userStore.updateQuery({page, per_page: -1, sort_options: sortOptions.value})
+  await userStore.fetchUsers()
+  usersOptions.value = userStore.users
     .filter((user: IUser) => user.sales_person == null)
     .filter((user: IUser) => !['admin', 'coordinator'].includes(user.role?.role ?? ''))
     .map((user: IUser) => ({
@@ -60,7 +54,6 @@ const updateUsersOptions = async () => {
 }
 
 watch(modalProps, async(newVal) => {
-  console.log(newVal)
   newVal.show && newVal.type === 'link' && await updateUsersOptions()
 }, { deep: true })
 </script>

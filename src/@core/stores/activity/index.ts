@@ -14,6 +14,7 @@ interface Filters {
 
 export const useActivityStore = defineStore('activity', {
   state: () => ({
+    activityTypes: [] as {value: number, label: string}[],
     activity: {} as IActivity,
     report: {} as IActivityReport,
     loadingId: null as number | null,
@@ -67,6 +68,17 @@ export const useActivityStore = defineStore('activity', {
     allCompetitorOptions: ref<ICompetitor[]>([])
   }),
   actions: {
+    async fetchActivityTypes() {      
+      const { data, error } = await useApi<any>(createUrl('activity/activity-types'), {})
+      if (error.value) {
+        console.error('Error fetching activity types:', error.value)
+        return
+      }
+      this.activityTypes = data.value.data.map((type: any) => ({
+        value: type.id,
+        label: type.name
+      }))
+    },
     async fetchActivities() {
       this.loadingList = true
       const url = createUrl('activity', { query: this.filters })
@@ -228,8 +240,7 @@ export const useActivityStore = defineStore('activity', {
         ...newFilters
       }
         
-      this.fetchActivities()      
-      console.log(newFilters)
+      this.fetchActivities()            
     },
     updateSortOptions(options: any) {
       this.updateFilters({
@@ -258,7 +269,6 @@ export const useActivityStore = defineStore('activity', {
         return
       }
 
-      console.log(salesPersonsData.value.data.salesPersons)
       this.salesPersonsOptions = salesPersonsData.value.data.salesPersons.map((sales: any) => ({
         title: sales.SlpName,
         value: sales.SlpCode

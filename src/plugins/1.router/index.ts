@@ -8,7 +8,6 @@ import { createRouter, createWebHistory } from 'vue-router/auto'
 import { setupGuards } from './guards'
 function recursiveLayouts(route: RouteRecordRaw): RouteRecordRaw {
   if (route.children) {
-    console.log(route)
     for (let i = 0; i < route.children.length; i++)
       route.children[i] = recursiveLayouts(route.children[i])
 

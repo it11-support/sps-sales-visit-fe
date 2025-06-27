@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useConfigStore } from '@core/stores/config'
-import avatar1 from '@images/avatars/avatar-1.png'
+import avatar1 from '@images/avatars/user-default.png'
 const userData = useCookie<any>('userData')
 const router = useRouter()
 const configStore = useConfigStore()
@@ -95,7 +95,7 @@ const toggleOverlay = () => {
           </VListItem>
 
           <!-- 👉 Settings -->
-          <VListItem link>
+          <!-- <VListItem link>
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -105,10 +105,10 @@ const toggleOverlay = () => {
             </template>
 
             <VListItemTitle>Settings</VListItemTitle>
-          </VListItem>
+          </VListItem> -->
 
           <!-- 👉 Pricing -->
-          <VListItem link>
+          <!-- <VListItem link>
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -118,10 +118,10 @@ const toggleOverlay = () => {
             </template>
 
             <VListItemTitle>Pricing</VListItemTitle>
-          </VListItem>
+          </VListItem> -->
 
           <!-- 👉 FAQ -->
-          <VListItem link>
+          <!-- <VListItem link>
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -131,7 +131,7 @@ const toggleOverlay = () => {
             </template>
 
             <VListItemTitle>FAQ</VListItemTitle>
-          </VListItem>
+          </VListItem> -->
 
           <!-- Divider -->
           <VDivider class="my-2" />

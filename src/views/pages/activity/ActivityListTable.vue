@@ -10,6 +10,7 @@ const salesPersonId = computed(() => user.value.sales_person?.SlpCode)
 const debouncedQuery = useDebounce(searchQuery, 400)
 const router = useRouter()
 const showCheckIn = reactive<Record<number, boolean>>({})
+const showFilters = ref(false)
 
 const STATUS = {
   ASSIGNED: 'assigned',
@@ -100,9 +101,9 @@ const handleCheckIn = async(id: number) => {
 <template>
   <VCard class="mb-6">
     <VCardItem class="pb-4">
-      <VCardTitle>Filters</VCardTitle>
+      <VCheckbox v-model="showFilters" label="Show Filters"></VCheckbox>
     </VCardItem>
-    <VCardText>
+    <VCardText v-if="showFilters">
       <VRow>
         <VCol 
           v-if="isAdmin"
@@ -173,9 +174,9 @@ const handleCheckIn = async(id: number) => {
           <div style="inline-size: 15.625rem;">
             <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
           </div>
-          <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+          <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
             Export
-          </VBtn>
+          </VBtn> -->
         </div>
     </VCardText>
     <VDivider />

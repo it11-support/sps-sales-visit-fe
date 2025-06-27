@@ -16,12 +16,11 @@ const filterDormantCustomer = ref(false)
 // Delayed search
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
+const showFilter = ref(false)
 
 watch(debouncedQuery, (val) => {
   customerStore.updateFilters({ search: val })
 })
-
-
 
 // Headers
 const headers = [
@@ -111,33 +110,20 @@ const deleteCustomer = async (id: string) => {
 
   // Remove deleted customer from selected rows
   const index = selectedRows.findIndex(row => row.CardCode === id)
-  if (index !== -1)
-    selectedRows.splice(index, 1)
-
+  if (index !== -1) selectedRows.splice(index, 1)
   // Refetch customers
   customerStore.fetchCustomers()
-
 }
 
-// watch(() =>isAdmin.value, (val) => {
-//   if(val) {
-//     customerStore.updateFilters({ sales_person_id: undefined })
-//   } else {
-//     const spId = user.value.sales_person?.SlpCode
-//     if (spId) {
-//       customerStore.updateFilters({ sales_person_id: spId })
-//     }
-//   }
-// }, { immediate: true })
 </script>
 
 <template>
   <section>
     <VCard class="mb-6">
       <VCardItem class="pb-4">
-        <VCardTitle>Filters</VCardTitle>
+        <VCheckbox v-model="showFilter" label="Show Filters"></VCheckbox>
       </VCardItem>
-      <VCardText>
+      <VCardText v-if="showFilter">
         <VRow>
           <!-- 👉 Select Role -->
           <VCol cols="12" sm="4" v-if="isAdmin">
@@ -193,37 +179,56 @@ const deleteCustomer = async (id: string) => {
       </VCardText>
       <VDivider />
       <VCardText class="d-flex flex-wrap gap-4">
-        <div class="me-4 d-flex gap-3">
-          <AppSelect :model-value="customerStore.filters.per_page" :items="PAGINATION_ITEMS"
-            style="inline-size: 6.25rem;" @update:model-value="customerStore.setPerpage(parseInt($event, 10))" />
-          <VCheckbox label="Hide Zero Invoice" v-model="customerStore.filters.hideZeroInvoice"
-            @update:model-value="customerStore.updateFilters({ hideZeroInvoice: $event as boolean })" />
+        <!-- Wrapper untuk AppSelect dan Checkbox -->
+        <div class="d-flex gap-3 flex-column flex-sm-row me-4">
+          <AppSelect
+            :model-value="customerStore.filters.per_page"
+            :items="PAGINATION_ITEMS"
+            style="inline-size: 6.25rem;"
+            @update:model-value="customerStore.setPerpage(parseInt($event, 10))"
+          />
+          <VCheckbox
+            label="Hide Zero Invoice"
+            v-model="customerStore.filters.hideZeroInvoice"
+            @update:model-value="customerStore.updateFilters({ hideZeroInvoice: $event as boolean })"
+          />
         </div>
+
         <VSpacer />
 
-        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-          <!-- 👉 Search  -->
+        <!-- Search field -->
+        <div class="app-user-search-filter d-flex align-center gap-4 flex-column flex-sm-row">
           <div style="inline-size: 15.625rem;">
-            <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
+            <AppTextField
+              v-model="searchQuery"
+              placeholder="Search ..."
+              clearable
+              clear-icon="tabler-x"
+            />
           </div>
-
-          <!-- 👉 Export button -->
-          <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
-            Export
-          </VBtn>
         </div>
       </VCardText>
 
       <VDivider />
 
       <!-- SECTION datatable -->
-      <VDataTableServer :loading="customerStore.loadingList" v-model:items-per-page="customerStore.filters.per_page"
-        v-model:model-value="customerStore.selectedRows" v-model:page="customerStore.filters.page"
-        :items="customerStore.customers" item-value="CardCode" :items-length="customerStore.pagination.total"
-        :headers="headers" class="text-no-wrap" show-select :select-strategy="'all'" return-object
-        @update:options="customerStore.updateSortOptions" @update:model-value="customerStore.setSelectedRows"
-        multi-sort>
-        <!-- User -->
+      <VDataTableServer
+        :loading="customerStore.loadingList"
+        v-model:items-per-page="customerStore.filters.per_page"
+        v-model:model-value="customerStore.selectedRows"
+        v-model:page="customerStore.filters.page"
+        :items="customerStore.customers"
+        item-value="CardCode"
+        :items-length="customerStore.pagination.total"
+        :headers="headers"
+        class="text-no-wrap"
+        show-select
+        :select-strategy="'all'"
+        return-object
+        @update:options="customerStore.updateSortOptions"
+        @update:model-value="customerStore.setSelectedRows"
+        multi-sort
+      >
         <template #item.actions="{ item }">
           <a :href="`${'view/' + item.CardCode}`">
             <VIcon small class="mr-1">tabler-eye</VIcon>
@@ -278,11 +283,11 @@ const deleteCustomer = async (id: string) => {
           </div>
         </template>
         <!-- pagination -->
-        <template #bottom>
+        <!-- <template #bottom>
           <TablePagination v-model:page="customerStore.pagination.current_page"
             v-model:items-per-page="customerStore.pagination.per_page"
             v-model:total-items="customerStore.pagination.total" @update:page="customerStore.setPage($event)" />
-        </template>
+        </template> -->
       </VDataTableServer>
       <!-- SECTION -->
     </VCard>

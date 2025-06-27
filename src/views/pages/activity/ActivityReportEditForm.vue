@@ -114,7 +114,11 @@ const submitHandler = async () => {
     if (validation) {
       const { valid, errors } = validation
       if (!valid) {
-        console.log(errors)
+        const firstError = Object.values(errors)[0]
+        const el = document.getElementById(firstError.id as string)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
         configStore.overlay = false
         return
       }
@@ -176,10 +180,7 @@ const onSelect = (val: ICompetitor, index: number) => {
 }
 
 const handleRemoveCompetitor = (index: number) => {
-  activityStore.activityReport.competitors.splice(index, 1)
-  if(activityStore.activityReport.competitors.length === 0) {
-    activityStore.activityReport.competitors.push({name: '', address: '', product: '', price: undefined, qty: undefined})      
-  }
+  activityStore.activityReport.competitors.splice(index, 1)  
 }
 
 const handleAddCompetitor = () => {
@@ -189,11 +190,11 @@ const handleAddCompetitor = () => {
 const shouldShowRemoveButton = (index: number) => {
   const competitors = activityStore.activityReport.competitors;
 
-  if (competitors.length > 1) return true;
+  if (competitors.length) return true;
 
-  const c = competitors[0];
-  const hasValue = c?.name || c?.address || c?.product || c?.price || c?.qty;
-  return !!hasValue;
+  // const c = competitors[0];
+  // const hasValue = c?.name || c?.address || c?.product || c?.price || c?.qty;
+  // return !!hasValue;
 }
 
 const handleSaveAsDraft = async () => {
@@ -205,9 +206,10 @@ const handleSaveAsDraft = async () => {
       const { valid, errors } = validation
       if (!valid) {
         configStore.overlay = false
-        console.log(errors)
-        const firstError = Object.keys(errors)[0]
-        console.log(firstError)
+        const el = document.getElementById('scrollTarget')
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
         return
       }
       await activityStore.updateReport(props.assignmentId as unknown as number, false).then(() => {
@@ -226,9 +228,29 @@ const handleBackToList = () => {
 }
 
 const handleCheckOut = async() => {
-  await activityStore.updateReport(props.assignmentId as unknown as number, false).then(async() => {
-     await activityStore.checkOut(Number(props.assignmentId))
-  }) 
+  isDraft.value = true
+  configStore.overlay = true
+  try {
+    const validation = await form.value?.validate()
+    if (validation) {
+      const { valid, errors } = validation
+      if (!valid) {
+        configStore.overlay = false
+        const el = document.getElementById('scrollTarget')
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+        return
+      }
+      await activityStore.updateReport(props.assignmentId as unknown as number, false).then(async() => {
+        await activityStore.checkOut(Number(props.assignmentId))
+      })
+    }
+  } catch (error) {
+    configStore.overlay = false
+    console.log(error)
+  }
+  configStore.overlay = false
 }
 
 const baseDomain = import.meta.env.VITE_BASE_DOMAIN
@@ -445,7 +467,7 @@ const handleViewOnMap = () => {
         ACTIVITY REPORT
       </VCardTitle>
       </VCardItem>
-      <VCardText>
+      <VCardText id="scrollTarget">
         <VRow>
           <VCol cols="12" lg="6" md="6" sm="12">
             <AppSelect
@@ -553,7 +575,7 @@ const handleViewOnMap = () => {
                 isSelecting = false
               }"
               clearable
-              :rules="isDraft ? [] : [v => !!(v && v.value || v.id) || 'Competitor is required']"
+              :rules="[v => !!(v && v.value || v.id) || 'Competitor is required']"
             />
             </VCol>
             <VCol cols="12" lg="4" md="4" sm="12">
@@ -564,7 +586,7 @@ const handleViewOnMap = () => {
                 @update:model-value="val => {
                   activityStore.activityReport.competitors[index].address = val
                 }"
-                :rules="isDraft ? [] : [requiredValidator]"
+                :rules="[requiredValidator]"
               />
             </VCol>
             <VCol cols="12" lg="3" md="4" sm="12">
@@ -642,22 +664,22 @@ const handleViewOnMap = () => {
     </VCardText> 
     <VCardText>
     <VRow class="flex-wrap">
-      <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start">
+      <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start">
         <VBtn color="warning" type="button" @click="handleBackToList">
           <VIcon end icon="tabler-arrow-big-left" class="mr-1"/> Back To List 
         </VBtn>
       </VCol>
-      <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" v-if="activityStore.activity.status !== 'completed'">
+      <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.activity.status !== 'completed'">
         <VBtn color="warning" type="button" @click="handleSaveAsDraft">
           Save As Draft <VIcon end icon="tabler-pencil-check" />
         </VBtn>
       </VCol>
-      <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" v-if="activityStore.activity.image_path === null">
+      <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.activity.image_path === null">
         <VBtn color="warning" type="button" @click="showCheckIn = true">
           Take Photo <VIcon end icon="tabler-camera" />
         </VBtn>
       </VCol>
-      <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start"
+      <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start"
         :loading="activityStore.loadingId === Number(props.assignmentId)" 
        v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out === null">
         <VBtn color="success" type="button" @click="handleCheckOut" :loading="activityStore.loadingId === Number(props.assignmentId)">

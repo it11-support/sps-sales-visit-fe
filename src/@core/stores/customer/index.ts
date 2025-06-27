@@ -28,6 +28,7 @@ export const useCustomerStore = defineStore('customer', {
   state: () => ({
     customers: [] as ICustomerData[],
     customerDetail: {} as ICustomerData,
+    customer: {} as ICustomerData,
     meta: {} as Meta,
     loadingList: false,
     loadingDetail: false,
@@ -89,6 +90,7 @@ export const useCustomerStore = defineStore('customer', {
       }
 
       this.customerDetail = data.value.data
+      this.customer = data.value.data
       this.loadingDetail = false
     },
 

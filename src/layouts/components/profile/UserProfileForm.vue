@@ -238,9 +238,9 @@ const dormantOptions = [
             </div>
 
             <!-- 👉 Export button -->
-            <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+            <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
               Export
-            </VBtn>
+            </VBtn> -->
           </div>
         </VCardText>
         <VDivider />
@@ -309,9 +309,9 @@ const dormantOptions = [
           </template>
 
           <!-- pagination -->
-          <template #bottom>
+          <!-- <template #bottom>
             <TablePagination v-model:page="customerStore.filters.page" :items-per-page="customerStore.filters.per_page" :total-items="customerStore.pagination.total" />
-          </template>
+          </template> -->
         </VDataTableServer>
       </VCard>
     </VCol>

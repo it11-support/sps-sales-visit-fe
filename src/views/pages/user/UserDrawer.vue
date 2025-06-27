@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ISalesPerson, IUser } from '@core/typedefs';
+import { useSalesPersonStore } from '@/@core/stores/sales-person';
+import { IUser } from '@core/typedefs';
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
 import { VForm } from 'vuetify/components/VForm';
 
@@ -11,11 +12,19 @@ interface Props {
   isDrawerOpen: boolean
   isEditMode: boolean
   user?: IUser
+  roleOptions: {
+    role: string
+    id: number
+  }[]
+  salesPersonsOptions: {
+    label: string
+    value: number
+  }[]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emit>()
-
+const salesPersonStore = useSalesPersonStore()
 const isFormValid = ref(false)
 const form = ref<VForm>()
 const formData = ref<any>({
@@ -27,9 +36,8 @@ const formData = ref<any>({
   sales_person_id: undefined,
   username: ''
 })
+const localSalesPersons = ref<{label: string, value: number}[]>([...props.salesPersonsOptions])
 
-const roleOptions = ref([])
-const salesPersonsOptions = ref<{ label: string; value: number }[]>([]);
 const isPasswordVisible = ref(false)
 // Close drawer
 const closeDrawer = () => {
@@ -41,7 +49,6 @@ const closeDrawer = () => {
 }
 
 const onSubmit = async () => {
-  console.log(formData.value)
   if (!props.isEditMode) {
     await form.value?.validate()
   }
@@ -62,20 +69,8 @@ const handleDrawerModelValueUpdate = (val: boolean) => {
 }
 
 watch(props, async (newVal) => {
+  
   if (newVal.isDrawerOpen) {
-    roleOptions.value = rolesData.value.data.map((role: any) => ({
-      label: role.role[0].toUpperCase() + role.role.slice(1),
-      value: role.id
-    }))
-
-    salesPersonsOptions.value = salesPersonsData.value.data.data
-      .filter((sales: any) => sales.user == null)
-      .filter((sales: any) => sales.user?.role?.role !== 'admin')
-      .map((sales: any) => ({
-        label: sales.SlpName,
-        value: sales.SlpCode
-      }))
-
     formData.value = props.isEditMode && props.isDrawerOpen ? props.user : {
       name: '',
       email: '',
@@ -89,26 +84,21 @@ watch(props, async (newVal) => {
       form.value?.resetValidation()
     })
   }
-
-  if (newVal.user && newVal.isEditMode) {
-    formData.value = newVal.user
-    const currentSalesPerson = salesPersonsData.value.data.data
-      .find((sales: ISalesPerson) => sales.SlpCode === props.user?.sales_person_id)
-    if (currentSalesPerson) {
-      salesPersonsOptions.value.unshift({
-        label: currentSalesPerson.SlpName,
-        value: currentSalesPerson.SlpCode
-      });
+  if (formData.value.sales_person_id) {
+    const exists = localSalesPersons.value.some(
+      sp => sp.value === formData.value.sales_person_id
+    )
+    if (!exists) {
+      const match = salesPersonStore.salesPersons.find(sp => sp.SlpCode === formData.value.sales_person_id)
+      if (match) {
+        localSalesPersons.value.unshift({
+          label: match.SlpName,
+          value: match.SlpCode,
+        })
+      }
     }
   }
 })
-const { data: rolesData } = await useApi<any>(createUrl('role'), {})
-const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {
-  query: {
-    per_page: -1,
-    page: 1,
-  }
-}))
 
 </script>
 <template>
@@ -158,13 +148,26 @@ const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {
               <!-- </template> -->
               <!-- 👉 Role -->
               <VCol cols="12">
-                <AppSelect v-model="formData.role_id" label="Select Role" placeholder="Select Role" item-title="label"
-                  item-value="value" :rules="[requiredValidator]" :items="roleOptions" />
+                <AppSelect 
+                  v-model="formData.role_id"
+                  label="Select Role" 
+                  placeholder="Select Role" 
+                  item-title="role"
+                  item-value="id"
+                  :rules="[requiredValidator]" 
+                  :items="props.roleOptions" 
+                />
               </VCol>
               <VCol cols="12">
-                <AppSelect v-model="formData.sales_person_id" label="Bind Sales Person"
-                  placeholder="Select Sales Person" item-title="label" item-value="value" :rules="[]"
-                  :items="salesPersonsOptions" />
+                <AppSelect 
+                  v-model="formData.sales_person_id" 
+                  label="Bind Sales Person"
+                  placeholder="Select Sales Person" 
+                  item-title="label" 
+                  item-value="value" 
+                  :rules="[]"
+                  :items="localSalesPersons" 
+                />
               </VCol>
 
               <!-- 👉 Submit and Cancel -->

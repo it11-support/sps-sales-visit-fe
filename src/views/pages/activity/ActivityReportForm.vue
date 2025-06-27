@@ -20,9 +20,7 @@ const statStore = useStatisticStore()
 const customerStore = useCustomerStore()
 const productStore = useProductStore()
 const loading = ref(true)
-const competitors = ref<ICompetitor[]>([
-  {name: '', address: '', product: '', price: undefined, qty: undefined},
-])
+const competitors = ref<ICompetitor[]>([])
 const search = ref('')
 const isSelecting = ref(false)
 const form = ref<VForm>()
@@ -175,11 +173,15 @@ const submitHandler = async () => {
       const { valid, errors } = validation
       if (!valid) {
         console.log(errors)
+        const el = document.getElementById('scrollTarget')
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
         configStore.overlay = false
         return
       }
     }
-    await activityStore.updateReport(props.assignmentId as unknown as number, true).then(() => {
+    await activityStore.storeActivityReport(false).then(() => {
       router.push({ path: createUrl(`/activity/list`).value })
     })
   } catch (error) {
@@ -197,12 +199,9 @@ const handleSaveAsDraft = async () => {
       const { valid, errors } = validation
       if (!valid) {
         configStore.overlay = false
-        if(errors) {
-          const firstError = Object.values(errors)[0]
-          const el = document.getElementById(firstError.id as string)
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          }
+        const el = document.getElementById('scrollTarget')
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }
         return
       }
@@ -222,9 +221,26 @@ const handleBackToList = () => {
 } 
 
 const handleCheckOut = async() => {
-   await activityStore.updateReport(props.assignmentId as unknown as number, false).then(async() => {
-     await activityStore.checkOut(Number(props.assignmentId))
-  }) 
+  isDraft.value = true
+  try {
+    const validation = await form.value?.validate()
+    if (validation) {
+      const { valid, errors } = validation
+      if (!valid) {
+        const el = document.getElementById('scrollTarget')
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+        return
+      }
+      await activityStore.updateReport(props.assignmentId as unknown as number, false).then(async() => {
+        await activityStore.checkOut(Number(props.assignmentId))
+      })
+    }
+    
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const baseDomain = import.meta.env.VITE_BASE_DOMAIN
@@ -441,7 +457,7 @@ const handleViewOnMap = () => {
         ACTIVITY REPORT
       </VCardTitle>
       </VCardItem>
-      <VCardText>
+      <VCardText id="scrollTarget">
         <VRow>
           <VCol cols="12" lg="6" md="6" sm="12">
             <AppSelect
@@ -550,7 +566,7 @@ const handleViewOnMap = () => {
                 isSelecting = false
               }"
               clearable
-              :rules="isDraft ? [] : [v => !!(v && v.value || v.id) || 'Competitor is required']"
+              :rules="[v => !!(v && v.value || v.id) || 'Competitor is required']"
             />
             </VCol>
             <VCol cols="12" lg="4" md="4" sm="12">
@@ -561,7 +577,7 @@ const handleViewOnMap = () => {
                 @update:model-value="val => {
                   competitors[index].address = val
                 }"
-                :rules="isDraft ? [] : [requiredValidator]"
+                :rules="[requiredValidator]"
               />
             </VCol>
             <VCol cols="12" lg="3" md="4" sm="12">
@@ -601,17 +617,23 @@ const handleViewOnMap = () => {
             </VCol>
             </VRow>
             <VRow>
-            <VCol cols="12" lg="6" md="6" sm="12" class="d-flex gap-2">
-               <VBtn icon color="error" @click="handleRemoveCompetitor(index)" v-if="competitors.length > 1" >
-                <VIcon icon="tabler-trash" />
-              </VBtn>
-              <VBtn icon color="success" @click="handleAddCompetitor" v-if="index === competitors.length - 1">
-                <VIcon icon="tabler-plus" /> 
-              </VBtn>
-             
-            </VCol>
+              <VCol cols="12" lg="6" md="6" sm="12" class="d-flex gap-2">
+                <VBtn icon color="error" @click="handleRemoveCompetitor(index)" v-if="competitors.length" >
+                  <VIcon icon="tabler-trash" />
+                </VBtn>
+                <VBtn icon color="success" @click="handleAddCompetitor" v-if="index === competitors.length - 1">
+                  <VIcon icon="tabler-plus" /> 
+                </VBtn>
+              </VCol>
             </VRow>
         </VCol>
+     </VRow>
+     <VRow v-if="competitors.length === 0">
+      <VCol>
+        <VBtn icon color="success" @click="handleAddCompetitor">
+          <VIcon icon="tabler-plus" />
+        </VBtn>
+      </VCol>
      </VRow>
    </VCardText>
     <VCardText v-if="activityStore.activity.image_path !== null">
@@ -635,27 +657,27 @@ const handleViewOnMap = () => {
     </VCardText> 
     <VCardText>
       <VRow class="flex-wrap">
-        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start">
+        <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start">
           <VBtn color="warning" type="button" @click="handleBackToList">
             <VIcon end icon="tabler-arrow-big-left" class="mr-1"/> Back To List 
           </VBtn>
         </VCol>
-        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start">
+        <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start">
           <VBtn color="warning" type="button" @click="handleSaveAsDraft">
             Save As Draft <VIcon end icon="tabler-pencil-check" />
           </VBtn>
         </VCol>
-        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" v-if="activityStore.activity.image_path === null">
+        <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.activity.image_path === null">
           <VBtn color="warning" type="button" @click="showCheckIn = true">
             Take Photo <VIcon end icon="tabler-camera" />
           </VBtn>
         </VCol>
-        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" :loading="activityStore.loadingId === Number(props.assignmentId)" v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out === null">
+        <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" :loading="activityStore.loadingId === Number(props.assignmentId)" v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out === null">
           <VBtn color="success" type="button" @click="handleCheckOut">
             Check Out <VIcon end icon="tabler-home-check" />
           </VBtn>
         </VCol>
-        <VCol cols="12" lg="2" md="4" sm="12" class="d-flex justify-start" v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out !== null">
+        <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out !== null">
           <VBtn color="success" type="submit">
             Submit Report <VIcon end icon="tabler-device-floppy" />
           </VBtn>

@@ -36,7 +36,7 @@ const { data: customerData, execute: fetchCustomer } = await useApi<any>(createU
 const customer = computed(() => {
   return customerData.value.data
 })
-console.log(customerData)
+
 const headers = [
   { title: 'Invoice', value: 'DocNum', sortable: true },
   { title: 'Inv Date', value: 'DocDate', sortable: true },
@@ -84,7 +84,7 @@ const handleRefresh = (stopLoading: () => void) => {
 </script>
 
 <template>
-  <CustomerOverview :data="customer" />
+  <CustomerOverview :data="customer" :id="customer.CardCode" />
   <SalesStatistic :id="customer.CardCode" />
   <VCol cols="12">
     <AppCardActions
@@ -125,9 +125,9 @@ const handleRefresh = (stopLoading: () => void) => {
           </div>
 
           <!-- 👉 Export button -->
-          <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+          <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
             Export
-          </VBtn>
+          </VBtn> -->
         </div>
       </VCardText>
 

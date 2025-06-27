@@ -73,71 +73,70 @@ const calculateTotalWeight = (items: any): string => {
 
 <template>
   <VCol
-      cols="12"
-    >
+    cols="12"
+  >
     <VCard class="mb-6">
       <VDivider />
-      <VDataTableServer
-        :items="props.salesInvoicesData"
-        :items-length="props.itemsLength"
-        :headers="computedHeaders"
-        :loading="configStore.loading"
-        :item-value="props.grouped ? props.groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum' : 'DocNum'"
-        :group-by="props.grouped ? [props.groupBy === 'DocNum' ? { key: 'DocNum' } : { key: 'Dscription' }] : []"
-        v-model:page="localPage"
-        v-model:items-per-page="localItemsPerPage"
-        v-model:model-value="props.selectedRows"
-        return-object
-        class="text-no-wrap"
-        :select-strategy="'all'"
-        multi-sort
-        @update:options="(opt) => props.onUpdateOptions && props.onUpdateOptions(opt)"
-        @update:model-value="(val) => props.onUpdateSelectedRows && props.onUpdateSelectedRows(val)"
-      >
-        <template v-if="props.grouped" #group-header="{ item, isGroupOpen, toggleGroup }">
-          <tr @click="toggleGroup(item)" style="cursor: pointer;" class="v-data-table__tr">
-            <td colspan="1" class="font-weight-bold text-primary">
-              <VIcon :icon="isGroupOpen(item) ? 'tabler-chevron-down' : 'tabler-chevron-right'" /> 
-              {{ item.value }} ({{ item.items.length }})
-            </td>
-            <td v-if="groupBy === 'ItemCode'" :colspan="1"  class="text-left">
-             {{  }}
-            </td>            
-            <td :colspan="groupBy === 'DocNum' ? 3 : 2"  class="text-left">
-              {{ formatDate(item.items[0].value.DocDate, { day: '2-digit', month: 'short', year: 'numeric'})  }}
-            </td>
-            <td class="text-left font-weight-bold text-primary">
-              {{ calculateTotalWeight(item.items) }}
-            </td>
-            <td></td>
-            <td class="text-left font-weight-bold text-primary">
-              {{ calculateTotalSales(item.items) }}
-            </td>
-          </tr>        
-        </template>
-  
-       <template #item.ItemCode="{ item }">
-         <a :href="`/customers/view/${props.customerId}/item/${item.ItemCode}`">{{ item.ItemCode }}</a>
+      <VDataTableServer 
+      :loading="configStore.loading" 
+      v-model:items-per-page="localItemsPerPage"
+      v-model:model-value="props.selectedRows"
+      v-model:page="localPage"
+      :items="props.salesInvoicesData"
+      :items-length="props.itemsLength"
+      :item-value="props.grouped ? props.groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum' : 'DocNum'"
+      :group-by="props.grouped ? [props.groupBy === 'DocNum' ? { key: 'DocNum' } : { key: 'Dscription' }] : []"
+      :headers="computedHeaders"
+      class="text-no-wrap"      
+      :select-strategy="'all'"
+      return-object 
+      @update:options="(opt) => props.onUpdateOptions && props.onUpdateOptions(opt)"
+      @update:model-value="(val) => props.onUpdateSelectedRows && props.onUpdateSelectedRows(val)"
+      multi-sort
+    >
+      <template v-if="props.grouped" #group-header="{ item, isGroupOpen, toggleGroup }">
+        <tr @click="toggleGroup(item)" style="cursor: pointer;" class="v-data-table__tr">
+          <td colspan="1" class="font-weight-bold text-primary">
+            <VIcon :icon="isGroupOpen(item) ? 'tabler-chevron-down' : 'tabler-chevron-right'" /> 
+            {{ item.value }} ({{ item.items.length }})
+          </td>
+          <td v-if="groupBy === 'ItemCode'" :colspan="1"  class="text-left">
+           {{  }}
+          </td>            
+          <td :colspan="groupBy === 'DocNum' ? 3 : 2"  class="text-left">
+            {{ formatDate(item.items[0].value.DocDate, false, { day: '2-digit', month: 'short', year: 'numeric'})  }}
+          </td>
+          <td class="text-left font-weight-bold text-primary">
+            {{ calculateTotalWeight(item.items) }}
+          </td>
+          <td></td>
+          <td class="text-left font-weight-bold text-primary">
+            {{ calculateTotalSales(item.items) }}
+          </td>
+        </tr>        
+      </template>
+      <template #item.ItemCode="{ item }">
+        <a :href="`/customers/view/${props.customerId}/item/${item.ItemCode}`">{{ item.ItemCode }}</a>
+      </template>
+      <template #item.DocNum="{ item }">
+        <a :href="`/customers/view/${props.customerId}/invoice/${item.DocNum}`">{{ item.DocNum }}</a>
+      </template>
+       <template #item.DocDate="{ item }">
+         {{ formatDate(item.DocDate, false , { day: '2-digit', month: 'short', year: 'numeric'})  }}
        </template>
-       <template #item.DocNum="{ item }">
-         <a :href="`/customers/view/${props.customerId}/invoice/${item.DocNum}`">{{ item.DocNum }}</a>
+       <template #item.QtyKg="{ item }">
+         {{ Number(item.QtyKg).toFixed(2) }}
        </template>
-        <template #item.DocDate="{ item }">
-          {{ formatDate(item.DocDate, { day: '2-digit', month: 'short', year: 'numeric'})  }}
-        </template>
-        <template #item.QtyKg="{ item }">
-          {{ Number(item.QtyKg).toFixed(2) }}
-        </template>
-         <template #item.total_weight="{ item }">
-          {{ Number(item.total_weight).toFixed(2) }}
-        </template>
-        <template #item.PriceBefDisc="{ item }">
-          {{ formatMoney(item.PriceBefDisc) }}
-        </template>
-        <template #item.TotalSales="{ item }">
-          {{ formatMoney(item.TotalSales) }}
-        </template>
-      </VDataTableServer>
+        <template #item.total_weight="{ item }">
+         {{ Number(item.total_weight).toFixed(2) }}
+       </template>
+       <template #item.PriceBefDisc="{ item }">
+         {{ formatMoney(item.PriceBefDisc) }}
+       </template>
+       <template #item.TotalSales="{ item }">
+         {{ formatMoney(item.TotalSales) }}
+       </template>
+    </VDataTableServer>
     </VCard>
   </VCol>
 </template>

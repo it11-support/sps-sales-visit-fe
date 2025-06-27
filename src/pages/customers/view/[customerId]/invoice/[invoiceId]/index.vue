@@ -5,7 +5,6 @@ import { SortItem } from '@/@core/types'
 import CustomerOverview from '@/views/pages/customer/CustomerOverview.vue'
 import SalesInvoiceTable from '@/views/pages/customer/SalesInvoiceTable.vue'
 import SalesStatistic from '@/views/pages/customer/SalesStatistic.vue'
-import { title } from 'node:process'
 
 
 const router = useRoute('customers-view-customerId-item-itemId' as any)
@@ -83,7 +82,7 @@ const handleRefresh = (stopLoading: () => void) => {
 </script>
 
 <template>
-  <CustomerOverview :data="customer" />
+  <CustomerOverview :data="customer" :id="customer.CardCode" />
   <SalesStatistic :id="customer.CardCode" />
   <VCol cols="12">
     <AppCardActions
@@ -94,6 +93,17 @@ const handleRefresh = (stopLoading: () => void) => {
       title="SALES INVOICES"
     >
       <VCardText class="d-flex flex-wrap gap-4">
+        <div class="me-4 d-flex gap-3">
+          <AppSelect
+            :model-value="itemsPerPage"
+            :items="PAGINATION_ITEMS"
+            style="inline-size: 6.25rem;"
+            @update:model-value="itemsPerPage = parseInt($event, 10)"
+          />
+          
+        </div>
+        <VSpacer />
+
         <VRow>
           <VCol cols="12" lg="12" md="12">
             <v-radio-group inline v-model="groupBy">
@@ -123,13 +133,12 @@ const handleRefresh = (stopLoading: () => void) => {
             <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
           </div>
 
-          <!-- 👉 Export button -->
-          <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
-            Export
-          </VBtn>
-        </div>
-      </VCardText>
-
+            <!-- 👉 Export button -->
+            <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+              Export
+            </VBtn> -->
+          </div>
+        </VCardText>
       <SalesInvoiceTable 
         :sales-invoices-data="salesInvoicesData" 
         :customer-id="router.params.customerId"

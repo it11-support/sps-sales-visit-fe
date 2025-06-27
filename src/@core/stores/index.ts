@@ -4,4 +4,4 @@ export * from './config'
 export * from './customer'
 export * from './product'
 export * from './statistic'
-
+export * from './user'

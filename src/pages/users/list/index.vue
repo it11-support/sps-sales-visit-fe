@@ -1,36 +1,31 @@
 <script setup lang="ts">
+import { useUserStore } from '@/@core/stores';
+import { useRoleStore } from '@/@core/stores/role';
+import { useSalesPersonStore } from '@/@core/stores/sales-person';
 import ConfirmDialog from '@/components/dialogs/ConfirmDialog.vue';
 import { handleUserBinding } from '@/utils/user/binding';
 import UserDrawer from '@/views/pages/user/UserDrawer.vue';
 import { useConfigStore } from '@core/stores/config';
-import type { ISalesPerson, IUser, SortItem } from '@core/types';
+import type { IUser } from '@core/types';
 
 const searchQuery = ref('')
-const selectedRole = ref()
-const debouncedQuery = ref('')
 const selectedSalesPerson = ref()
-const salesPersonOptions  = ref([])
-const selectedUser = ref()
 const salesPersonModal = ref({
   type : 'link',
   show: false
 })
 
-const isAddNewUserDrawerVisible = ref(false)
-const isEditMode = ref(false)
 let debouncedQueryTimeout: ReturnType<typeof setTimeout> | null = null
 
-
 // Data table options
-const itemsPerPage = ref(DEFAULT_PER_PAGE)
-const page = ref(1)
-const sortOptions = ref<SortItem[]>([])
-const selectedRows = ref<IUser[]>([])
 const isConfirmDialogVisible = ref(false)
 const configStore = useConfigStore()
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
-
+const showFilter = ref(false)
+const userStore = useUserStore()
+const roleStore = useRoleStore()
+const salesPersonStore = useSalesPersonStore()
 // Headers
 const headers = [
   { title: 'User', key: 'name'},
@@ -41,79 +36,38 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-// Add user
-const storeUser = async (userData: IUser) => {
-  configStore.overlay = true
+onMounted(() => {  
+  roleStore.fetchRoles()
+  salesPersonStore.updateSalesPersonOptions()
+  userStore.fetchUsers()
+})
 
-  console.log(userData)
-  try {
-    const url = isEditMode.value ? `/user/update/${userData.id}` : '/user/register'
-    await $api(url, {
-      method: isEditMode.value ? 'PUT' : 'POST',
-      body: userData,
-    })
-    // Refetch User
-    fetchUsers()  
-  } catch (error) {
-
-  } finally {
-    configStore.overlay = false
-    isAddNewUserDrawerVisible.value = false
-  }
-}
-
-// Update sort options
-const updateOptions = (options: any) => {
-  sortOptions.value = [options.sortBy]
-}
 // Delayed search
 watch(searchQuery, (newVal) => {
   if (debouncedQueryTimeout) clearTimeout(debouncedQueryTimeout)
 
   debouncedQueryTimeout = setTimeout(() => {
-    debouncedQuery.value = newVal
+    userStore.updateQuery({ search: newVal })
   }, 700)
 })
 
-// Fetch sales persons
-const { data: salesPersonsData, execute: fetchSalesPersons } = await useApi<any>(createUrl('sales',{
-  query: {
-    per_page: -1,
-    page: 1,
-  }
-}))
 
 // Update sales person options
 watch(salesPersonModal, async(newVal) => {
-  newVal.show && newVal.type === 'link' && await updateSalesPersonOptions()
+  newVal.show && newVal.type === 'link' && await salesPersonStore.updateSalesPersonOptions()
 }, { deep: true })
 
-const updateSalesPersonOptions = async () => {
-  await fetchSalesPersons()
-  salesPersonOptions.value = salesPersonsData.value.data.data
-    .filter((sales: ISalesPerson) => sales.user == null)
-    .filter((sales: ISalesPerson) => sales.user?.role?.role !== 'admin')
-    .map((sales: ISalesPerson) => ({
-      label: sales.SlpName,
-      value: sales.SlpCode
-    }))
-}
-
-// Update selected rows
-const updateSelectedRows = (rows: IUser[]) => {
-  selectedRows.value = rows.map((row: IUser) => ({ ...row }));
-}
 
 // Link & unlink user to sales person api
 const handleSalesPersonLink = async () => {
   await handleUserBinding({
     type: salesPersonModal.value.type,
-    userId: selectedUser.value.id, 
+    userId: userStore.selectedUser.id, 
     salesPersonId: selectedSalesPerson.value,
-    callback: fetchUsers, 
+    callback: userStore.fetchUsers, 
     onFinish: () => {
       salesPersonModal.value = {...salesPersonModal.value, show: false}
-      selectedUser.value = null
+      userStore.setSelectedUser({username: '', role: undefined, id: 0, name: '', email: ''})
       selectedSalesPerson.value = null
     }
   })
@@ -121,12 +75,12 @@ const handleSalesPersonLink = async () => {
 
 // Show delete modal
 const showDeleteModal = (item: IUser) => {
-  selectedUser.value = item
+  userStore.setSelectedUser(item)
   isConfirmDialogVisible.value = true
 }
 
 const deleteSelectedUsers = async () => {
-  console.log(selectedUser.value)
+  console.log(userStore.selectedUser)
 }
 // Open link menu
 const handleClickLinkMenu = (item: IUser) => {
@@ -135,42 +89,19 @@ const handleClickLinkMenu = (item: IUser) => {
   } else {
     salesPersonModal.value = {show: true, type: 'link'}
   }
-  selectedUser.value = item
+  userStore.setSelectedUser(item)
 }
 
-// 👉 Fetching users
-const { data: usersData, execute: fetchUsers } = await useApi<any>(createUrl('user', {
-  query: {
-    search: debouncedQuery,
-    role: selectedRole,
-    per_page: itemsPerPage,
-    page,
-    sort_options: sortOptions
-  },
-}))
-
-// Fetch roles
-const { data: rolesData } = await useApi<any>(createUrl('role'), {})
-
-// Roles for filter
-const roleOptions = rolesData.value.data.map((role: any) => ({
-  role: role.role[0].toUpperCase() + role.role.slice(1),
-  id: role.id
-}))
-
-const totalUser = computed(() => usersData.value.data.total)
-const users = computed((): IUser[] => usersData.value.data.data)
-
 // Change selected item value and open drawer
-const handleSelectItem = (item?: IUser) => {
+const handleSelectItem = (item?: IUser) => {  
   if (item) {
-    selectedUser.value = { ...item }
-    isEditMode.value = true
+    userStore.setSelectedUser({ ...item })
+    userStore.setEditMode(true)
   } else {
-    selectedUser.value = null
-    isEditMode.value = false
+    userStore.setSelectedUser({ username: '', role: undefined, id: 0, name: '', email: '' })
+    userStore.setEditMode(false)
   }
-  isAddNewUserDrawerVisible.value = true
+  userStore.setAddNewUserDrawerVisible(true)
 }
 </script>
 
@@ -178,19 +109,20 @@ const handleSelectItem = (item?: IUser) => {
   <section>
     <VCard class="mb-6">
       <VCardItem class="pb-4">
-        <VCardTitle>Filters</VCardTitle>
+        <VCheckbox v-model="showFilter" label="Show Filters"></VCheckbox>
       </VCardItem>
-      <VCardText>
+      <VCardText v-if="showFilter">
         <VRow>
           <VCol
             cols="12"
             sm="4"
           >
           <AppSelect
-            v-model="selectedRole"
+            v-model="userStore.query.role"
+            @update:model-value="userStore.updateQuery({ role: $event, page: 1 })"
             clearable
             clear-icon="tabler-x"
-            :items="roleOptions"
+            :items="roleStore.roleOptions"
             item-title="role"
             item-value="id"
             label="Role"
@@ -204,10 +136,10 @@ const handleSelectItem = (item?: IUser) => {
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-3 d-flex gap-3">
           <AppSelect
-            :model-value="itemsPerPage"
+            :model-value="userStore.query.per_page"
             :items="PAGINATION_ITEMS"
             style="inline-size: 6.25rem;"
-            @update:model-value="itemsPerPage = parseInt($event, 10)"
+            @update:model-value="userStore.setPerpage(parseInt($event, 10))"
           />
         </div>
         <VSpacer />
@@ -223,13 +155,13 @@ const handleSelectItem = (item?: IUser) => {
           </div>
 
           <!-- 👉 Export button -->
-          <VBtn
+          <!-- <VBtn
             variant="tonal"
             color="secondary"
             prepend-icon="tabler-upload"
           >
             Export
-          </VBtn>
+          </VBtn> -->
 
           <VBtn
             prepend-icon="tabler-plus"
@@ -242,19 +174,19 @@ const handleSelectItem = (item?: IUser) => {
       <VDivider />
       <VDataTableServer
         :loading="configStore.loading && !salesPersonModal.show"
-        v-model:items-per-page="itemsPerPage"
-        v-model:model-value="selectedRows"
-        v-model:page="page"
-        :items="users"
+        v-model:items-per-page="userStore.pagination.per_page"
+        v-model:model-value="userStore.selectedRows"
+        v-model:page="userStore.query.page"
+        :items="userStore.users"
         item-value="id"
-        :items-length="totalUser"
+        :items-length="userStore.pagination.total"
         :headers="headers"
         class="text-no-wrap"
         show-select
         :select-strategy="'all'"
         return-object
-        @update:options="updateOptions"
-        @update:model-value="updateSelectedRows"
+        @update:options="userStore.updateSortOptions"
+        @update:model-value="userStore.setSelectedRows"
         multi-sort
       >
         <template #item.name="{ item }">
@@ -295,12 +227,12 @@ const handleSelectItem = (item?: IUser) => {
             <VIcon icon="tabler-dots-vertical" />
             <VMenu activator="parent">
               <VList>
-                <VListItem >
+                <!-- <VListItem >
                   <template #prepend>
                     <VIcon icon="tabler-eye" />
                   </template>
                   <VListItemTitle>View</VListItemTitle>
-                </VListItem>
+                </VListItem> -->
                 <VListItem @click="handleSelectItem(item)">
                   <template #prepend>
                     <VIcon icon="tabler-edit" />
@@ -315,25 +247,25 @@ const handleSelectItem = (item?: IUser) => {
                     <VListItemTitle>{{ !item.sales_person ? 'Link Sales Person' : 'Unlink Sales Person' }}</VListItemTitle>
                   </VListItem>
                 </template>                
-                <div>
+                <!-- <div>
                   <VListItem v-if="item.role?.role !== 'admin'" @click="showDeleteModal(item)">
                     <template #prepend>
                       <VIcon icon="tabler-trash" />
                     </template>
                     <VListItemTitle>Delete</VListItemTitle>
                   </VListItem>
-              </div>
+                </div> -->
               </VList>
             </VMenu>
           </VBtn>
         </template>
-        <template #bottom>
+        <!-- <template #bottom>
           <TablePagination
-            v-model:page="page"
-            :items-per-page="itemsPerPage"
-            :total-items="totalUser"
+            v-model:page="userStore.query.page"
+            :items-per-page="userStore.query.per_page"
+            :total-items="userStore.pagination.total"
           />
-        </template>
+        </template> -->
       </VDataTableServer>
     </VCard>
     <VDialog v-model="salesPersonModal.show" max-width="500">
@@ -349,7 +281,7 @@ const handleSelectItem = (item?: IUser) => {
               clear-icon="tabler-x"
               item-title="label"
               item-value="value"
-              :items="salesPersonOptions"          
+              :items="salesPersonStore.salesPersonOptions"
               label="Sales Person"
               retun-object
             />
@@ -375,10 +307,12 @@ const handleSelectItem = (item?: IUser) => {
       </VCard>      
     </VDialog>
     <UserDrawer
-      :user="selectedUser"
-      :is-edit-mode="isEditMode"
-      v-model:is-drawer-open="isAddNewUserDrawerVisible"
-      @user-data="storeUser"
+      :user="userStore.selectedUser"
+      :is-edit-mode="userStore.isEditMode"
+      v-model:is-drawer-open="userStore.isAddNewUserDrawerVisible"
+      :role-options="roleStore.roleOptions"
+      :sales-persons-options="salesPersonStore.salesPersonOptions"
+      @user-data="userStore.storeUser"
     />
     <ConfirmDialog
       v-model:is-dialog-visible="isConfirmDialogVisible"
