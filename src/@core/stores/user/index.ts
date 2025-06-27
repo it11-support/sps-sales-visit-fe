@@ -76,8 +76,6 @@ export const useUserStore = defineStore('userStore', {
     },
     async storeUser (userData: IUser) {
       configStore.overlay = true
-      console.log(this.isEditMode)
-      console.log(userData)
       try {
         const url = this.isEditMode ? `/user/update/${userData.id}` : '/user/register'
         await $api(url, {

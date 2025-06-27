@@ -76,7 +76,7 @@ export const useActivityStore = defineStore('activity', {
       }
       this.activityTypes = data.value.data.map((type: any) => ({
         value: type.id,
-        label: type.name
+        title: type.name
       }))
     },
     async fetchActivities() {
@@ -277,13 +277,11 @@ export const useActivityStore = defineStore('activity', {
     },
     
     updateForm(form: Partial<IActivityReport>) {
-      console.log(form)
       this.activityReport = {
         ...this.activityReport,
         ...form
       }
 
-      console.log(this.activityReport)
     }, 
     addCompetitor(competitor: ICompetitor) {
       this.activityReport.competitors?.push(competitor)

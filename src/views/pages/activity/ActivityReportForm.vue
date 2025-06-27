@@ -172,7 +172,6 @@ const submitHandler = async () => {
     if (validation) {
       const { valid, errors } = validation
       if (!valid) {
-        console.log(errors)
         const el = document.getElementById('scrollTarget')
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' })

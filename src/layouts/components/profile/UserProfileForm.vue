@@ -56,7 +56,6 @@ const submitUserHandler = async () => {
     if (validation) {
       const { valid, errors } = validation
       if (!valid) {
-        console.log(errors)
         return
       }
     }

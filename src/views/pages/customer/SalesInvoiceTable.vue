@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useConfigStore } from '@/@core/stores/config';
-import { ISalesInvoice } from '@/@core/typedefs/salesinvoice';
+import { ISalesInvoice, ISalesInvoiceData } from '@/@core/typedefs/salesinvoice';
 
 interface Props {  
-  salesInvoicesData: ISalesInvoice[],
+  salesInvoicesData: ISalesInvoiceData,
   groupBy?: string
   headers: {
     title: string;
@@ -82,7 +82,7 @@ const calculateTotalWeight = (items: any): string => {
       v-model:items-per-page="localItemsPerPage"
       v-model:model-value="props.selectedRows"
       v-model:page="localPage"
-      :items="props.salesInvoicesData"
+      :items="props.salesInvoicesData.data"
       :items-length="props.itemsLength"
       :item-value="props.grouped ? props.groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum' : 'DocNum'"
       :group-by="props.grouped ? [props.groupBy === 'DocNum' ? { key: 'DocNum' } : { key: 'Dscription' }] : []"

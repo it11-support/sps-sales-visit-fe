@@ -3,6 +3,7 @@ import { useConfigStore } from '@/@core/stores/config'
 import { ISalesInvoice } from '@/@core/typedefs/salesinvoice'
 import { SortItem } from '@/@core/types'
 import SalesInvoiceTable from './SalesInvoiceTable.vue'
+import { useSalesInvoiceStore } from '@/@core/stores/salesinvoice'
 
 const startDate = ref('')
 const endDate = ref('')
@@ -16,8 +17,7 @@ const groupBy = ref('DocNum')
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 const configStore = useConfigStore()
 const selectedRows = ref<ISalesInvoice[]>([])
-const collapsed = ref(false)
-
+const salesInvoiceStore = useSalesInvoiceStore()
 interface Props {
   id: string
 }
@@ -33,8 +33,8 @@ const headers = [
   { title: 'Total', value: 'TotalSales', sortable: true },
 ]
 
-const { data: salesInvoices, execute: fetchSalesInvoices } = await useApi<any>(createUrl(`invoice`, {
-  query: {
+onMounted(() => {
+  salesInvoiceStore.updateQuery({
     id: props.id,
     search: debouncedQuery,
     per_page: itemsPerPage,
@@ -43,8 +43,9 @@ const { data: salesInvoices, execute: fetchSalesInvoices } = await useApi<any>(c
     start_date: startDate,
     end_date: endDate,
     group_by: groupBy
-  }
-}))
+  })
+  salesInvoiceStore.fetchSalesInvoices()
+})
 
 // Delayed search
 watch(searchQuery, (newVal) => {
@@ -56,9 +57,7 @@ watch(searchQuery, (newVal) => {
   }, 400) // delay 400ms
 })
 
-const salesInvoicesData = computed((): ISalesInvoice[] => {
-  return salesInvoices.value.data.data
-})
+const salesInvoicesData = computed(() => salesInvoiceStore.salesInvoices)
 
 const updateOptions = (options: any) => {
   if(options.sortBy.length < 1) {
@@ -70,7 +69,7 @@ const updateOptions = (options: any) => {
 }
 
 const handleRefresh = (stopLoading: () => void) => {
-  fetchSalesInvoices().finally(() => {
+  salesInvoiceStore.fetchSalesInvoices().finally(() => {
     stopLoading();
   });
 }
@@ -84,7 +83,7 @@ const calculateTotalSales = (items: any): string => {
   return formatMoney(totalSales)
 }
 
-const totalSales = computed(() => salesInvoices.value.data.total)
+const totalSales = computed(() => salesInvoiceStore.salesInvoices.total)
 
 const computedHeaders = computed(() => {
   if (groupBy.value === 'ItemCode') {

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useConfigStore } from '@/@core/stores/config'
+import { useSalesInvoiceStore } from '@/@core/stores/salesinvoice'
 import { ISalesInvoice } from '@/@core/typedefs/salesinvoice'
 import { SortItem } from '@/@core/types'
 import CustomerOverview from '@/views/pages/customer/CustomerOverview.vue'
@@ -16,10 +17,12 @@ const page = ref(1)
 const itemsPerPage = ref(DEFAULT_PER_PAGE)
 const selectedRows = ref<ISalesInvoice[]>([])
 const sortOptions = ref<SortItem[]>([])
+const salesInvoiceStore = useSalesInvoiceStore()
 
 const configStore = useConfigStore()
-const { data: salesInvoices, execute: fetchSalesInvoices } = await useApi<any>(createUrl(`invoice`, {
-  query: {
+
+onMounted(async () => {
+  salesInvoiceStore.updateQuery({
     id: router.params.customerId,
     itemId: router.params.itemId,
     per_page: itemsPerPage,
@@ -28,8 +31,10 @@ const { data: salesInvoices, execute: fetchSalesInvoices } = await useApi<any>(c
     start_date: startDate,
     end_date: endDate,
     // group_by: groupBy
-  }
-}))
+  })
+  salesInvoiceStore.fetchSalesInvoices()
+})
+
 
 const { data: customerData, execute: fetchCustomer } = await useApi<any>(createUrl(`customer/${router.params.customerId}`))
 
@@ -57,11 +62,10 @@ const computedHeaders = computed(() => {
 
 })
 
-const salesInvoicesData = computed((): ISalesInvoice[] => {
-  return salesInvoices.value.data.data
-})
 
-const totalSales = computed(() => salesInvoices.value.data.total)
+const salesInvoicesData = computed(() => salesInvoiceStore.salesInvoices)
+
+const totalSales = computed(() => salesInvoiceStore.salesInvoices.total)
 
 const updateOptions = (options: any) => {
   if (JSON.stringify(options.sortBy) !== JSON.stringify(sortOptions.value)) {
@@ -76,7 +80,7 @@ const updateSelectedRows = (rows: ISalesInvoice[]) => {
 }
 
 const handleRefresh = (stopLoading: () => void) => {
-  fetchSalesInvoices().finally(() => {
+  salesInvoiceStore.fetchSalesInvoices().finally(() => {
     stopLoading()
   });
 }

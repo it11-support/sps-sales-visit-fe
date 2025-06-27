@@ -59,7 +59,6 @@ export const useSalesInvoiceStore = defineStore('salesinvoice', {
         console.error('Error fetching sales person options:', error.value)
         return
       }
-      console.log(data)
       this.salesInvoices = data.value.data
       this.loading = false
     },
