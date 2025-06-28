@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useCustomerStore } from '@/@core/stores/customer'
+import { useSalesPersonStore } from '@/@core/stores/sales-person'
 
 const customerStore = useCustomerStore()
+const salesStore = useSalesPersonStore()
 // 👉 Store
 const searchQuery = ref('')
 // const debouncedQuery = ref('')
@@ -17,6 +19,11 @@ const filterDormantCustomer = ref(false)
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
 const showFilter = ref(false)
+const loadingSalesPerson = ref(true)
+const loadingGroupName = ref(true)
+const loadingPaymentOptions = ref(true)
+const loadingPriceListOptions = ref(true)
+const loadingCityOptions = ref(true)
 
 watch(debouncedQuery, (val) => {
   customerStore.updateFilters({ search: val })
@@ -41,50 +48,24 @@ const headers = [
 
 
 onMounted(() => {
-  customerStore.fetchCustomers()
+  customerStore.fetchCustomers()  
+  salesStore.updateQuery({ per_page: -1, page: 1 })
 })
 
-const { data: salesPersonsData } = await useApi<any>(createUrl('sales', {
-  query: {
-    per_page: -1,
-    page: 1
+watch(showFilter, (newVal) => {
+  if(newVal){
+    salesStore.fetchSalesPersons()
+    customerStore.fetchFilters()
   }
-}), {})
+})
 
-const { data: groupFilter } = await useApi<any>(createUrl('customer/get-fitlers'), {})
-
-const groupNameOptions = computed(() => groupFilter.value.data.groupName.map((group: any) => ({
-  value: group.GroupName,
-  title: group.GroupName
-})))
-
-
-const paymentTermOptions = computed(() => groupFilter.value.data.paymentTerm.map((term: any) => ({
-  value: term.PaymentTerm,
-  title: term.PaymentTerm
-})))
-
-const priceListOptions = computed(() => groupFilter.value.data.priceList.map((list: any) => ({
-  value: list.PriceList,
-  title: list.PriceList
-})))
-
-const cityOptions = computed(() => groupFilter.value.data.cities
-  .filter((city: any) => city.City !== null)
-  .map((city: any) => ({
-    value: city.City,
-    title: city.City
-  })))
-
-// Sales persons for filter
-const salesPersons = computed(() => salesPersonsData.value.data.data.map((salesPerson: any) => ({
-  value: salesPerson.SlpCode,
-  title: salesPerson.SlpName
-})))
-
-
-const customers = customerStore.customers
-
+watch([salesStore, customerStore], ([sales, customer]) => {
+  if(sales.salesPersonOptions.length > 0) loadingSalesPerson.value = false
+  if(customer.groupNameOptions.length > 0) loadingGroupName.value = false
+  if(customerStore.paymentTermOptions.length > 0) loadingPaymentOptions.value = false
+  if(customerStore.priceListOptions.length > 0) loadingPriceListOptions.value = false
+  if(customerStore.cityOptions.length > 0) loadingCityOptions.value = false
+})
 // 👉 search filters
 const status = [
   { title: 'Active', value: 'N' },
@@ -127,35 +108,70 @@ const deleteCustomer = async (id: string) => {
         <VRow>
           <!-- 👉 Select Role -->
           <VCol cols="12" sm="4" v-if="isAdmin">
-            <AppSelect v-model="customerStore.filters.sales_person_id"
+            <AppSelect 
+              v-model="customerStore.filters.sales_person_id"
               @update:model-value="customerStore.updateFilters({ sales_person_id: $event })"
-              placeholder="Fitler by sales person" :items="salesPersons" clearable clear-icon="tabler-x" />
+              placeholder="Filter by sales person" 
+              :items="salesStore.salesPersonOptions"
+              clearable
+              clear-icon="tabler-x" 
+              :loading="loadingSalesPerson"
+            />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect v-model="customerStore.filters.group_name"
+            <AppSelect 
+              v-model="customerStore.filters.group_name"
               @update:model-value="customerStore.updateFilters({ group_name: $event })"
-              placeholder="Filter by group name" :items="groupNameOptions" clearable clear-icon="tabler-x" />
+              placeholder="Filter by group name"
+              :items="customerStore.groupNameOptions"
+              clearable
+              clear-icon="tabler-x" 
+              :loading="loadingGroupName"
+            />
           </VCol>
 
           <VCol cols="12" md="4" sm="4">
-            <AppSelect v-model="customerStore.filters.status"
-              @update:model-value="customerStore.updateFilters({ status: $event })" placeholder="Filter by status"
-              :items="status" clearable clear-icon="tabler-x" />
+            <AppSelect
+              v-model="customerStore.filters.status"
+              @update:model-value="customerStore.updateFilters({ status: $event })" 
+              placeholder="Filter by status"
+              :items="status" 
+              clearable 
+              clear-icon="tabler-x" 
+            />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect v-model="customerStore.filters.payment_term"
+            <AppSelect
+              v-model="customerStore.filters.payment_term"
               @update:model-value="customerStore.updateFilters({ payment_term: $event })"
-              placeholder="Filter by Payment Term" :items="paymentTermOptions" clearable clear-icon="tabler-x" />
+              placeholder="Filter by Payment Term"
+              :items="customerStore.paymentTermOptions"
+              clearable
+              clear-icon="tabler-x" 
+              :loading="loadingPaymentOptions"
+            />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect v-model="customerStore.filters.price_list"
+            <AppSelect
+              v-model="customerStore.filters.price_list"
               @update:model-value="customerStore.updateFilters({ price_list: $event })"
-              placeholder="Filter by Price List" :items="priceListOptions" clearable clear-icon="tabler-x" />
+              placeholder="Filter by Price List" 
+              :items="customerStore.priceListOptions" 
+              clearable 
+              clear-icon="tabler-x" 
+              :loading="loadingPriceListOptions"
+            />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect v-model="customerStore.filters.city"
-              @update:model-value="customerStore.updateFilters({ city: $event })" placeholder="Filter by City / Area"
-              :items="cityOptions" clearable clear-icon="tabler-x" />
+            <AppSelect
+              v-model="customerStore.filters.city"
+              @update:model-value="customerStore.updateFilters({ city: $event })"
+              placeholder="Filter by City / Area"
+              :items="customerStore.cityOptions" 
+              clearable 
+              clear-icon="tabler-x" 
+              :loading="loadingCityOptions"
+            />
           </VCol>
         </VRow>
         <VRow class="d-flex justify-start">

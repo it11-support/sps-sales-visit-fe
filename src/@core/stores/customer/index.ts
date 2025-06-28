@@ -32,6 +32,11 @@ export const useCustomerStore = defineStore('customer', {
     meta: {} as Meta,
     loadingList: false,
     loadingDetail: false,
+    groupFilters: {} as any,
+    groupNameOptions: [] as { value: string; title: string }[],
+    paymentTermOptions: [] as { value: string; title: string }[],
+    priceListOptions: [] as { value: string; title: string }[],
+    cityOptions: [] as { value: string; title: string }[],
     selectedRows: [] as ICustomerData[],
     pagination: {
       current_page: 1,
@@ -93,7 +98,35 @@ export const useCustomerStore = defineStore('customer', {
       this.customer = data.value.data
       this.loadingDetail = false
     },
-
+    async fetchFilters() {
+      this.loadingList = true
+      const { data, error } = await useApi<any>(createUrl('customer/get-fitlers'))
+      if (error.value) {
+        console.error('Error fetching filters:', error.value)
+        this.loadingList = false
+        return
+      }
+      this.groupFilters = data.value.data
+      this.groupNameOptions = data.value.data.groupName.map((group: any) => ({
+        title: group.GroupName,
+        value: group.GroupName
+      }))
+      this.paymentTermOptions = data.value.data.paymentTerm.map((term: any) => ({
+        title: term.PaymentTerm,
+        value: term.PaymentTerm
+      }))
+      this.priceListOptions = data.value.data.priceList.map((list: any) => ({
+        title: list.PriceList,
+        value: list.PriceList
+      }))
+      this.cityOptions = data.value.data.cities
+      .filter((city: any) => city.City !== null)
+      .map((city: any) => ({
+        title: city.City,
+        value: city.City
+      }))
+      this.loadingList = false
+    },
     updateSortOptions(options: any) {
       this.updateFilters({
         sort_options: [options.sortBy]

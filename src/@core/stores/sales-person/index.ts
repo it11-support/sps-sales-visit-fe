@@ -8,20 +8,28 @@ export const useSalesPersonStore = defineStore('salesPersonStore', {
       per_page: -1,
       page: 1
     },
-    salesPersonOptions: [] as { label: string, value: number }[]
+    salesPersonOptions: [] as { title: string, value: number }[],
+    filteredSalesPersonOptions: [] as { title: string, value: number }[],
   }),
   actions:{
     async fetchSalesPersons() {
       const { data } = await useApi<any>(createUrl('sales',{ query: this.query }))
       this.salesPersons = data.value.data.data
+      this.salesPersonOptions = data.value.data.data.map((sales: ISalesPerson) => ({
+        title: sales.SlpName,
+        value: sales.SlpCode
+      }))
+    },
+    async updateQuery(query: any) {
+      this.query = { ...this.query, ...query }     
     },
     async updateSalesPersonOptions() {
       await this.fetchSalesPersons()
-      this.salesPersonOptions = this.salesPersons
+      this.filteredSalesPersonOptions = this.salesPersons
         .filter((sales: ISalesPerson) => sales.user == null)
         .filter((sales: ISalesPerson) => sales.user?.role?.role !== 'admin')
         .map((sales: ISalesPerson) => ({
-          label: sales.SlpName,
+          title: sales.SlpName,
           value: sales.SlpCode
         }))
     }

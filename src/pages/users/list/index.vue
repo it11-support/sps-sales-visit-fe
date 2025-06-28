@@ -14,7 +14,7 @@ const salesPersonModal = ref({
   type : 'link',
   show: false
 })
-
+const loadingRoles = ref(true)
 let debouncedQueryTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Data table options
@@ -36,8 +36,7 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-onMounted(() => {  
-  roleStore.fetchRoles()
+onMounted(() => {   
   salesPersonStore.updateSalesPersonOptions()
   userStore.fetchUsers()
 })
@@ -51,6 +50,15 @@ watch(searchQuery, (newVal) => {
   }, 700)
 })
 
+watch(showFilter, (newVal) => {
+  if(newVal){
+    roleStore.fetchRoles()
+  }
+})
+
+watch(roleStore, (newVal) => {
+  if(newVal.roleOptions.length > 0) loadingRoles.value = false
+})
 
 // Update sales person options
 watch(salesPersonModal, async(newVal) => {
@@ -118,6 +126,7 @@ const handleSelectItem = (item?: IUser) => {
             sm="4"
           >
           <AppSelect
+            :loading="loadingRoles"
             v-model="userStore.query.role"
             @update:model-value="userStore.updateQuery({ role: $event, page: 1 })"
             clearable
@@ -279,7 +288,7 @@ const handleSelectItem = (item?: IUser) => {
               v-model="selectedSalesPerson"
               clearable
               clear-icon="tabler-x"
-              item-title="label"
+              item-title="title"
               item-value="value"
               :items="salesPersonStore.salesPersonOptions"
               label="Sales Person"

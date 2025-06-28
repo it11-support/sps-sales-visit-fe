@@ -9,8 +9,8 @@ const searchQuery = ref('')
 const salesPersonId = computed(() => user.value.sales_person?.SlpCode)
 const debouncedQuery = useDebounce(searchQuery, 400)
 const router = useRouter()
-const showCheckIn = reactive<Record<number, boolean>>({})
 const showFilters = ref(false)
+const loadingSalesPersonsOptions = ref(true)
 
 const STATUS = {
   ASSIGNED: 'assigned',
@@ -42,8 +42,17 @@ onMounted(async () => {
   if(!isAdmin.value && salesPersonId.value) {
     activityStore.updateFilters({ sales_person_id: salesPersonId.value })
   }
-  await activityStore.fetchActivities()
-  await activityStore.fetchSalesPersonOptions()
+  await activityStore.fetchActivities()  
+})
+
+watch(showFilters, (val) => {
+  if (val) {
+    activityStore.fetchSalesPersonOptions()
+  }
+})
+
+watch(activityStore, (val) => {
+  if(val.salesPersonsOptions.length > 0) loadingSalesPersonsOptions.value = false
 })
 
 watch(() =>isAdmin.value, (val) => {
@@ -80,9 +89,6 @@ const getStatus = (status: string) => {
     }
 }
 
-const handleClickReport = (id: number) => {
-  router.push({ path: createUrl(`/activity/${id}/report`).value })
-}
 
 const handleClickViewReport = (id: number) => {
   router.push({ path: createUrl(`/activity/${id}/view-report`).value })
@@ -112,9 +118,10 @@ const handleCheckIn = async(id: number) => {
         >
           <AppSelect 
             v-model="activityStore.filters.sales_person_id"
-            :disabled="activityStore.loading"
+            :disabled="loadingSalesPersonsOptions"
+            :loading="loadingSalesPersonsOptions"
             @update:model-value="activityStore.updateFilters({ sales_person_id: $event })"
-            placeholder="Fitler by sales person" 
+            placeholder="Filter by sales person" 
             :items="activityStore.salesPersonsOptions" 
             clearable 
             clear-icon="tabler-x"

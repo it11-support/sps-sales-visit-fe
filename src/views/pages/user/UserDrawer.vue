@@ -17,7 +17,7 @@ interface Props {
     id: number
   }[]
   salesPersonsOptions: {
-    label: string
+    title: string
     value: number
   }[]
 }
@@ -36,7 +36,7 @@ const formData = ref<any>({
   sales_person_id: undefined,
   username: ''
 })
-const localSalesPersons = ref<{label: string, value: number}[]>([...props.salesPersonsOptions])
+const localSalesPersons = ref<{title: string, value: number}[]>([...props.salesPersonsOptions])
 
 const isPasswordVisible = ref(false)
 // Close drawer
@@ -92,7 +92,7 @@ watch(props, async (newVal) => {
       const match = salesPersonStore.salesPersons.find(sp => sp.SlpCode === formData.value.sales_person_id)
       if (match) {
         localSalesPersons.value.unshift({
-          label: match.SlpName,
+          title: match.SlpName,
           value: match.SlpCode,
         })
       }
