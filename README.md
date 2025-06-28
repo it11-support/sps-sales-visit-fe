@@ -12,5 +12,8 @@
 - Input sales visit report
 
 ## Documentation
-
-<!-- TODO -->
+### 1. Administrator
+#### 1.1 Add User
+- Navigate to `Users > Users List (/users/list)`
+- Click `Add New User` button
+- Pop up will appear 

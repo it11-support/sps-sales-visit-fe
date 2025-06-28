@@ -2,6 +2,7 @@ import { IRole } from "@/@core/typedefs";
 
 export const useRoleStore = defineStore('roleStore', {
   state: () => ({
+    isLoading: false,
     role: {
       id: 0,
       role: '',
@@ -30,6 +31,7 @@ export const useRoleStore = defineStore('roleStore', {
   }),
   actions: {
     async fetchRoles() {
+      this.isLoading = true
       const { data } = await $api('/role', {
         method: 'GET',
       })
@@ -38,6 +40,7 @@ export const useRoleStore = defineStore('roleStore', {
         role: role.role[0].toUpperCase() + role.role.slice(1),
         id: role.id
       }))
+      this.isLoading = false
     },
   }
 })

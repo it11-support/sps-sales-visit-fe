@@ -36,7 +36,7 @@ const formData = ref<any>({
   sales_person_id: undefined,
   username: ''
 })
-const localSalesPersons = ref<{title: string, value: number}[]>([...props.salesPersonsOptions])
+const localSalesPersons = ref<{title: string, value: number}[]>([...salesPersonStore.filteredSalesPersonOptions])
 
 const isPasswordVisible = ref(false)
 // Close drawer
@@ -163,7 +163,7 @@ watch(props, async (newVal) => {
                   v-model="formData.sales_person_id" 
                   label="Bind Sales Person"
                   placeholder="Select Sales Person" 
-                  item-title="label" 
+                  item-title="title" 
                   item-value="value" 
                   :rules="[]"
                   :items="localSalesPersons" 
