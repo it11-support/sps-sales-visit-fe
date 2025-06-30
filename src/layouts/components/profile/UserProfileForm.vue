@@ -1,13 +1,15 @@
 <script lang="ts" setup>
+import { useUserStore } from '@/@core/stores';
 import { useCustomerStore } from '@/@core/stores/customer';
+import { useRoleStore } from '@/@core/stores/role';
 import { useConfigStore } from '@core/stores/config';
 import { VForm } from 'vuetify/components/VForm';
 
 const configStore = useConfigStore()
 const customerStore = useCustomerStore()
+const userStore = useUserStore()
 
 const userData = useCookie<any>('userData')
-const roleOptions = ref([])
 const form = ref<VForm>()
 const salesPerson = useCookie<any>('userData')?.value?.sales_person ?? null
 const hasCustomer = useCookie<any>('userData')?.value?.hasCustomer ?? false
@@ -18,6 +20,7 @@ const isPasswordVisible = ref(false)
 const searchQuery = ref('')
 const filterDormantCustomer = ref(false)
 const debouncedQuery = useDebounce(searchQuery, 400)
+const roleStore = useRoleStore()
 
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
@@ -28,26 +31,7 @@ watch(debouncedQuery, (val) => {
 
 onMounted(() => {
   customerStore.updateFilters({ sales_person_id: salesPerson?.SlpCode})
-})
-
-onMounted(async () => {
-  try {
-    configStore.overlay = true
-    // Get roles from api
-    const { data: rolesData } = await useApi<any>(createUrl('role'), {
-      method: 'GET',
-    });
-
-    roleOptions.value = rolesData.value.data.map((role: any) => ({
-      label: role.role[0].toUpperCase() + role.role.slice(1),
-      value: role.id
-    }))
-    configStore.overlay = false
-  } catch (error) {
-    configStore.overlay = false
-  } finally {
-    configStore.overlay = false
-  }
+  roleStore.fetchRoles()
 })
 
 const submitUserHandler = async () => {
@@ -331,8 +315,8 @@ const dormantOptions = [
                 <AppTextField :disabled="!isAdmin" label="Email" v-model="userData.email" type="text" />
               </VCol>
               <VCol cols="12" md="6">
-                <AppSelect :disabled="!isAdmin" v-model="userData.role_id" :items="roleOptions" item-title="label"
-                  item-value="value" label="Role" persistent-hint single-line />
+                <AppSelect :disabled="!isAdmin" v-model="userData.role_id" :items="roleStore.roleOptions" item-title="role"
+                  item-value="id" label="Role" persistent-hint single-line />
               </VCol>
               <VCol cols="12" md="6">
                 <AppTextField v-model="password" label="Password" placeholder="············"
