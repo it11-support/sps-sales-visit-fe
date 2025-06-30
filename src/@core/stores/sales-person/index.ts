@@ -13,12 +13,15 @@ export const useSalesPersonStore = defineStore('salesPersonStore', {
   }),
   actions:{
     async fetchSalesPersons() {
+      this.loading = true
       const { data } = await useApi<any>(createUrl('sales',{ query: this.query }))
       this.salesPersons = data.value.data.data
       this.salesPersonOptions = data.value.data.data.map((sales: ISalesPerson) => ({
         title: sales.SlpName,
         value: sales.SlpCode
       }))
+
+      this.loading = false
     },
     async updateQuery(query: any) {
       this.query = { ...this.query, ...query }     

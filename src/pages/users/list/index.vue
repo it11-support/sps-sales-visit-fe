@@ -56,6 +56,13 @@ watch(showFilter, (newVal) => {
   }
 })
 
+watch(userStore, (newVal) => {
+  if(newVal.isAddNewUserDrawerVisible){
+    roleStore.fetchRoles()
+    salesPersonStore.updateSalesPersonOptions()
+  }
+})
+
 watch(roleStore, (newVal) => {
   if(newVal.roleOptions.length > 0) loadingRoles.value = false
 })
@@ -320,7 +327,7 @@ const handleSelectItem = (item?: IUser) => {
       :is-edit-mode="userStore.isEditMode"
       v-model:is-drawer-open="userStore.isAddNewUserDrawerVisible"
       :role-options="roleStore.roleOptions"
-      :sales-persons-options="salesPersonStore.salesPersonOptions"
+      :sales-persons-options="salesPersonStore.filteredSalesPersonOptions"
       @user-data="userStore.storeUser"
     />
     <ConfirmDialog

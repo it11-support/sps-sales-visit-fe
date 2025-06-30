@@ -402,7 +402,7 @@ const handleViewOnMap = () => {
                       />
                     </template>
                     
-                      <VTable v-if="!statStore.loadingState && !activityStore.loadingAssignment && competitors.length" class="border text-high-emphasis mb-6">
+                      <VTable v-if="!statStore.loadingState && !activityStore.loadingAssignment && competitors" class="border text-high-emphasis mb-6">
                       <thead>
                         <tr>
                           <th scope="col">
