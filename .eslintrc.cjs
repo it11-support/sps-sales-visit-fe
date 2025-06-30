@@ -29,7 +29,7 @@ module.exports = {
     'regex',
     'regexp',
   ],
-  ignorePatterns: ['src/@core/*.js','src/@layouts/*.js','src/layouts/*.js', 'src/plugins/iconify/*.js', 'node_modules', 'dist', '*.d.ts', 'vendor', '*.json'],
+  ignorePatterns: ['src/@core/*.vue','src/@layouts/*.vue','src/layouts/*.vue', 'src/plugins/iconify/*.js', 'node_modules', 'dist', '*.d.ts', 'vendor', '*.json'],
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
