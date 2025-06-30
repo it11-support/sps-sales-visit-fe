@@ -91,6 +91,22 @@ export const useUserStore = defineStore('userStore', {
         this.setAddNewUserDrawerVisible(false)
       }
     },
+    async updateUser (userData: IUser) {
+      configStore.overlay = true
+      try {
+        const url = `/user/update/${userData.id}`
+        await $api(url, {
+          method: 'PUT',
+          body: userData,
+        })
+        // Refetch User
+        this.fetchUsers()
+      } catch (error) {
+
+      } finally {
+        configStore.overlay = false
+      }
+    },
     updateQuery(query: any) {
       this.query = { ...this.query, ...query }
       this.fetchUsers()
