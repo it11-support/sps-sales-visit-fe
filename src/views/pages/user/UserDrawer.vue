@@ -36,7 +36,7 @@ const formData = ref<any>({
   sales_person_id: undefined,
   username: ''
 })
-const localSalesPersons = ref<{title: string, value: number}[]>([...salesPersonStore.filteredSalesPersonOptions])
+const localSalesPersons = computed(() => [...salesPersonStore.filteredSalesPersonOptions]);
 
 const isPasswordVisible = ref(false)
 // Close drawer
