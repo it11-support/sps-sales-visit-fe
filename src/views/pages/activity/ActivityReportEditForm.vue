@@ -212,6 +212,7 @@ const handleSaveAsDraft = async () => {
         }
         return
       }
+      activityStore.activityReport.assignment_id = Number(props.assignmentId)
       await activityStore.updateReport(props.assignmentId as unknown as number, false).then(() => {
         activityStore.fetchActivityById(props.assignmentId)
       })
