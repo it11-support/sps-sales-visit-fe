@@ -1,4 +1,4 @@
-name: Deploy Vue 3 to Production
+name: Vue Deploy Only
 
 on:
   push:
@@ -8,37 +8,32 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Production Server
+    name: Deploy Vue to Production Server
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/release/v1'
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '22.x'
+      - name: Deploy Vue app via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 30122
+          script: |
+            echo "🚀 Deploying Vue project..."
+            cd /home/sps-saleshub
 
-    - name: Install dependencies
-      run: npm install --legacy-peer-deps
+            echo "🔄 Pull latest code..."
+            git pull origin release/v1
 
-# Skip for now
-    # - name: Run type check & lint
-    #   run: |
-    #     npm run typecheck
-    #     npm run lint
+            echo "📦 Installing dependencies..."
+            npm install --legacy-peer-deps
 
-    - name: Build project
-      run: npm run build
+            echo "🛠️ Building project with production env..."
+            npm run build -- --mode production
 
-    - name: Deploy to server via SCP
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        port: 30122
-        source: "dist/*"
-        target: "/home/sps-saleshub"
+            echo "✅ Build completed."
