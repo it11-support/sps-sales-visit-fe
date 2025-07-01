@@ -68,7 +68,7 @@ export const useActivityStore = defineStore('activity', {
     allCompetitorOptions: ref<ICompetitor[]>([])
   }),
   actions: {
-    emptyActivityReport() {
+    emptyActivityReport(): IActivityReport {
       return {
         products: [] as IProduct[],
         customer: {} as ICustomerData,
@@ -120,24 +120,20 @@ export const useActivityStore = defineStore('activity', {
     },
 
     async fetchActivityReport(id: string) {
-      this.loadingAssignment = true
-      const { data, error } = await useApi<any>(`activity/${id}/report`)
+      this.loadingAssignment = true;
+      const { data, error } = await useApi<any>(`activity/${id}/report`);
       if (error.value) {
-        console.error('Error fetching activity detail:', error.value)
-        this.loadingAssignment = false
-        return
+        console.error(error.value);
+        this.loadingAssignment = false;
+        return;
       }
 
-      const payload = data.value.data
-       if (!payload) {
-        this.report = this.emptyActivityReport()
-        this.activityReport = this.emptyActivityReport()
-      } else {    
-        this.report = { ...payload }
-        this.activityReport = { ...payload }
-      }
+      const payload = data.value.data ?? this.emptyActivityReport();
 
-      this.loadingAssignment = false
+      this.report = { ...payload };
+      this.activityReport = { ...payload };
+
+      this.loadingAssignment = false;
     },
     async updateActivityStatus(id: number, status: string) {
       this.loadingId = id
