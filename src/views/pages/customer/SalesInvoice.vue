@@ -53,7 +53,6 @@ watch(searchQuery, (newVal) => {
 
   debounceTimeout = setTimeout(() => {
     debouncedQuery.value = newVal
-    console.log('Search:', debouncedQuery.value)
   }, 400) // delay 400ms
 })
 

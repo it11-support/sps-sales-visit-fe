@@ -45,7 +45,6 @@ onMounted(() => {
   loadAll()
 })
 
-console.log(activityStore.activity)
 const activity = computed(() => activityStore.activity)
 const monthly_summary = computed(() => statStore.monthly_summary)
 const customer = computed(() => customerStore.customerDetail)
@@ -160,7 +159,6 @@ const computedItems = computed<ICompetitor[]>(() => {
 const onSelect = (val: ICompetitor, index: number) => {
   isSelecting.value = true
   const newName = val.name.split(' - ')[0]
-  console.log(val)
   if (val?.isNew) {
     const newItem: ICompetitor = {
       // id: Date.now(),
@@ -177,9 +175,6 @@ const onSelect = (val: ICompetitor, index: number) => {
     search.value = ''
     isSelecting.value = false
   })
-
-
-  console.log(activityStore.allCompetitorOptions)
 }
 
 const handleRemoveCompetitor = (index: number) => {
