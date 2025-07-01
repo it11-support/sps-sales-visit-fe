@@ -1,4 +1,4 @@
-# Visitrack - SPS Sales visit tracker
+# SPS SalesHub
 ## Features
 ### 1. Administrator
 - Manage Sales Persons (link to user)

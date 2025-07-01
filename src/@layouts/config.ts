@@ -4,7 +4,7 @@ import { breakpointsVuetify } from '@vueuse/core'
 
 export const layoutConfig: LayoutConfig = {
   app: {
-    title: import.meta.env.VITE_APP_TITLE || 'Visitrack',
+    title: import.meta.env.VITE_APP_TITLE || 'SalesHub',
     logo: h('img', { src: '/src/assets/vt.svg' }),
     contentWidth: ContentWidth.Boxed,
     contentLayoutNav: AppContentLayoutNav.Vertical,
