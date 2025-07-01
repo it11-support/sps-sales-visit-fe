@@ -127,8 +127,16 @@ export const useActivityStore = defineStore('activity', {
         this.loadingAssignment = false
         return
       }
-      this.report = {...this.emptyActivityReport(), ...data.value.data}
-      this.activityReport = {...this.emptyActivityReport(), ...data.value.data}
+
+      const payload = data.value.data
+       if (!payload) {
+        this.report = this.emptyActivityReport()
+        this.activityReport = this.emptyActivityReport()
+      } else {    
+        this.report = { ...payload }
+        this.activityReport = { ...payload }
+      }
+
       this.loadingAssignment = false
     },
     async updateActivityStatus(id: number, status: string) {
