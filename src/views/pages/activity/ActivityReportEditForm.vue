@@ -177,6 +177,9 @@ const onSelect = (val: ICompetitor, index: number) => {
     search.value = ''
     isSelecting.value = false
   })
+
+
+  console.log(activityStore.allCompetitorOptions)
 }
 
 const handleRemoveCompetitor = (index: number) => {
@@ -184,8 +187,19 @@ const handleRemoveCompetitor = (index: number) => {
 }
 
 const handleAddCompetitor = () => {
-  activityStore.activityReport.competitors.push({name: '', address: '', product: '', price: undefined, qty: undefined})
-}
+  if (!Array.isArray(activityStore.activityReport.competitors)) {
+    activityStore.activityReport.competitors = [];
+  }
+
+  activityStore.activityReport.competitors.push({
+    name: '',
+    address: '',
+    product: '',
+    price: undefined,
+    qty: undefined,
+  });
+};
+
 
 const shouldShowRemoveButton = (index: number) => {
   const competitors = activityStore.activityReport.competitors;
@@ -576,7 +590,7 @@ const handleViewOnMap = () => {
                 isSelecting = false
               }"
               clearable
-              :rules="[v => !!(v && v.value || v.id) || 'Competitor is required']"
+              :rules="[v => !!(v && v.name) || 'Competitor is required']"
             />
             </VCol>
             <VCol cols="12" lg="4" md="4" sm="12">
