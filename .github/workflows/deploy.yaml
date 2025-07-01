@@ -1,4 +1,4 @@
-name: Vue Deploy Only
+name: Deploy Vue 3 to Production
 
 on:
   push:
@@ -8,31 +8,45 @@ on:
 
 jobs:
   deploy:
-    name: Deploy Vue to Production Server
+    name: Deploy to Production Server
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/release/v1'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Deploy Vue app via SSH
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: 30122
-          script: |
-            bash -l -c '
-              cd /home/sps-saleshub
-              echo "🔄 Pull latest code..."
-              git pull origin release/v1
-              echo "📦 Installing dependencies..."
-              npm install --legacy-peer-deps
-              echo "🛠️ Building project with production env..."
-              npm run build -- --mode production
-              echo "✅ Build completed."
-            '
-          
-          
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '22.x'
+
+    - name: Install dependencies
+      run: npm install --legacy-peer-deps
+
+    - name: Create .env.production file
+      run: echo "${{ secrets.VITE_ENV_PROD }}" > .env.production
+    
+    - name: Show .env files in runner
+      run: |
+        ls -al
+        echo "--- .env.production ---"
+        cat .env.production || echo "NOT FOUND"
+# Skip for now
+    # - name: Run type check & lint
+    #   run: |
+    #     npm run typecheck
+    #     npm run lint
+
+    - name: Build project
+      run: npm run build
+
+    - name: Deploy to server via SCP
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: 30122
+        source: "dist/*"
+        target: "/home/sps-saleshub"
