@@ -68,6 +68,21 @@ export const useActivityStore = defineStore('activity', {
     allCompetitorOptions: ref<ICompetitor[]>([])
   }),
   actions: {
+    emptyActivityReport() {
+      return {
+        products: [] as IProduct[],
+        customer: {} as ICustomerData,
+        assignment_id: 0,
+        assignment: {} as IActivity,
+        reason_qty_drop_id: undefined,
+        activity_purpose_id: undefined,
+        non_active_product: '',
+        product_issue: '',
+        next_action: '',
+        additional_note: '',
+        competitors: [] as ICompetitor[],        
+      }
+    },
     async fetchActivityTypes() {      
       const { data, error } = await useApi<any>(createUrl('activity/activity-types'), {})
       if (error.value) {
@@ -112,8 +127,8 @@ export const useActivityStore = defineStore('activity', {
         this.loadingAssignment = false
         return
       }
-      this.report = data.value.data
-      this.activityReport = data.value.data
+      this.report = {...this.emptyActivityReport(), ...data.value.data}
+      this.activityReport = {...this.emptyActivityReport(), ...data.value.data}
       this.loadingAssignment = false
     },
     async updateActivityStatus(id: number, status: string) {
