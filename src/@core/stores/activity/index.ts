@@ -230,6 +230,11 @@ export const useActivityStore = defineStore('activity', {
           'Content-Type': 'application/json'
         }
       })
+
+      if(final) {
+        await this.clearActivityReport()
+      }
+
       if (error.value) {
         console.error('Error fetching activity detail:', error.value)
         this.loading = false
@@ -252,6 +257,10 @@ export const useActivityStore = defineStore('activity', {
         console.error('Unexpected error:', err);
         return false;
       }
+    },
+    async clearActivityReport() {
+      this.activityReport = this.emptyActivityReport()
+      this.report = this.emptyActivityReport()
     },
     updateFilters(newFilters: Partial<Filters>) {
       this.filters = {
