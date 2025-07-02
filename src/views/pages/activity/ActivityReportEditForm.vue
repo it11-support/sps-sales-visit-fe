@@ -599,7 +599,7 @@ const handleViewOnMap = () => {
                 :rules="[requiredValidator]"
               />
             </VCol>
-            <VCol cols="12" lg="3" md="4" sm="12">
+            <VCol cols="12" lg="4" md="4" sm="12">
               <VTextField
                 v-model="activityStore.activityReport.competitors[index].product"
                 label="Product"
@@ -662,7 +662,7 @@ const handleViewOnMap = () => {
           :src="`${baseDomain}/storage/${activityStore.report?.assignment?.image_path}`"
         />
       </VCol>
-      <VCol class="text-no-wrap" cols="12">
+      <VCol class="text-no-wrap" cols="12" v-if="activityStore.report.assignment?.check_in !== null">
         <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
         <span>{{ formatDate(activityStore.report.assignment?.check_in as unknown as  string, true ) }}</span>
       </VCol>
