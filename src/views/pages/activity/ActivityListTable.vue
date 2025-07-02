@@ -42,7 +42,8 @@ onMounted(async () => {
   if(!isAdmin.value && salesPersonId.value) {
     activityStore.updateFilters({ sales_person_id: salesPersonId.value })
   }
-  await activityStore.fetchActivities()  
+  await activityStore.fetchActivities()
+  await activityStore.fetchCustomer()
 })
 
 watch(showFilters, (val) => {
@@ -123,6 +124,20 @@ const handleCheckIn = async(id: number) => {
             @update:model-value="activityStore.updateFilters({ sales_person_id: $event })"
             placeholder="Filter by sales person" 
             :items="activityStore.salesPersonsOptions" 
+            clearable 
+            clear-icon="tabler-x"
+          />
+        </VCol>
+        <VCol 
+          v-if="isAdmin"
+          cols="12"
+          sm="4"
+        >
+          <AppSelect 
+            v-model="activityStore.filters.customer_id"
+            @update:model-value="activityStore.updateFilters({ customer_id: $event })"
+            placeholder="Filter by Customer" 
+            :items="activityStore.customerOptions"
             clearable 
             clear-icon="tabler-x"
           />

@@ -2,7 +2,8 @@ import { IActivity, IActivityReport, ICompetitor, ICustomerData, IProduct, IReas
 
 interface Filters {
   search?: string
-  sales_person_id?: number  
+  sales_person_id?: number
+  customer_id?: number
   per_page: number
   page: number
   sort_options: SortItem[]
@@ -25,6 +26,7 @@ export const useActivityStore = defineStore('activity', {
     loadingDetail: false,
     selectedRows: [] as IActivity[],
     salesPersonsOptions: [] as { title: string; value: number }[],
+    customerOptions: [] as { title: string; value: number, sales_person_id?: number }[],
     reasonQtyDropOptions: [] as { title: string; value: number }[],
     activityPuposesOptions: [] as { title: string; value: number }[],
     pagination: {
@@ -42,6 +44,7 @@ export const useActivityStore = defineStore('activity', {
     filters: {
       search: '',
       sales_person_id: undefined,
+      customer_id: undefined,
       per_page: 10,
       page: 1,
       sort_options: [],
@@ -65,6 +68,7 @@ export const useActivityStore = defineStore('activity', {
       reason: undefined,
       purpose: undefined
     } as IActivityReport,
+    customers: [] as ICustomerData[],
     allCompetitorOptions: ref<ICompetitor[]>([])
   }),
   actions: {
@@ -267,7 +271,25 @@ export const useActivityStore = defineStore('activity', {
         ...this.filters,
         ...newFilters
       }
-        
+
+      if (newFilters.sales_person_id) {
+        const filterCustomerOptions = this.customers.filter((customer: any) =>
+          Number(customer.SlpCode) === Number(newFilters.sales_person_id)
+        ).map((customer: any) => ({
+          value: customer.CardCode,
+          title: customer.CardName,
+          sales_person_id: Number(customer.SlpCode)
+        }))
+        this.customerOptions = filterCustomerOptions
+      } else {
+        this.customerOptions = this.customers.map((customer: any) => ({
+          value: customer.CardCode,
+          title: customer.CardName,
+          sales_person_id: Number(customer.sales_person_id)
+        }))
+      }
+
+      console.log(this.customerOptions)
       this.fetchActivities()            
     },
     updateSortOptions(options: any) {
@@ -290,7 +312,7 @@ export const useActivityStore = defineStore('activity', {
     },
     async fetchSalesPersonOptions() {
       this.loading = true
-      const url = createUrl(`activity/get-fitlers`)
+      const url = createUrl(`activity/get-filters`)
       const { data: salesPersonsData, error } = await useApi<any>(url)
       if (error.value) {
         console.error('Error fetching sales person options:', error.value)
@@ -301,6 +323,26 @@ export const useActivityStore = defineStore('activity', {
         title: sales.SlpName,
         value: sales.SlpCode
       }))
+      this.loading = false
+    },
+    async fetchCustomer() {
+      this.loading = true
+      const url = createUrl(`activity/get-customers`)
+      const { data: customerData, error } = await useApi<any>(url)
+      if (error.value) {
+        console.error('Error fetching sales person options:', error.value)
+        return
+      }
+
+
+      this.customers = customerData.value.data
+      
+      this.customerOptions = this.customers.map((customer: any) => ({
+        title: customer.CardName,
+        value: customer.CardCode,
+        sales_person_id: customer.SlpCode
+      }))
+
       this.loading = false
     },
     
