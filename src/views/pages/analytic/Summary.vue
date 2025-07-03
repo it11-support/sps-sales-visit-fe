@@ -788,14 +788,14 @@ const chartConfigs = computed(() => {
           :options="chartConfigs[Number(currentTab)].yoyChartOptions"
           :series="chartConfigs[Number(currentTab)].yoySeries"
           height="400"
-          width="400"
+          width="600"
           class="mt-6"
         />
       </div>
     </div>
   </template>
 </template>
-<style lang="css" scoped>
+<style lang="scss" scoped>
 .chart-scroll-wrapper {
   overflow-x: auto;
   padding-block-end: 1rem;

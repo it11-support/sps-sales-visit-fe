@@ -18,6 +18,7 @@ const filterDormantCustomer = ref(false)
 // Delayed search
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
+const isCoordinator = computed(() => user.value.role.role === 'coordinator')
 const showFilter = ref(false)
 const loadingSalesPerson = ref(true)
 const loadingGroupName = ref(true)
@@ -33,6 +34,7 @@ watch(debouncedQuery, (val) => {
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
   { title: 'Customer', key: 'CardName' },
+  { title: 'Sales Person', key: 'SlpName' },
   { title: 'Group Name', key: 'GroupName' },
   { title: 'PIC', key: 'CntctPrsn' },
   { title: 'Status', key: 'status', sortable: false },
@@ -107,7 +109,7 @@ const deleteCustomer = async (id: string) => {
       <VCardText v-if="showFilter">
         <VRow>
           <!-- 👉 Select Role -->
-          <VCol cols="12" sm="4" v-if="isAdmin">
+          <VCol cols="12" sm="4" v-if="isAdmin || isCoordinator">
             <AppSelect 
               v-model="customerStore.filters.sales_person_id"
               @update:model-value="customerStore.updateFilters({ sales_person_id: $event })"
@@ -256,6 +258,15 @@ const deleteCustomer = async (id: string) => {
             <div class="d-flex flex-column">
               <div class="text-sm">
                 {{ item.CardName }}
+              </div>
+            </div>
+          </div>
+        </template>
+        <template #item.SlpName="{ item }">
+          <div class="d-flex align-center gap-x-4">
+            <div class="d-flex flex-column">
+              <div class="text-sm">
+                {{ item.sales_person?.SlpName }}
               </div>
             </div>
           </div>

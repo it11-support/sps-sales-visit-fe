@@ -18,7 +18,7 @@ const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
 const user = useCookie<any>('userData')
 const _isAdmin = computed(() => user.value.role.role === 'admin')
-
+const _isCoordinator = computed(() => user.value.role.role === 'coordinator')
 
 const formData = ref({
   assigned_by: userData.value.id,
@@ -67,11 +67,17 @@ const handleShowScheduleForm = () => {
   }  
 }
 
-const handleOnFinsih = async() => {  
-  await onFinish?.().finally(() => {
-    showLinkSalesPersonModal.value = false
-    showScheduleForm.value = true
-  })
+const handleOnFinsih = async() => {
+  if (onFinish) {
+    try {
+      await onFinish()
+      showScheduleForm.value = true
+    } catch (error) {
+      console.error(error)
+    } finally {
+      showLinkSalesPersonModal.value = false
+    }
+  }
 }
 const formatSelectedDate = (val: string) => {
   const date = new Date(val)
@@ -121,7 +127,7 @@ const handleSubmit = async () => {
         <VList class="card-list text-medium-emphasis">
           <CustomerItemList v-for="item in items" :key="item.title" :data="item" />
         </VList>
-        <VRow class="d-flex justify-start" v-if="_isAdmin">
+        <VRow class="d-flex justify-start" v-if="_isAdmin || _isCoordinator">
           <VCol cols="12">
             <VDivider class="my-4" />
               <VRow class="d-flex justify-end">
