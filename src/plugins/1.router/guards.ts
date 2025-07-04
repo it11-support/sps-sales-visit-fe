@@ -22,10 +22,7 @@ export const setupGuards = (router: _RouterTyped<RouteNamedMap & { [key: string]
     if (to.meta.roles && !(to.meta.roles as string[]).includes(role)) {
       return {
         name: 'unauthorized',
-        query: {
-          ...to.query,
-          to: to.fullPath !== '/' ? to.path : undefined,
-        },
+        query: { to: to.fullPath !== '/' ? to.path : undefined },
       }
     }
     /*
@@ -36,8 +33,6 @@ export const setupGuards = (router: _RouterTyped<RouteNamedMap & { [key: string]
     if (to.meta.unauthenticatedOnly) {
       if (isLoggedIn)
         return '/'
-      else
-        return undefined
     }
 
     // if (!canNavigate(to) && to.matched.length) {
