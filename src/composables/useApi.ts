@@ -44,13 +44,16 @@ export const useApi = createFetch({
     },
     onFetchError(ctx) {
       configStore.loading = false
+
+      const router = useRouter()
       const status = ctx.response?.status
 
       if (status === 401) {
         console.warn('Unauthorized, redirecting to login...')
         // Remove token
         useCookie('accessToken').value = null
-        useCookie('userData').value = null
+        // Redirect
+        router.push({ name: 'login' })
       }
 
       return ctx
