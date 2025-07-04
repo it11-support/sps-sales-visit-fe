@@ -9,4 +9,13 @@ export const $api = ofetch.create({
     if (accessToken)
       options.headers.append('Authorization', `Bearer ${accessToken}`)
   },
+  onResponseError({ response }) {
+    const router = useRouter()
+    
+    if (response?.status === 401) {
+      console.warn('Unauthorized, redirecting to login...')
+      useCookie('accessToken').value = null // Remove token
+      router.push({ name: 'login' }) // Redirect to login
+    }
+  },
 })
