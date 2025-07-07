@@ -288,8 +288,6 @@ export const useActivityStore = defineStore('activity', {
           sales_person_id: Number(customer.sales_person_id)
         }))
       }
-
-      console.log(this.customerOptions)
       this.fetchActivities()            
     },
     updateSortOptions(options: any) {
