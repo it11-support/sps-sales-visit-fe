@@ -233,9 +233,9 @@ const handleViewOnMap = () => {
                       />
                     </template>
                     <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.product_issue" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
-                      <VListItem>
-                        <VListItemTitle>
-                          {{ activityStore.report?.product_issue }}
+                      <VListItem v-for="item in  activityStore.report?.product_issue.split('\n') || []" :key="item">
+                        <VListItemTitle >
+                          {{ item }}
                         </VListItemTitle>
                       </VListItem>
                     </VList>
@@ -254,9 +254,9 @@ const handleViewOnMap = () => {
                       />
                     </template>
                     <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.next_action" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
-                      <VListItem>
+                      <VListItem v-for="item in activityStore.report?.next_action.split('\n') || []" :key="item">
                         <VListItemTitle>
-                          {{ activityStore.report?.next_action }}
+                          {{ item }}
                         </VListItemTitle>
                       </VListItem>
                     </VList>
@@ -275,9 +275,9 @@ const handleViewOnMap = () => {
                       />
                     </template>
                     <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.additional_note" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
-                      <VListItem>
+                      <VListItem v-for="item in activityStore.report?.additional_note.split('\n') || []" :key="item">
                         <VListItemTitle>
-                          {{ activityStore.report?.additional_note }}
+                          {{ item }}
                         </VListItemTitle>
                       </VListItem>
                     </VList>
