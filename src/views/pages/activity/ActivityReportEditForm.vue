@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useActivityStore, useConfigStore, useCustomerStore, useProductStore, useStatisticStore } from '@/@core/stores';
-import { ICompetitor, IProduct } from '@/@core/typedefs';
+import { ICompetitor } from '@/@core/typedefs';
 import { VForm } from 'vuetify/components/VForm';
 import CheckIn from './CheckIn.vue';
 
@@ -24,7 +24,6 @@ const competitors = ref<ICompetitor[]>([
   {name: '', address: '', product: '', price: undefined, qty: undefined},
 ])
 
-const selectedProducts = ref<IProduct[]>([])
 const search = ref('')
 const isSelecting = ref(false)
 
@@ -37,7 +36,6 @@ const loadAll = async () => {
   await productStore.fetchProductOptions()
 
   competitors.value = activityStore.report.competitors
-  selectedProducts.value = activityStore.report.products ?? []
   loading.value = false
 }
 
@@ -279,6 +277,9 @@ const handleViewOnMap = () => {
   window.open(viewMap.value, '_blank')
 }
 
+watch(productStore, (newVal) => {
+  console.log(newVal.products)
+})
 </script>
 
 <template>
@@ -511,7 +512,7 @@ const handleViewOnMap = () => {
               closable-chips
               multiple
               @update:model-value="activityStore.updateForm({ products: $event })"
-              v-model="selectedProducts"
+              v-model="activityStore.activityReport.products"
               :items="productStore.products"
               label="Product Offering"
               placeholder="Product Offering"
