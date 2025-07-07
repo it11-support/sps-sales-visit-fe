@@ -519,7 +519,8 @@ watch(productStore, (newVal) => {
               clearable
               clear-icon="tabler-x"
               item-title="ItemName"
-              item-value="ItemCode"              
+              item-value="ItemCode" 
+              return-object             
             
             />
           </VCol>
