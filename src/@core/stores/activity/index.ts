@@ -266,29 +266,34 @@ export const useActivityStore = defineStore('activity', {
       this.activityReport = this.emptyActivityReport()
       this.report = this.emptyActivityReport()
     },
-    updateFilters(newFilters: Partial<Filters>) {
+    async updateFilters(newFilters: Partial<Filters>, shouldFetch = true) {
       this.filters = {
         ...this.filters,
         ...newFilters
       }
 
       if (newFilters.sales_person_id) {
-        const filterCustomerOptions = this.customers.filter((customer: any) =>
-          Number(customer.SlpCode) === Number(newFilters.sales_person_id)
-        ).map((customer: any) => ({
-          value: customer.CardCode,
-          title: customer.CardName,
-          sales_person_id: Number(customer.SlpCode)
-        }))
-        this.customerOptions = filterCustomerOptions
+        const filterCustomerOptions = this.customers
+          .filter((customer: any) =>
+            Number(customer.SlpCode) === Number(newFilters.sales_person_id)
+          )
+          .map((customer: any) => ({
+            value: customer.CardCode,
+            title: customer.CardName,
+            sales_person_id: Number(customer.SlpCode)
+          }));
+        this.customerOptions = filterCustomerOptions;
       } else {
         this.customerOptions = this.customers.map((customer: any) => ({
           value: customer.CardCode,
           title: customer.CardName,
           sales_person_id: Number(customer.sales_person_id)
-        }))
+        }));
       }
-      this.fetchActivities()            
+
+      if (shouldFetch) {
+        await this.fetchActivities();
+      }
     },
     updateSortOptions(options: any) {
       this.updateFilters({
