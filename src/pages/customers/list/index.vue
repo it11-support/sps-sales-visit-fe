@@ -117,7 +117,7 @@ const deleteCustomer = async (id: string) => {
               v-model="customerStore.filters.sales_person_id"
               @update:model-value="customerStore.updateFilters({ sales_person_id: $event })"
               placeholder="Filter by sales person" 
-              :items="salesStore.salesPersonOptions"
+              :items="salesStore.salesPersonOptions.filter(item => item.user !== null)"
               clearable
               clear-icon="tabler-x" 
               :loading="loadingSalesPerson"

@@ -8,7 +8,7 @@ export const useSalesPersonStore = defineStore('salesPersonStore', {
       per_page: -1,
       page: 1
     },
-    salesPersonOptions: [] as { title: string, value: number }[],
+    salesPersonOptions: [] as { title: string, value: number, user: any }[],
     filteredSalesPersonOptions: [] as { title: string, value: number }[],
   }),
   actions:{
@@ -18,7 +18,8 @@ export const useSalesPersonStore = defineStore('salesPersonStore', {
       this.salesPersons = data.value.data.data
       this.salesPersonOptions = data.value.data.data.map((sales: ISalesPerson) => ({
         title: sales.SlpName,
-        value: sales.SlpCode
+        value: sales.SlpCode,
+        user: sales.user ?? null
       }))
 
       this.loading = false
