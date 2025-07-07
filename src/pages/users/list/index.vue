@@ -297,7 +297,7 @@ const handleSelectItem = (item?: IUser) => {
               clear-icon="tabler-x"
               item-title="title"
               item-value="value"
-              :items="salesPersonStore.salesPersonOptions"
+              :items="salesPersonStore.salesPersonOptions.filter((item) => item.user === null)"
               label="Sales Person"
               retun-object
             />
