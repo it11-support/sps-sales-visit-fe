@@ -127,7 +127,7 @@ const handleSubmit = async () => {
         <VList class="card-list text-medium-emphasis">
           <CustomerItemList v-for="item in items" :key="item.title" :data="item" />
         </VList>
-        <VRow class="d-flex justify-start" v-if="_isAdmin || _isCoordinator">
+        <VRow class="d-flex justify-start">
           <VCol cols="12">
             <VDivider class="my-4" />
               <VRow class="d-flex justify-end">

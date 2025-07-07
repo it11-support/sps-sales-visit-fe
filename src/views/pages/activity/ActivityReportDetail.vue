@@ -223,7 +223,7 @@ const handleViewOnMap = () => {
               </VCardText>
               <VCardText>            
                 <VRow class="print-row mb-2">
-                  <VCol class="text-no-wrap" cols="12" sm="12" md="6" lg="6">
+                  <VCol class="text-no-wrap" cols="12">
                     <h6 class="text-h6 mb-4">
                       PRODUCT ISSUE
                     </h6>

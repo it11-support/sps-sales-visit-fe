@@ -50,6 +50,9 @@ const headers = [
 
 
 onMounted(() => {
+  if(!isAdmin.value || !isCoordinator.value) {
+    customerStore.updateFilters({sales_person_id: user.value.sales_person_id})
+  }
   customerStore.fetchCustomers()  
   salesStore.updateQuery({ per_page: -1, page: 1 })
 })
