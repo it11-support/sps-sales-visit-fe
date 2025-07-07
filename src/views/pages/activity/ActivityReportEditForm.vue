@@ -277,9 +277,6 @@ const handleViewOnMap = () => {
   window.open(viewMap.value, '_blank')
 }
 
-watch(productStore, (newVal) => {
-  console.log(newVal.products)
-})
 </script>
 
 <template>
