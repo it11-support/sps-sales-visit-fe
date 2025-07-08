@@ -15,6 +15,7 @@ interface Filters {
 
 export const useActivityStore = defineStore('activity', {
   state: () => ({
+    isReady: false,
     activityTypes: [] as {value: number, label: string}[],
     activity: {} as IActivity,
     report: {} as IActivityReport,
@@ -295,10 +296,19 @@ export const useActivityStore = defineStore('activity', {
         await this.fetchActivities();
       }
     },
+    async initialize(salesPersonId: number) {
+      if(salesPersonId) {
+        await this.updateFilters({ sales_person_id: salesPersonId }, false)
+      }
+      await this.fetchActivities()
+      await this.fetchCustomer()
+      this.isReady = true
+    },
     updateSortOptions(options: any) {
+      if (!this.isReady) return
       this.updateFilters({
         sort_options: [options.sortBy]
-      })
+      }, true)
     },
     setPage(page: number) {
     this.updateFilters({page})

@@ -39,11 +39,7 @@ const headers = computed(() => {
 
 
 onMounted(async () => {
-  if (!isAdmin.value && salesPersonId.value) {
-    await activityStore.updateFilters({ sales_person_id: salesPersonId.value }, false)
-  }
-  await activityStore.fetchActivities()
-  await activityStore.fetchCustomer()
+  await activityStore.initialize(salesPersonId.value)
 })
 
 watch(showFilters, (val) => {
