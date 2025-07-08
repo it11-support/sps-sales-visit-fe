@@ -136,6 +136,7 @@ export const useCustomerStore = defineStore('customer', {
       this.isReady = true
     },
     updateSortOptions(options: any) {
+      if (!this.isReady) return
       this.updateFilters({
         sort_options: [options.sortBy]
       })

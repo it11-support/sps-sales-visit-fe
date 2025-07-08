@@ -30,8 +30,8 @@ watch(debouncedQuery, (val) => {
   customerStore.updateFilters({ search: val })
 })
 
-onMounted(() => {
-  customerStore.updateFilters({ sales_person_id: salesPerson?.SlpCode})
+onMounted(async() => {
+  await customerStore.initialize(salesPerson?.SlpCode)
   roleStore.fetchRoles()
 })
 
