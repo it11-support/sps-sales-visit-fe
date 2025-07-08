@@ -26,6 +26,7 @@ interface Filters {
 
 export const useCustomerStore = defineStore('customer', {
   state: () => ({
+    isReady: false,
     customers: [] as ICustomerData[],
     customerDetail: {} as ICustomerData,
     customer: {} as ICustomerData,
@@ -127,18 +128,27 @@ export const useCustomerStore = defineStore('customer', {
       }))
       this.loadingList = false
     },
+     async initialize(salesPersonId: number) {
+      if(salesPersonId) {
+        await this.updateFilters({ sales_person_id: salesPersonId }, false)
+      }
+      await this.fetchCustomers()
+      this.isReady = true
+    },
     updateSortOptions(options: any) {
       this.updateFilters({
         sort_options: [options.sortBy]
       })
     },
 
-    updateFilters(newFilters: Partial<Filters>) {
+    async updateFilters(newFilters: Partial<Filters>, shouldFetch = true) {
       this.filters = {
         ...this.filters,
         ...newFilters
       }
-      this.fetchCustomers()      
+      if (shouldFetch) {
+        this.fetchCustomers()
+      }
     },
 
     setPage(page: number) {

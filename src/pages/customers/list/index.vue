@@ -39,7 +39,7 @@ const headers = [
   { title: 'PIC', key: 'CntctPrsn' },
   { title: 'Status', key: 'status', sortable: false },
   { title: 'Address', key: 'Address', width: '50px' },
-  { title: 'Phone', key: 'Phone' },
+  { title: 'Phone', key: 'Phone1' },
   { title: 'Total Sales', key: 'total_sales' },
   { title: 'Last Invoice Date', key: 'last_transaction_date' },
   { title: 'Number of Invoices', key: 'invoice_count' },
@@ -49,11 +49,10 @@ const headers = [
 ]
 
 
-onMounted(() => {
-  if(!isAdmin.value || !isCoordinator.value) {
-    customerStore.updateFilters({sales_person_id: user.value.sales_person_id})
-  }
-  customerStore.fetchCustomers()  
+onMounted(async() => {
+ 
+  await customerStore.initialize(user.value.sales_person_id)
+ 
   salesStore.updateQuery({ per_page: -1, page: 1 })
 })
 

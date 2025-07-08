@@ -150,7 +150,6 @@ const handleSubmit = async () => {
     body.append('lat', location.value?.coords.latitude?.toString() ?? '')
     body.append('lng', location.value?.coords.longitude?.toString() ?? '')
     body.append('accuracy', location.value?.coords.accuracy?.toString() ?? '')
-    body.append('check_in', currentDate.value)
 
     const result = await activityStore.photoUpload(body)
     if (result) {

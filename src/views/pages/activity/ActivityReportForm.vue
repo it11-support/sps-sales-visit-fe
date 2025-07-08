@@ -498,7 +498,6 @@ const handleViewOnMap = () => {
               clear-icon="tabler-x"
               item-title="ItemName"
               item-value="ItemCode"
-              :rules="isDraft ? [] : [requiredValidator]"
             />
           </VCol>
           <VCol cols="12" lg="6" md="6" sm="12">
@@ -508,8 +507,7 @@ const handleViewOnMap = () => {
               label="Product Issues"
               placeholder="Product Issues"
               clearable
-              clear-icon="tabler-x"
-              :rules="isDraft ? [] : [requiredValidator]"
+              clear-icon="tabler-x"            
             />
           </VCol>
         </VRow>
@@ -522,7 +520,6 @@ const handleViewOnMap = () => {
               placeholder="Next actions"
               clearable
               clear-icon="tabler-x"
-              :rules="isDraft ? [] : [requiredValidator]"
             />
           </VCol>
           <VCol cols="12" lg="6" md="6" sm="12">
