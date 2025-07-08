@@ -110,6 +110,14 @@ const handleSubmit = async () => {
 
 <template>
   <VCol cols="12">
+   <VBreadcrumbs
+      class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
+      :items="[{title: 'Home', to: '/', class: 'text-primary' },{ title: 'Customers', to: { name: 'customers-list' }, class: 'text-primary'}, {title: 'Customer Overview'}]"
+      >
+      <template v-slot:prepend>
+        <v-icon icon='tabler-home' size="small"></v-icon>
+      </template>
+    </VBreadcrumbs>
     <AppCardActions
       :title=title
       action-collapsed      
