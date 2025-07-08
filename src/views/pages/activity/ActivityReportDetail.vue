@@ -81,6 +81,30 @@ const handleViewOnMap = () => {
 
 <template>
   <section>
+    <VBreadcrumbs
+    class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
+    :items="[
+      {
+        title: 'Home',
+        to: '/',
+        class: 'text-primary' 
+      },
+      { 
+        title: 'Activities', 
+        to: { 
+          name: 'activity-list' 
+        },
+        class: 'text-primary'
+      }, 
+      {
+        title: 'Activity Report Detail',     
+      }
+    ]"
+    >
+    <template v-slot:prepend>
+      <v-icon icon='tabler-home' size="small"></v-icon>
+    </template>
+  </VBreadcrumbs>
     <VRow>      
       <VCol cols="12" >
         <VCard class="pa-2 pa-sm-2">
@@ -170,7 +194,7 @@ const handleViewOnMap = () => {
                             LAST PURCHASED
                           </th>
                           <th scope="col">
-                            VOLUME
+                            VOLUME (Kg)
                           </th>
                         </tr>
                       </thead>
