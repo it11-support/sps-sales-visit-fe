@@ -27,6 +27,7 @@ const canvas = ref<HTMLCanvasElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFacingMode = ref<'user' | 'environment'>('user')
 const location = ref<GeolocationPosition | null>(null)
+const router = useRouter()
 
 let stream: MediaStream | null = null
 
@@ -156,6 +157,7 @@ const handleSubmit = async () => {
       toggleModal()
       await activityStore.fetchActivityReport(modalProps.assignmentId.toString())
       await activityStore.fetchActivityById(modalProps.assignmentId.toString())
+      await router.push(`/activity/${modalProps.assignmentId}/report/edit`)
     }
   } catch (err) {
     console.error(err)
