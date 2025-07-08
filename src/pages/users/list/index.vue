@@ -122,6 +122,23 @@ const handleSelectItem = (item?: IUser) => {
 
 <template>
   <section>
+  <VBreadcrumbs
+    class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
+    :items="[
+      {
+        title: 'Home',
+        to: '/',
+        class: 'text-primary' 
+      },
+      { 
+        title: 'User List',  
+      },
+    ]"
+    >
+    <template v-slot:prepend>
+      <v-icon icon='tabler-home' size="small"></v-icon>
+    </template>
+  </VBreadcrumbs>
     <VCard class="mb-6">
       <VCardItem class="pb-4">
         <VCheckbox v-model="showFilter" label="Show Filters"></VCheckbox>

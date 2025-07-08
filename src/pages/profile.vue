@@ -1,5 +1,6 @@
 <script setup lang="ts">
- const UserProfileForm = defineAsyncComponent(() => import('../layouts/components/profile/UserProfileForm.vue'))
+import UserProfileForm from '@/views/pages/user/UserProfileForm.vue';
+
 </script>
 
 <template>

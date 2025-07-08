@@ -280,6 +280,30 @@ const handleViewOnMap = () => {
 </script>
 
 <template>
+  <VBreadcrumbs
+    class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
+    :items="[
+      {
+        title: 'Home',
+        to: '/',
+        class: 'text-primary' 
+      },
+      { 
+        title: 'Activities', 
+        to: { 
+          name: 'activity-list' 
+        },
+        class: 'text-primary'
+      }, 
+      {
+        title: 'Edit Activity Report',     
+      }
+    ]"
+    >
+    <template v-slot:prepend>
+      <v-icon icon='tabler-home' size="small"></v-icon>
+    </template>
+  </VBreadcrumbs>
   <VCard class="mb-6">
   <VCardItem class="pb-4">
     <VCardTitle>CUSTOMER SUMMARY</VCardTitle>
@@ -437,7 +461,7 @@ const handleViewOnMap = () => {
                       LAST PURCHASED
                     </th>
                     <th scope="col">
-                      VOLUME
+                      VOLUME (Kg)
                     </th>
                   </tr>
                 </thead>
@@ -627,9 +651,9 @@ const handleViewOnMap = () => {
               <VTextField
                 :model-value="activityStore.activityReport.competitors[index].qty ?? undefined"
                 hide-details="auto"
-                label="Quantity"
+                label="Quantity (Kg)"
                 type="number"
-                placeholder="Quantity"          
+                placeholder="Quantity (Kg)"
                 @update:model-value="(val) => activityStore.activityReport.competitors[index].qty = Number(val)"
               />
             </VCol>

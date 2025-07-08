@@ -4,6 +4,7 @@ import { useCustomerStore } from '@/@core/stores/customer';
 import { useRoleStore } from '@/@core/stores/role';
 import { useConfigStore } from '@core/stores/config';
 import { VForm } from 'vuetify/components/VForm';
+import avatar1 from '@images/avatars/user-default.png'
 
 const configStore = useConfigStore()
 const customerStore = useCustomerStore()
@@ -120,8 +121,17 @@ const dormantOptions = [
 <template>
   <VRow v-if="salesPerson !== null">
     <VCol cols="12">
+      <VBreadcrumbs
+        class="px-0 pb-2 pt-0 help-center-breadcrumbs"
+        :items="[{title: 'Home', to: '/', class: 'text-primary' },{ title: 'Profile', class: 'text-primary' }]"
+      >
+      <template v-slot:prepend>
+        <v-icon icon='tabler-home' size="small"></v-icon>
+      </template>
+      </VBreadcrumbs>
       <VCard title="Linked Sales Person">
-        <VCardSubtitle class="text-h5 ml-2 mb-2">
+        <VCardSubtitle class="text-h5 ml-2 mb-4">
+          <VAvatar size="30" :image="avatar1"></VAvatar>
           {{ salesPerson.SlpName }}
         </VCardSubtitle>
       </VCard>
