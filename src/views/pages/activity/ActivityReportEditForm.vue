@@ -661,9 +661,13 @@ const handleViewOnMap = () => {
           :src="`${baseDomain}/storage/${activityStore.report?.assignment?.image_path}`"
         />
       </VCol>
-      <VCol class="text-no-wrap" cols="12" v-if="activityStore.report.assignment?.check_in !== null">
+      <VCol class="text-no-wrap" cols="12" v-if="activityStore.activityReport.assignment?.check_in !== null">
         <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
-        <span>{{ formatDate(activityStore.report.assignment?.check_in as unknown as  string, true ) }}</span>
+        <span>{{ formatDate(activityStore.activityReport.assignment?.check_in as unknown as  string, true ) }}</span>
+      </VCol>
+       <VCol class="text-no-wrap" cols="12" v-if="activityStore.activityReport.assignment?.check_out !== null">
+        <span class="me-2" style="min-inline-size: 120px;">Check Out Date</span>
+        <span>{{ formatDate(activityStore.activityReport.assignment?.check_out as unknown as  string, true ) }}</span>
       </VCol>
       <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
         <VBtn color="success" size="small" @click="handleViewOnMap">
