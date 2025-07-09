@@ -22,6 +22,7 @@ const isConfirmDialogVisible = ref(false)
 const configStore = useConfigStore()
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
+const isSpv = computed(() => user.value.role.role === 'spv')
 const showFilter = ref(false)
 const userStore = useUserStore()
 const roleStore = useRoleStore()
@@ -32,14 +33,21 @@ const headers = [
   { title: 'Email', key: 'email' },
   { title: 'Username', key: 'username' },
   { title: 'Role', key: 'role' },
+  { title: 'Team', key: 'team' },
   { title: 'Sales Person', key: 'sales_person' , sortable: false },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-onMounted(() => {   
+onMounted(async() => {
   salesPersonStore.updateSalesPersonOptions()
-  userStore.fetchUsers()
+  await userStore.initialize(user.value.team_id)
 })
+
+watch(() => user.value, async(newVal) => {
+  if(newVal){
+    await userStore.initialize(newVal.team_id)
+  }
+},{immediate: true})
 
 // Delayed search
 watch(searchQuery, (newVal) => {
@@ -60,6 +68,7 @@ watch(userStore, (newVal) => {
   if(newVal.isAddNewUserDrawerVisible){
     roleStore.fetchRoles()
     salesPersonStore.updateSalesPersonOptions()
+    salesPersonStore.fetchTeamOptions()
   }
 })
 
@@ -88,17 +97,13 @@ const handleSalesPersonLink = async () => {
   })
 }
 
-// Show delete modal
-const showDeleteModal = (item: IUser) => {
-  userStore.setSelectedUser(item)
-  isConfirmDialogVisible.value = true
-}
 
 const deleteSelectedUsers = async () => {
   console.log(userStore.selectedUser)
 }
 // Open link menu
 const handleClickLinkMenu = (item: IUser) => {
+  console.log(item)
   if (item.sales_person) {
     salesPersonModal.value = {show: true, type: 'unlink'}
   } else {
@@ -108,7 +113,8 @@ const handleClickLinkMenu = (item: IUser) => {
 }
 
 // Change selected item value and open drawer
-const handleSelectItem = (item?: IUser) => {  
+const handleSelectItem = (item?: IUser) => {
+  console.log(item)
   if (item) {
     userStore.setSelectedUser({ ...item })
     userStore.setEditMode(true)
@@ -240,6 +246,15 @@ const handleSelectItem = (item?: IUser) => {
             </div>
           </div>
         </template>
+        <template #item.team="{ item }">
+          <div class="d-flex align-center gap-x-4">          
+            <div class="d-flex flex-column">
+              <div class="text-sm">
+                {{ item.team?.name  }}
+              </div>
+            </div>
+          </div>
+        </template>
         <template #item.sales_person="{ item }">
           <div class="d-flex align-center gap-x-4">          
             <div class="d-flex flex-column">
@@ -252,7 +267,7 @@ const handleSelectItem = (item?: IUser) => {
         </template>
         <template #item.actions="{ item }">
           <VBtn
-            v-if="isAdmin"
+            v-if="isAdmin || isSpv"
             icon
             variant="text"
             color="medium-emphasis"

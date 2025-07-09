@@ -13,6 +13,7 @@ interface Filters {
   search?: string
   status?: string
   sales_person_id?: number
+  team_id?: number
   group_name?: string
   payment_term?: string
   price_list?: string
@@ -128,9 +129,12 @@ export const useCustomerStore = defineStore('customer', {
       }))
       this.loadingList = false
     },
-     async initialize(salesPersonId: number) {
+     async initialize(salesPersonId?: number, teamId?: number) {
       if(salesPersonId) {
         await this.updateFilters({ sales_person_id: salesPersonId }, false)
+      }
+      if(teamId) {
+        await this.updateFilters({ team_id: teamId }, false)
       }
       await this.fetchCustomers()
       this.isReady = true

@@ -46,7 +46,7 @@ const updateUsersOptions = async () => {
   await userStore.fetchUsers()
   usersOptions.value = userStore.users
     .filter((user: IUser) => user.sales_person == null)
-    .filter((user: IUser) => !['admin', 'coordinator'].includes(user.role?.role ?? ''))
+    .filter((user: IUser) => !['admin', 'spv'].includes(user.role?.role ?? ''))
     .map((user: IUser) => ({
       label: user.name,
       value: user.id

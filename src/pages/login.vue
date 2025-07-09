@@ -159,11 +159,10 @@ const onSubmit = () => {
               <VCol cols="12">
                 <AppTextField
                   v-model="credentials.username"
-                  label="Email"
-                  placeholder="johndoe@email.com"
-                  type="email"
+                  label="Email / Username"
+                  placeholder="johndoe@email.com or johndoe"                  
                   autofocus
-                  :rules="[requiredValidator, emailValidator]"
+                  :rules="[requiredValidator]"
                   :error-messages="errors.username"
                 />
               </VCol>

@@ -18,7 +18,7 @@ const filterDormantCustomer = ref(false)
 // Delayed search
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
-const isCoordinator = computed(() => user.value.role.role === 'coordinator')
+const isSpv = computed(() => user.value.role.role === 'spv')
 const showFilter = ref(false)
 const loadingSalesPerson = ref(true)
 const loadingGroupName = ref(true)
@@ -49,10 +49,11 @@ const headers = [
 ]
 
 
-onMounted(async() => {
- 
-  await customerStore.initialize(user.value.sales_person_id)
- 
+onMounted(async() => { 
+  const showAll = isSpv.value || isAdmin.value
+  const salesPersonId = showAll ? undefined : user.value.sales_person_id
+  const teamId = isAdmin.value ? undefined : user.value.team_id
+  await customerStore.initialize(salesPersonId, teamId) 
   salesStore.updateQuery({ per_page: -1, page: 1 })
 })
 
@@ -119,7 +120,7 @@ const deleteCustomer = async (id: string) => {
       <VCardText v-if="showFilter">
         <VRow>
           <!-- 👉 Select Role -->
-          <VCol cols="12" sm="4" v-if="isAdmin || isCoordinator">
+          <VCol cols="12" sm="4" v-if="isAdmin || isSpv">
             <AppSelect 
               v-model="customerStore.filters.sales_person_id"
               @update:model-value="customerStore.updateFilters({ sales_person_id: $event })"

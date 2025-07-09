@@ -34,10 +34,13 @@ const formData = ref<any>({
   confirm_password: '',
   role_id: undefined,
   sales_person_id: undefined,
-  username: ''
+  username: '',
+  team_id: undefined
 })
 const localSalesPersons = computed(() => [...salesPersonStore.filteredSalesPersonOptions]);
-
+const localTeams = computed(() => [...salesPersonStore.teamOptions]);
+const user = useCookie<any>('userData')
+const isAdmin = computed(() => user.value.role.role === 'admin')
 const isPasswordVisible = ref(false)
 // Close drawer
 const closeDrawer = () => {
@@ -68,6 +71,13 @@ const handleDrawerModelValueUpdate = (val: boolean) => {
   }
 }
 
+onMounted(() => {
+  console.log(user.value.team_id)
+  if (user.value?.role?.role !== 'admin') {
+    formData.value.team_id = user.value.team_id
+  }
+})
+
 watch(props, async (newVal) => {
   
   if (newVal.isDrawerOpen) {
@@ -78,6 +88,7 @@ watch(props, async (newVal) => {
       confirm_password: '',
       role_id: undefined,
       sales_person_id: undefined,
+      team_id: user.value.team_id,
       username: ''
     }
     nextTick(() => {
@@ -169,7 +180,17 @@ watch(props, async (newVal) => {
                   :items="localSalesPersons" 
                 />
               </VCol>
-
+              <VCol cols="12" v-if="isAdmin">
+                <AppSelect 
+                  v-model="formData.team_id" 
+                  label="Select Team"
+                  placeholder="Select Team" 
+                  item-title="title" 
+                  item-value="value" 
+                  :rules="[]"
+                  :items="localTeams" 
+                />
+              </VCol>
               <!-- 👉 Submit and Cancel -->
               <VCol cols="12">
                 <VBtn type="submit" class="me-3">
@@ -184,6 +205,5 @@ watch(props, async (newVal) => {
         </VCardText>
       </VCard>
     </PerfectScrollbar>
-
   </VNavigationDrawer>
 </template>

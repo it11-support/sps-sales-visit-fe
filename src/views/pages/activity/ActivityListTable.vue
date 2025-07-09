@@ -5,6 +5,8 @@ const activityStore = useActivityStore()
 const authStore = useAuthStore()
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
+const isSpv = computed(() => user.value.role.role === 'spv')
+
 const searchQuery = ref('')
 const salesPersonId = computed(() => user.value.sales_person?.SlpCode)
 const debouncedQuery = useDebounce(searchQuery, 400)
@@ -26,6 +28,7 @@ const headers = computed(() => {
   const headers = [
     { title: 'Actions', key: 'actions', sortable: false },
     { title: 'Schedule', key: 'scheduled_date', sortable: true },
+    { title: 'Assignee', key: 'assigned_to', sortable: true },
     { title: 'Customer', key: 'customer', sortable: true },
     { title: 'Type', key: 'activity', sortable: true },
     { title: 'Note', key: 'notes', sortable: true },
@@ -39,7 +42,13 @@ const headers = computed(() => {
 
 
 onMounted(async () => {
-  await activityStore.initialize(salesPersonId.value)
+  if (isAdmin.value) {
+    await activityStore.initialize()
+  } else if(isSpv.value) {
+    await activityStore.initialize(undefined, user.value.team_id)
+  } else {
+    await activityStore.initialize(salesPersonId.value)
+  } 
 })
 
 watch(showFilters, (val) => {
@@ -51,17 +60,6 @@ watch(showFilters, (val) => {
 watch(activityStore, (val) => {
   if(val.salesPersonsOptions.length > 0) loadingSalesPersonsOptions.value = false
 })
-
-watch(() =>isAdmin.value, (val) => {
-  if(val) {
-    activityStore.updateFilters({ sales_person_id: undefined })
-  } else {
-    const spId = authStore.user?.sales_person?.SlpCode
-    if (spId) {
-      activityStore.updateFilters({ sales_person_id: spId })
-    }
-  }
-}, { immediate: true })
 
 watch(debouncedQuery, (val) => {
   activityStore.updateFilters({ search: val })
@@ -221,9 +219,10 @@ const handleCheckIn = async(id: number) => {
       @update:model-value="activityStore.setSelectedRows"
       multi-sort
     >
-      <template #item.actions="{ item }">
+      <template #item.actions="{ item }">        
         <div class="d-flex justify-between gap-x-4" v-if="item.status === STATUS.ASSIGNED && !isAdmin">     
           <VBtn 
+            v-if="item.assigned_to.id === user.id"
             :key="item.id" 
             :loading="activityStore.loadingId === item.id" 
             @click="handleCheckIn(item.id)" 
@@ -250,7 +249,7 @@ const handleCheckIn = async(id: number) => {
         </div>
         <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.DRAFT || item.status === STATUS.ONGOING && !isAdmin">
           <VBtn
-            v-if="!isAdmin"
+            v-if="!isAdmin && item.assigned_to.id === user.id"
             :key="item.id" 
             :loading="activityStore.loadingId === item.id" 
             @click="handleClickEdit(item.id)"
@@ -277,6 +276,15 @@ const handleCheckIn = async(id: number) => {
           <div class="d-flex flex-column">
             <div class="text-sm">
               {{ formatDate(item.scheduled_date) }}
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #item.assigned_to="{ item }">
+        <div class="d-flex align-center gap-x-4">
+          <div class="d-flex flex-column">
+            <div class="text-sm">
+              {{ item.assigned_to.name }}
             </div>
           </div>
         </div>
@@ -311,8 +319,7 @@ const handleCheckIn = async(id: number) => {
             </div>
           </div>
         </div>
-      </template>
-      
+      </template>      
     </VDataTableServer>
   </VCard>  
 </template>

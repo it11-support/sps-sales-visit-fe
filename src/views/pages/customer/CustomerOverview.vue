@@ -18,7 +18,7 @@ const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
 const user = useCookie<any>('userData')
 const _isAdmin = computed(() => user.value.role.role === 'admin')
-const _isCoordinator = computed(() => user.value.role.role === 'coordinator')
+const _isSpv = computed(() => user.value.role.role === 'spv')
 
 const formData = ref({
   assigned_by: userData.value.id,

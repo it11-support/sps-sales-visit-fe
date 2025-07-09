@@ -9,7 +9,9 @@ export interface IUser {
   password?: string
   confirm_password?: string
   role_id?: number  
-  role?: IRole
+  role?: IRole,
+  team?: {id: number, name: string}
+  team_id?: number
   sales_person?: ISalesPerson
   sales_person_id?: number
 }

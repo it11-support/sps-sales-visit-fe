@@ -77,6 +77,7 @@ const toggleOverlay = () => {
               {{ userData?.name }}
             </VListItemTitle>
             <VListItemSubtitle>{{ userData?.email }}</VListItemSubtitle>
+            <VListItemSubtitle v-if="userData?.team">{{ userData?.team.name }}</VListItemSubtitle>
           </VListItem>
 
           <VDivider class="my-2" />

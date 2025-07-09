@@ -5,6 +5,7 @@ const configStore = useConfigStore()
 
 export const useUserStore = defineStore('userStore', {
   state: () => ({
+    isReady: false,
     loadingList: false,
     user: {
       id: 0,
@@ -24,6 +25,8 @@ export const useUserStore = defineStore('userStore', {
       password: '',
       confirm_password: '',
       role_id: undefined,
+      team_id: undefined,
+      team: undefined as {id: number, name: string} | undefined,
       role: undefined as IRole | undefined,
     } as IUser,
     users: [] as IUser[],
@@ -34,7 +37,8 @@ export const useUserStore = defineStore('userStore', {
       role: undefined,
       per_page: 10,
       page: 1,
-      sort_options: []
+      sort_options: [],
+      team_id: undefined
     },
     pagination: {
       current_page: 1,
@@ -68,7 +72,7 @@ export const useUserStore = defineStore('userStore', {
     async updateUserOptions() {
       await this.fetchUsers()
       this.userOptions = this.users.filter((user: IUser) => user.sales_person == null)
-      .filter((user: IUser) => !['admin', 'coordinator'].includes(user.role?.role ?? ''))
+      .filter((user: IUser) => !['admin', 'spv'].includes(user.role?.role ?? ''))
       .map((user: IUser) => ({
         label: user.name,
         value: user.id
@@ -107,9 +111,18 @@ export const useUserStore = defineStore('userStore', {
         configStore.overlay = false
       }
     },
-    updateQuery(query: any) {
+     async initialize(teamId: number) {
+      if(teamId) {
+        await this.updateQuery({ team_id: teamId }, false)
+      }
+      await this.fetchUsers()
+      this.isReady = true
+    },
+    async updateQuery(query: any, shouldFetch = true) {
       this.query = { ...this.query, ...query }
-      this.fetchUsers()
+      if (shouldFetch) {
+        this.fetchUsers()
+      }
     },
     setPerpage(perpage: number) {
       this.pagination.per_page = perpage
@@ -120,6 +133,7 @@ export const useUserStore = defineStore('userStore', {
       this.selectedRows = rows
     },
     updateSortOptions(options: any) {
+      if (!this.isReady) return
       this.updateQuery({
         sort_options: [options.sortBy]
       })

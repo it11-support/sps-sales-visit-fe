@@ -11,6 +11,7 @@ interface Filters {
   start_date?: Date | string
   end_date?: Date | string
   activity_type_id?: number,
+  team_id?: number
 }
 
 export const useActivityStore = defineStore('activity', {
@@ -52,6 +53,7 @@ export const useActivityStore = defineStore('activity', {
       status: undefined,
       start_date: '',
       end_date: '',
+      team_id: undefined,
       activity_type_id: undefined,
     } as Filters,
     activityReport: {
@@ -296,9 +298,12 @@ export const useActivityStore = defineStore('activity', {
         await this.fetchActivities();
       }
     },
-    async initialize(salesPersonId: number) {
+    async initialize(salesPersonId?: number, teamId?: number) {
       if(salesPersonId) {
         await this.updateFilters({ sales_person_id: salesPersonId }, false)
+      }      
+      if(teamId) {
+        await this.updateFilters({ team_id: teamId }, false)
       }
       await this.fetchActivities()
       await this.fetchCustomer()
