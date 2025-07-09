@@ -2,7 +2,6 @@ import { useConfigStore } from "@core/stores/config";
 
 const configStore = useConfigStore()
 export const handleUserBinding = async(params: any) => {
-  console.log(params)
   const { type, userId, salesPersonId, callback, onFinish } = params
   configStore.overlay = true;
   try {

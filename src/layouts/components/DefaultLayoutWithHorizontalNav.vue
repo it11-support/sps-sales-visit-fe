@@ -11,7 +11,6 @@ import NavBarI18n from '@core/components/I18n.vue'
 import { HorizontalNavLayout } from '@layouts'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 
-console.log(navItems)
 </script>
 
 <template>

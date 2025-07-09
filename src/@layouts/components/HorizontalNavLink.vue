@@ -15,7 +15,6 @@ const props = withDefaults(defineProps<Props>(), {
   isSubItem: false,
 })
 
-console.log(props.item)
 </script>
 
 <template>

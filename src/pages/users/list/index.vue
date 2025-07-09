@@ -103,7 +103,6 @@ const deleteSelectedUsers = async () => {
 }
 // Open link menu
 const handleClickLinkMenu = (item: IUser) => {
-  console.log(item)
   if (item.sales_person) {
     salesPersonModal.value = {show: true, type: 'unlink'}
   } else {
@@ -114,7 +113,6 @@ const handleClickLinkMenu = (item: IUser) => {
 
 // Change selected item value and open drawer
 const handleSelectItem = (item?: IUser) => {
-  console.log(item)
   if (item) {
     userStore.setSelectedUser({ ...item })
     userStore.setEditMode(true)

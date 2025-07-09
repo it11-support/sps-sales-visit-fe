@@ -72,7 +72,6 @@ const handleDrawerModelValueUpdate = (val: boolean) => {
 }
 
 onMounted(() => {
-  console.log(user.value.team_id)
   if (user.value?.role?.role !== 'admin') {
     formData.value.team_id = user.value.team_id
   }

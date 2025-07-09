@@ -93,7 +93,6 @@ const handleShowSalesPersonModal = (item: ISalesPerson) => {
 }
 
 const handleSalesPersonLink = async () => {
-  console.log(selectedUser.value)
   await handleUserBinding({
     type: salesPersonModal.value.type,
     userId: selectedItem.value?.user?.id || selectedUser.value, 
