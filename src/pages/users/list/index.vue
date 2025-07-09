@@ -213,7 +213,7 @@ const handleSelectItem = (item?: IUser) => {
       <VDivider />
       <VDataTableServer
         :loading="configStore.loading && !salesPersonModal.show"
-        v-model:items-per-page="userStore.pagination.per_page"
+        v-model:items-per-page="userStore.query.per_page"
         v-model:model-value="userStore.selectedRows"
         v-model:page="userStore.query.page"
         :items="userStore.users"
