@@ -49,11 +49,8 @@ const headers = [
 ]
 
 
-onMounted(async() => { 
-  const showAll = isSpv.value || isAdmin.value
-  const salesPersonId = showAll ? undefined : user.value.sales_person_id
-  const teamId = isAdmin.value ? undefined : user.value.team_id
-  await customerStore.initialize(salesPersonId, teamId) 
+onMounted(async() => {
+  await customerStore.initialize(user.value.sales_person_id, user.value.team_id) 
   salesStore.updateQuery({ per_page: -1, page: 1 })
 })
 
