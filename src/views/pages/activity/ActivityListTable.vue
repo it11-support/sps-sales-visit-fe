@@ -40,6 +40,7 @@ const headers = computed(() => {
   return headers
 })
 
+activityStore.$reset()
 
 onMounted(async () => {
   if (isAdmin.value) {

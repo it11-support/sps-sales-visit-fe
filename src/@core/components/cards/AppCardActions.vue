@@ -64,6 +64,14 @@ const triggeredRemove = () => {
   isCardRemoved.value = true
   emit('trash')
 }
+
+watch(
+  () => props.collapsed,
+  newVal => {
+    isContentCollapsed.value = newVal
+  }
+)
+
 </script>
 
 <template>

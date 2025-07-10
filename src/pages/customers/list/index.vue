@@ -48,9 +48,17 @@ const headers = [
   // { title: 'Actions', key: 'actions', sortable: false },
 ]
 
+customerStore.$reset()
+salesStore.$reset()
 
 onMounted(async() => {
-  await customerStore.initialize(user.value.sales_person_id, user.value.team_id) 
+  if(isAdmin.value) {
+    await customerStore.initialize()
+  } else if(isSpv.value) {
+    await customerStore.initialize(undefined, user.value.team_id)
+  } else {
+    await customerStore.initialize(user.value.sales_person_id)
+  }
   salesStore.updateQuery({ per_page: -1, page: 1 })
 })
 

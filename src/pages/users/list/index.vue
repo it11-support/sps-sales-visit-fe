@@ -27,6 +27,7 @@ const showFilter = ref(false)
 const userStore = useUserStore()
 const roleStore = useRoleStore()
 const salesPersonStore = useSalesPersonStore()
+const roleOptions = ref<{role: string, id: number}[]>([])
 // Headers
 const headers = [
   { title: 'User', key: 'name'},
@@ -37,6 +38,8 @@ const headers = [
   { title: 'Sales Person', key: 'sales_person' , sortable: false },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
+
+userStore.$reset()
 
 onMounted(async() => {
   salesPersonStore.updateSalesPersonOptions()
@@ -73,7 +76,16 @@ watch(userStore, (newVal) => {
 })
 
 watch(roleStore, (newVal) => {
+  console.log(roleStore.roleOptions)
   if(newVal.roleOptions.length > 0) loadingRoles.value = false
+  roleOptions.value =  newVal.roleOptions.filter(role => {
+    if(isSpv.value) {
+      return role.role !== 'Admin' && role.role !== 'Spv'
+    }
+    return true
+  })
+
+  console.log(roleOptions.value)
 })
 
 // Update sales person options
@@ -144,7 +156,7 @@ const handleSelectItem = (item?: IUser) => {
     </template>
   </VBreadcrumbs>
     <VCard class="mb-6">
-      <VCardItem class="pb-4">
+      <VCardItem class="pb-4" v-if="isAdmin">
         <VCheckbox v-model="showFilter" label="Show Filters"></VCheckbox>
       </VCardItem>
       <VCardText v-if="showFilter">
@@ -159,7 +171,7 @@ const handleSelectItem = (item?: IUser) => {
             @update:model-value="userStore.updateQuery({ role: $event, page: 1 })"
             clearable
             clear-icon="tabler-x"
-            :items="roleStore.roleOptions"
+            :items="roleOptions"
             item-title="role"
             item-value="id"
             label="Role"
@@ -265,7 +277,7 @@ const handleSelectItem = (item?: IUser) => {
         </template>
         <template #item.actions="{ item }">
           <VBtn
-            v-if="isAdmin || isSpv"
+            v-if="isAdmin || isSpv && (isSpv && item.role?.role !== 'admin')"
             icon
             variant="text"
             color="medium-emphasis"
@@ -356,7 +368,7 @@ const handleSelectItem = (item?: IUser) => {
       :user="userStore.selectedUser"
       :is-edit-mode="userStore.isEditMode"
       v-model:is-drawer-open="userStore.isAddNewUserDrawerVisible"
-      :role-options="roleStore.roleOptions"
+      :role-options="roleOptions"
       :sales-persons-options="salesPersonStore.filteredSalesPersonOptions"
       @user-data="userStore.storeUser"
     />

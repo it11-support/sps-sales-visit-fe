@@ -16,6 +16,8 @@ const selectedType = ref(null)
 const showLinkSalesPersonModal = ref(false)
 const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
+const isSticky = ref(false)
+const stickyRef = ref<HTMLElement | null>(null)
 
 const formData = ref({
   assigned_by: userData.value.id,
@@ -103,10 +105,24 @@ const handleSubmit = async () => {
     showScheduleForm.value = false
   })
 }
+onMounted(() => {
+  window.addEventListener('scroll', checkSticky)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', checkSticky)
+})
+
+const checkSticky = () => {
+  if (!stickyRef.value) return
+  const top = stickyRef.value.getBoundingClientRect().top
+  isSticky.value = top <= 62
+}
+
 </script>
 
 <template>
-  <VCol cols="12">
+  <VCol cols="12" class="pb-0">
    <VBreadcrumbs
       class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
       :items="[{title: 'Home', to: '/', class: 'text-primary' },{ title: 'Customers', to: { name: 'customers-list' }, class: 'text-primary'}, {title: 'Customer Overview'}]"
@@ -115,9 +131,12 @@ const handleSubmit = async () => {
         <v-icon icon='tabler-home' size="small"></v-icon>
       </template>
     </VBreadcrumbs>
+  </VCol>
+  <div class="sticky-card-actions v-col v-col-12" ref="stickyRef">
     <AppCardActions
       :title=title
-      action-collapsed      
+      action-collapsed
+      :collapsed="isSticky"
     >
       <VCardText>       
         <VRow class="d-flex justify-start">
@@ -146,7 +165,7 @@ const handleSubmit = async () => {
           </VRow>        
       </VCardText>
     </AppCardActions>
-  </VCol>
+  </div>
    <VDialog
     v-model="showScheduleForm"
     width="500"
@@ -353,5 +372,11 @@ const handleSubmit = async () => {
   .card-list > * {
     flex-basis: 100%;
   }
+}
+
+.sticky-card-actions {
+  position: sticky;
+  z-index: 20;
+  inset-block-start: 58px;
 }
 </style>

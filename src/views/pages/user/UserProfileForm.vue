@@ -25,13 +25,22 @@ const roleStore = useRoleStore()
 
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
+const isSpv = computed(() => user.value.role.role === 'spv')
 
 watch(debouncedQuery, (val) => {
   customerStore.updateFilters({ search: val })
 })
 
+customerStore.$reset()
+
 onMounted(async() => {
-  await customerStore.initialize(salesPerson?.SlpCode)
+  if(isAdmin.value) {
+    await customerStore.initialize()
+  } else if(isSpv.value) {
+    await customerStore.initialize(undefined, user.value.team_id)
+  } else {
+    await customerStore.initialize(user.value.sales_person_id)
+  }
   roleStore.fetchRoles()
 })
 
@@ -68,14 +77,16 @@ const submitUserHandler = async () => {
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
   { title: 'Customer', key: 'CardName' },
+  { title: 'Sales Person', key: 'SlpName' },
   { title: 'Group Name', key: 'GroupName' },
   { title: 'PIC', key: 'CntctPrsn' },
   { title: 'Status', key: 'status', sortable: false },
   { title: 'Address', key: 'Address', width: '50px' },
-  { title: 'Phone', key: 'Phone' },
-  { title: 'Number of Invoices', key: 'invoice_count' },
+  { title: 'Phone', key: 'Phone1' },
+  { title: 'Total Sales', key: 'total_sales' },
   { title: 'Last Invoice Date', key: 'last_transaction_date' },
-  { title: 'Payment Terms', key: 'PaymentTerm' },
+  { title: 'Number of Invoices', key: 'invoice_count' },
+  { title: 'Payment Term', key: 'PaymentTerm' },
   { title: 'Price List', key: 'PriceList' },
   // { title: 'Actions', key: 'actions', sortable: false },
 ]
