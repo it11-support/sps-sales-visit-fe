@@ -6,7 +6,19 @@
 - Analyze sales performance
 - Manage Activity (Assignment)
 - View activity report
-### 2. Sales Person
+### 2. Sales Coordinator
+- Manage Sales Persons (link to user)
+- View all customers
+- Analyze sales performance
+- Manage Activity (Assignment)
+- View activity report
+### 3. Supervisor
+- Manage Sales Persons (link to user)
+- View all customers
+- Analyze sales performance
+- Manage Activity (Assignment)
+- View activity report
+### 4. Sales Person
 - View customers belongs to the sales person
 - View activities (Assingment)
 - Input sales visit report
