@@ -56,7 +56,7 @@ watch(showScheduleForm, (val) => {
   }
 })
 
-const title = computed(() => `CUSTOMER OVERVIEW - ${data.value.CardCode}`)
+const title = computed(() => `${data.value.CardName.toUpperCase()}`)
 
 const handleShowScheduleForm = () => {
   if(data.value.sales_person?.user == null) {

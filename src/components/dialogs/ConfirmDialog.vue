@@ -10,11 +10,10 @@ interface Props {
 
 interface Emit {
   (e: 'update:isDialogVisible', value: boolean): void
-  (e: 'confirm', value: boolean): void
+  (e: 'confirm'): void
 }
 
 const props = defineProps<Props>()
-
 const emit = defineEmits<Emit>()
 
 const unsubscribed = ref(false)
@@ -25,14 +24,13 @@ const updateModelValue = (val: boolean) => {
 }
 
 const onConfirmation = () => {
-  emit('confirm', true)
   updateModelValue(false)
+  emit('confirm') // Tidak mengirim boolean, hanya emit biasa
   unsubscribed.value = true
 }
 
 const onCancel = () => {
-  emit('confirm', false)
-  emit('update:isDialogVisible', false)
+  updateModelValue(false)
   cancelled.value = true
 }
 </script>
@@ -80,7 +78,7 @@ const onCancel = () => {
     </VCard>
   </VDialog>
 
-  <!-- Unsubscribed -->
+  <!-- Unsubscribed / Confirmed -->
   <VDialog
     v-model="unsubscribed"
     max-width="500"

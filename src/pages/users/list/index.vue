@@ -76,7 +76,6 @@ watch(userStore, (newVal) => {
 })
 
 watch(roleStore, (newVal) => {
-  console.log(roleStore.roleOptions)
   if(newVal.roleOptions.length > 0) loadingRoles.value = false
   roleOptions.value =  newVal.roleOptions.filter(role => {
     if(isSpv.value) {
@@ -85,7 +84,6 @@ watch(roleStore, (newVal) => {
     return true
   })
 
-  console.log(roleOptions.value)
 })
 
 // Update sales person options
@@ -93,12 +91,17 @@ watch(salesPersonModal, async(newVal) => {
   newVal.show && newVal.type === 'link' && await salesPersonStore.updateSalesPersonOptions()
 }, { deep: true })
 
+// Show delete confirm dialog
+const showDeleteModal = (item: IUser) => {
+  isConfirmDialogVisible.value = true
+  userStore.setSelectedUser(item)
+}
 
 // Link & unlink user to sales person api
 const handleSalesPersonLink = async () => {
   await handleUserBinding({
     type: salesPersonModal.value.type,
-    userId: userStore.selectedUser.id, 
+    userId: userStore.selectedUser?.id, 
     salesPersonId: selectedSalesPerson.value,
     callback: userStore.fetchUsers, 
     onFinish: () => {
@@ -109,10 +112,15 @@ const handleSalesPersonLink = async () => {
   })
 }
 
+// Delete user
+const deleteSelectedUser = async () => {
 
-const deleteSelectedUsers = async () => {
-  console.log(userStore.selectedUser)
+ if (!userStore.selectedUser) return
+
+  await userStore.destroyUser(userStore.selectedUser.id)
+  isConfirmDialogVisible.value = false
 }
+
 // Open link menu
 const handleClickLinkMenu = (item: IUser) => {
   if (item.sales_person) {
@@ -134,6 +142,19 @@ const handleSelectItem = (item?: IUser) => {
   }
   userStore.setAddNewUserDrawerVisible(true)
 }
+
+const shouldShowDeleteButton = (item: IUser): boolean => {
+
+  const isLinked = item.sales_person !== null
+
+  return (
+    !isLinked ||
+    isAdmin.value ||
+    (item.sales_person?.SlpCode !== user.value.sales_person?.SlpCode) ||
+    (isSpv && item.role?.role == 'sales')
+  )
+}
+
 </script>
 
 <template>
@@ -305,14 +326,14 @@ const handleSelectItem = (item?: IUser) => {
                     <VListItemTitle>{{ !item.sales_person ? 'Link Sales Person' : 'Unlink Sales Person' }}</VListItemTitle>
                   </VListItem>
                 </template>                
-                <!-- <div>
-                  <VListItem v-if="item.role?.role !== 'admin'" @click="showDeleteModal(item)">
+                <div>
+                  <VListItem v-if="shouldShowDeleteButton(item)" @click="showDeleteModal(item)">
                     <template #prepend>
                       <VIcon icon="tabler-trash" />
                     </template>
                     <VListItemTitle>Delete</VListItemTitle>
                   </VListItem>
-                </div> -->
+                </div>
               </VList>
             </VMenu>
           </VBtn>
@@ -379,7 +400,7 @@ const handleSelectItem = (item?: IUser) => {
       confirm-msg="User deleted successfully."
       confirmation-question="Are you sure to delete this user?"
       cancel-msg="Delete user cancelled!!"
-      v-on:confirm="deleteSelectedUsers"
+      v-on:confirm="deleteSelectedUser"
     />
   </section> 
 </template>

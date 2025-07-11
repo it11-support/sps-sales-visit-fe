@@ -28,7 +28,7 @@ export const useUserStore = defineStore('userStore', {
       team_id: undefined,
       team: undefined as {id: number, name: string} | undefined,
       role: undefined as IRole | undefined,
-    } as IUser,
+    } as IUser | undefined,
     users: [] as IUser[],
     isEditMode: false,
     isAddNewUserDrawerVisible: false,
@@ -107,6 +107,21 @@ export const useUserStore = defineStore('userStore', {
         this.fetchUsers()
       } catch (error) {
 
+      } finally {
+        configStore.overlay = false
+      }
+    },
+    async destroyUser (id: number) {
+      configStore.overlay = true
+      try {
+        const url = `/user/${id}`
+        await $api(url, {
+          method: 'DELETE',
+        })
+        // Refetch User
+        this.fetchUsers()
+        this.selectedUser = undefined
+      } catch (error) {
       } finally {
         configStore.overlay = false
       }

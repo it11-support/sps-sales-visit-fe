@@ -77,10 +77,9 @@ onMounted(() => {
   }
 })
 
-watch(props, async (newVal) => {
-  
-  if (newVal.isDrawerOpen) {
-    formData.value = props.isEditMode && props.isDrawerOpen ? props.user : {
+watch(() => props.isDrawerOpen, async (isOpen) => {
+  if (isOpen) {
+    formData.value = props.isEditMode ? {...props.user} : {
       name: '',
       email: '',
       password: '',
@@ -90,25 +89,30 @@ watch(props, async (newVal) => {
       team_id: user.value.team_id,
       username: ''
     }
+
     nextTick(() => {
       form.value?.resetValidation()
     })
-  }
-  if (formData.value.sales_person_id) {
-    const exists = localSalesPersons.value.some(
-      sp => sp.value === formData.value.sales_person_id
-    )
-    if (!exists) {
-      const match = salesPersonStore.salesPersons.find(sp => sp.SlpCode === formData.value.sales_person_id)
-      if (match) {
-        localSalesPersons.value.unshift({
-          title: match.SlpName,
-          value: match.SlpCode,
-        })
+
+    if (formData.value.sales_person_id) {
+      const exists = localSalesPersons.value.some(
+        sp => sp.value === formData.value.sales_person_id
+      )
+      if (!exists) {
+        const match = salesPersonStore.salesPersons.find(
+          sp => sp.SlpCode === formData.value.sales_person_id
+        )
+        if (match) {
+          localSalesPersons.value.unshift({
+            title: match.SlpName,
+            value: match.SlpCode,
+          })
+        }
       }
     }
   }
 })
+
 
 </script>
 <template>
