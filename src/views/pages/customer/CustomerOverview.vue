@@ -4,6 +4,7 @@ import type { ICustomerData } from '@core/types';
 import dayjs from 'dayjs';
 import LinkSalesPersonModal from '../user/LinkSalesPersonModal.vue';
 import CustomerItemList from './CustomerItemList.vue';
+import { useActivityStore } from '@/@core/stores';
 const props = defineProps<{ data: ICustomerData, onFinish?: () => Promise<void> }>()
 const { data } = toRefs(props)
 const { onFinish } = props
@@ -18,7 +19,7 @@ const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
 const isSticky = ref(false)
 const stickyRef = ref<HTMLElement | null>(null)
-
+const activityStore = useActivityStore()
 const formData = ref({
   assigned_by: userData.value.id,
   assigned_to: data.value.sales_person?.user?.id,
@@ -43,12 +44,9 @@ const items = [
   { title: 'Sales Person', value: `${salesPersonName}`, icon: 'tabler-user' },
 ]
 
-const {data: activityTypes} = await useApi<any>(createUrl('activity/activity-types'), {})
-
-const activityTypeOptions = computed(() => activityTypes.value.data.map((type: any) => ({
-  value: type.id,
-  title: type.name
-})))
+onMounted(async () => {
+  await activityStore.fetchActivityTypes()
+})
 
 watch(showScheduleForm, (val) => {
   if(val){
@@ -278,7 +276,7 @@ const checkSticky = () => {
                   <AppSelect
                     v-model="selectedType"           
                     placeholder="Select Activity Type"
-                    :items="activityTypeOptions"
+                    :items="activityStore.activityTypes"
                     clearable
                     clear-icon="tabler-x"
                     @update:model-value="updateSelectedType"

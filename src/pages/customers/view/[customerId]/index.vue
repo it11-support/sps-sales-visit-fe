@@ -7,17 +7,26 @@ import { useRoute } from 'vue-router';
 import { ISalesInvoice } from '@/@core/typedefs/salesinvoice';
 import CustomerOverview from '@/views/pages/customer/CustomerOverview.vue';
 import SalesInvoice from '@/views/pages/customer/SalesInvoice.vue';
+import { useCustomerStore } from '@/@core/stores';
+import { ICustomerData } from '@/@core/typedefs';
 
 
 const route = useRoute('customers-view-customerId')
 const searchQuery = ref('')
 const debouncedQuery = ref('')
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
-
-
-const { data: customerData, execute } = await useApi<any>(createUrl(`customer/${route.params.customerId}`))
+const customerStore = useCustomerStore()
 
 const id = route.params.customerId as string
+let customer = ref<ICustomerData | null>(null)
+const fetchCustomer = async () => {
+  await customerStore.fetchCustomerById(id)
+}
+
+onMounted(async() => {
+  await fetchCustomer()
+  customer.value = customerStore.customer
+})
 
 // Delayed search
 watch(searchQuery, (newVal) => {
@@ -28,18 +37,12 @@ watch(searchQuery, (newVal) => {
   }, 400) // delay 400ms
 })
 
-const selectedRows = ref<ISalesInvoice[]>([])
-
-const updateSelectedRows = (rows: ISalesInvoice[]) => {
-  selectedRows.value = rows.map((row: ISalesInvoice) => ({ ...row }));
-}
-
 </script>
 
 <template>
   <section>
-  <VRow v-if="customerData">    
-    <CustomerOverview :data="customerData.data" :onFinish="execute"/>
+  <VRow v-if="customer">    
+    <CustomerOverview :data="customer" :onFinish="fetchCustomer"/>
     <SalesStatistic :id="id" />
     <SalesInvoice :id="id" />
   </VRow>
