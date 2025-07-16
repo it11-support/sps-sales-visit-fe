@@ -37,11 +37,34 @@ const formData = ref<any>({
   username: '',
   team_id: undefined
 })
-const localSalesPersons = computed(() => [...salesPersonStore.filteredSalesPersonOptions]);
 const localTeams = computed(() => [...salesPersonStore.teamOptions]);
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
 const isPasswordVisible = ref(false)
+
+const localSalesPersons = computed(() => {
+  const options = [...salesPersonStore.filteredSalesPersonOptions]
+
+  const selectedId = formData.value.sales_person_id
+  if (
+    selectedId &&
+    !options.some(opt => opt.value === selectedId)
+  ) {
+    const match = salesPersonStore.salesPersons.find(
+      sp => sp.SlpCode === selectedId
+    )
+    if (match) {
+      options.unshift({
+        title: match.SlpName,
+        value: match.SlpCode,
+      })
+    }
+  }
+
+  return options
+})
+
+
 // Close drawer
 const closeDrawer = () => {
   emit('update:isDrawerOpen', false)
@@ -94,22 +117,23 @@ watch(() => props.isDrawerOpen, async (isOpen) => {
       form.value?.resetValidation()
     })
 
-    if (formData.value.sales_person_id) {
-      const exists = localSalesPersons.value.some(
-        sp => sp.value === formData.value.sales_person_id
-      )
-      if (!exists) {
-        const match = salesPersonStore.salesPersons.find(
-          sp => sp.SlpCode === formData.value.sales_person_id
-        )
-        if (match) {
-          localSalesPersons.value.unshift({
-            title: match.SlpName,
-            value: match.SlpCode,
-          })
-        }
-      }
-    }
+    // if (formData.value.sales_person_id) {
+    //   const exists = localSalesPersons.value.some(
+    //     sp => sp.value === formData.value.sales_person_id
+    //   )
+    //   console.log(exists)
+    //   if (!exists) {
+    //     const match = salesPersonStore.salesPersons.find(
+    //       sp => sp.SlpCode === formData.value.sales_person_id
+    //     )
+    //     if (match) {
+    //       localSalesPersons.value.unshift({
+    //         title: match.SlpName,
+    //         value: match.SlpCode,
+    //       })
+    //     }
+    //   }
+    // }
   }
 })
 

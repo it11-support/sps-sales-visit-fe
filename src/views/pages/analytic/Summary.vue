@@ -17,20 +17,20 @@ const yoyRefVueApexChart = ref()
 const currentTab = ref<number>(0)
 
 const labelMoM = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.month))
-const activeCustomer = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.active_customers))
-const volume = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.volume))
-const revenue = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.revenue))
-const momVolume = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.mom_volume))
-const momRevenue = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.mom_revenue))
-const momActiveCustomer = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.mom_active_customers))
+const activeCustomer = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.active_customers ?? 0))
+const volume = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.volume ?? 0))
+const revenue = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.revenue ?? 0))
+const momVolume = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.mom_volume ?? 0))
+const momRevenue = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.mom_revenue ?? 0))
+const momActiveCustomer = computed(() => salesSummaryStore.summary.mom.map((item: Partial<ISalesSummary>) => item.mom_active_customers ?? 0))
 
 const labelYoy = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.month))
-const yearlyActiveCustomer = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.active_customers))
-const yoyActiveCustomer = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.yoy_active_customers))
-const yearlyVolume = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.volume))
-const yoyVolume = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.yoy_volume))
-const yearlyRevenue = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.revenue))
-const yoyRevenue = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.yoy_revenue))
+const yearlyActiveCustomer = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.active_customers ?? 0))
+const yoyActiveCustomer = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.yoy_active_customers ?? 0))
+const yearlyVolume = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.volume ?? 0))
+const yoyVolume = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.yoy_volume ?? 0))
+const yearlyRevenue = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.revenue ?? 0))
+const yoyRevenue = computed(() => salesSummaryStore.summary.yoy.map((item: Partial<ISalesSummary>) => item.yoy_revenue ?? 0))
 
 const chartConfigs = computed(() => {
   const currentTheme = vuetifyTheme.current.value.colors
@@ -727,6 +727,15 @@ const chartConfigs = computed(() => {
   ]
 })
 
+watch(
+  () => salesSummaryStore.month,
+  async (newValue) => {
+    if (newValue) {
+      await salesSummaryStore.fetchSalesSummary()
+    }
+  }
+)
+
 </script>
 
 <template>
@@ -735,18 +744,33 @@ const chartConfigs = computed(() => {
     v-if="salesSummaryStore.loading">
   </VSkeletonLoader>
   <template v-else>
+    <VRow class="d-flex justify-start mb-5">
+        <VCol sm="8" md="4" lg="4">
+          <AppSelect 
+          v-model="salesSummaryStore.month"
+          label="Select Month"
+          placeholder="Select Month" 
+          item-title="label" 
+          item-value="value" 
+          :rules="[]"
+          @update:model-value="salesSummaryStore.setMonth($event as number)"
+          :items="salesSummaryStore.monthList" 
+          />
+        </VCol>
+      </VRow>
     <VSlideGroup
       v-model="currentTab"
       show-arrows
       mandatory
       class="mb-10"
-    >
+    >    
       <VSlideGroupItem
         v-for="(report, index) in chartConfigs"
         :key="report.title"
         v-slot="{ isSelected, toggle }"
         :value="index"
       >
+      
         <div
           style="block-size: 120px; inline-size: 140px;"
           :style="isSelected ? 'border-color:rgb(var(--v-theme-primary)) !important' : ''"

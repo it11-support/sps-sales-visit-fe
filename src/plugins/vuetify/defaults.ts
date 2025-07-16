@@ -188,4 +188,7 @@ export default {
   VNavigationDrawer: {
     touchless: true,
   },
+  global: {
+    style: 'font-size: 0.75rem !important;',
+  }
 }

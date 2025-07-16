@@ -46,7 +46,7 @@ watch(searchQuery, (newVal) => {
     <SalesStatistic :id="id" />
     <SalesInvoice :id="id" />
   </VRow>
-  <div v-else>
+  <div v-else-if="!customerStore.loadingDetail">
     <VAlert
       type="error"
       variant="tonal"
