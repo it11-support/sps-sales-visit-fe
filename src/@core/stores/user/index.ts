@@ -99,6 +99,7 @@ export const useUserStore = defineStore('userStore', {
       configStore.overlay = true
       try {
         const url = `/user/update/${userData.id}`
+        console.log(userData)
         await $api(url, {
           method: 'PUT',
           body: userData,

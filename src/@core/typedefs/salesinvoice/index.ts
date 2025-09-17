@@ -45,3 +45,8 @@ export interface ISalesInvoiceData {
   links: string[],
   data: ISalesInvoice[]
 }
+
+export interface ISalesSummaryResponse {
+  mom: Record<string, Partial<ISalesSummary>[]>
+  yoy: Record<string, Partial<ISalesSummary>[]>
+}

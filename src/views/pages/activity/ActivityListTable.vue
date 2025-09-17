@@ -34,9 +34,6 @@ const headers = computed(() => {
     { title: 'Note', key: 'notes', sortable: true },
     { title: 'Status', key: 'status', sortable: true },
   ]
-  if (isAdmin.value) {
-    headers.splice(1, 0, { title: 'Assigned To', key: 'assigned_to.sales_person', sortable: true })
-  }
   return headers
 })
 
@@ -261,15 +258,6 @@ const handleCheckIn = async(id: number) => {
             >
             Edit Report
           </VBtn>
-        </div>
-      </template>
-      <template #item.assigned_to.sales_person="{ item }">
-        <div class="d-flex align-center gap-x-4">
-          <div class="d-flex flex-column">
-            <div class="text-sm">
-              {{ item.assigned_to.sales_person?.SlpName }}
-            </div>
-          </div>
         </div>
       </template>
       <template #item.scheduled_date="{ item }">

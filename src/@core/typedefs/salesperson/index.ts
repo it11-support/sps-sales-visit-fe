@@ -1,6 +1,8 @@
 import { IUser } from "../user"
 
 export interface ISalesPerson {
+  id: string
+  CompanyId: string
   SlpCode: number
   SlpName: string
   Commission: number
@@ -12,5 +14,5 @@ export interface ISalesPerson {
   UserSign: number
   dwh_created_at: Date
   dwh_updated_at: Date
-  user?: IUser
+  user?: IUser[]
 }

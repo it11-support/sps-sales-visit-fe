@@ -128,12 +128,7 @@ const handleViewOnMap = () => {
                         type="article"
                       />
                     </template>
-                    <VListItem v-if="!activityStore.loadingAssignment">
-                      <VListItemTitle class="d-flex mb-1">
-                        <span class="me-2" style="min-inline-size: 120px;">Sales Person</span>
-                        <span>{{ activityStore.report?.assignment?.assigned_to?.sales_person?.SlpName }}</span>
-                      </VListItemTitle>
-
+                    <VListItem v-if="!activityStore.loadingAssignment">                     
                       <VListItemTitle class="d-flex mb-1">
                         <span class="me-2" style="min-inline-size: 120px;">Outlet Name</span>
                         <span>{{ activityStore.report?.assignment?.customer?.CardName }}</span>

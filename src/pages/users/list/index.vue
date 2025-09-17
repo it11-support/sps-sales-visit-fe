@@ -144,14 +144,13 @@ const handleSelectItem = (item?: IUser) => {
 }
 
 const shouldShowDeleteButton = (item: IUser): boolean => {
-
-  const isLinked = item.sales_person !== null
+  const isLinked = Array.isArray(item.sales_person) && item.sales_person.length > 0
 
   return (
     !isLinked ||
     isAdmin.value ||
-    (item.sales_person?.SlpCode !== user.value.sales_person?.SlpCode) ||
-    (isSpv && item.role?.role == 'sales')
+    !item.sales_person?.some(sp => sp.SlpCode === user.value.sales_person?.SlpCode) ||
+    (isSpv && item.role?.role === 'sales')
   )
 }
 
@@ -290,7 +289,7 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
           <div class="d-flex align-center gap-x-4">          
             <div class="d-flex flex-column">
               <div class="text-sm">               
-                <VChip v-if ="item.role?.role !== 'admin' && item.sales_person" label size="small" color="success">{{ item.sales_person.SlpName }}</VChip>
+                <VChip class="mr-3" v-for="slp in item.sales_person" v-if ="item.role?.role !== 'admin' && item.sales_person" label size="small" color="success">{{ slp.SlpName }} - {{ slp.CompanyId }}</VChip>
                 <VChip v-else-if="item.role?.role !== 'admin' && !item.sales_person" label size="small" color="error">Not Linked</VChip>
               </div>
             </div>

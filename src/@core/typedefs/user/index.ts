@@ -12,6 +12,7 @@ export interface IUser {
   role?: IRole,
   team?: {id: number, name: string}
   team_id?: number
-  sales_person?: ISalesPerson
-  sales_person_id?: number
+  sales_person?: ISalesPerson[]
+  bbs_sales_person_id?: number
+  spv_sales_person_id?: number
 }

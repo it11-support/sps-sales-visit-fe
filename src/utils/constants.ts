@@ -11,4 +11,12 @@ export const PAGINATION_ITEMS = [
   { value: -1, title: 'All' },
 ]
 
+
+export const COMPANIES = {
+  SPS: "SPS",
+  BBS: "BBS",
+} as const;
+
+export type Company = keyof typeof COMPANIES;
+
 export const DEFAULT_TOAST_TIMEOUT = 3000

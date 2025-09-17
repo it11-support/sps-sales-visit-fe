@@ -22,7 +22,8 @@ interface Filters {
   page: number
   sort_options: SortItem[]
   hideZeroInvoice: boolean
-  dormantMonth?: number
+  dormantMonth?: number,
+  companyIds: string[]
 }
 
 export const useCustomerStore = defineStore('customer', {
@@ -64,7 +65,8 @@ export const useCustomerStore = defineStore('customer', {
       page: 1,
       sort_options: [],
       hideZeroInvoice: false,
-      dormantMonth: undefined
+      dormantMonth: undefined,
+      companyIds: [COMPANIES.SPS]
     } as Filters,
   }),
 

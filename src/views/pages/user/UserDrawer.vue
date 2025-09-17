@@ -18,7 +18,7 @@ interface Props {
   }[]
   salesPersonsOptions: {
     title: string
-    value: number
+    value: string
   }[]
 }
 
@@ -33,7 +33,8 @@ const formData = ref<any>({
   password: '',
   confirm_password: '',
   role_id: undefined,
-  sales_person_id: undefined,
+  bbs_sales_person_id: undefined,
+  sps_sales_person_id: undefined,
   username: '',
   team_id: undefined
 })
@@ -43,25 +44,64 @@ const isAdmin = computed(() => user.value.role.role === 'admin')
 const isPasswordVisible = ref(false)
 
 const localSalesPersons = computed(() => {
-  const options = [...salesPersonStore.filteredSalesPersonOptions]
+  let options = [...salesPersonStore.filteredSalesPersonOptions]
+  const currentUserId = user.value.id
 
-  const selectedId = formData.value.sales_person_id
-  if (
-    selectedId &&
-    !options.some(opt => opt.value === selectedId)
-  ) {
-    const match = salesPersonStore.salesPersons.find(
-      sp => sp.SlpCode === selectedId
-    )
-    if (match) {
+  // Ambil selected IDs per Company (buat user yang sedang di-edit)
+  let spsSelectedId = formData.value.sps_sales_person_id
+  let bbsSelectedId = formData.value.bbs_sales_person_id
+
+  // Filter: hide jika sudah terhubung dengan user lain
+  options = options.filter(opt => {
+    if (!opt.user || opt.user.length === 0) return true
+    return opt.user.some((u: IUser) => u.id === formData.value.id)
+  })
+
+  // Auto-select jika login user ada di salesPersons
+  const match = salesPersonStore.salesPersons.find(sp =>
+    sp.user?.some(u => u.id === currentUserId)
+  )
+
+  if (match) {
+    if (match.CompanyId === COMPANIES.SPS && !spsSelectedId) {
+      spsSelectedId = match.SlpCode
+      formData.value.sps_sales_person_id = spsSelectedId
+    }
+    if (match.CompanyId === 'BBS' && !bbsSelectedId) {
+      bbsSelectedId = match.SlpCode
+      formData.value.bbs_sales_person_id = bbsSelectedId
+    }
+  }
+
+  // Jika selectedId belum ada di options, tambahkan manual
+  if (spsSelectedId && !options.some(opt => opt.value === spsSelectedId)) {
+    const matchSps = salesPersonStore.salesPersons.find(sp => sp.SlpCode === spsSelectedId)
+    if (matchSps) {
       options.unshift({
-        title: match.SlpName,
-        value: match.SlpCode,
+        title: matchSps.SlpName,
+        value: matchSps.id,
+        user: matchSps.user ?? [],
+        type: matchSps.CompanyId
       })
     }
   }
 
-  return options
+  if (bbsSelectedId && !options.some(opt => opt.value === bbsSelectedId)) {
+    const matchBbs = salesPersonStore.salesPersons.find(sp => sp.SlpCode === bbsSelectedId)
+    if (matchBbs) {
+      options.unshift({
+        title: matchBbs.SlpName,
+        value: matchBbs.id,
+        user: matchBbs.user ?? [],
+        type: matchBbs.CompanyId
+      })
+    }
+  }
+
+  const sps = options.filter(opt => opt.type === COMPANIES.SPS)
+  const bbs = options.filter(opt => opt.type === COMPANIES.BBS)
+
+  return { sps, bbs }
 })
 
 
@@ -108,9 +148,15 @@ watch(() => props.isDrawerOpen, async (isOpen) => {
       password: '',
       confirm_password: '',
       role_id: undefined,
-      sales_person_id: undefined,
+      bbs_sales_person_id: undefined,
+      sps_sales_person_id: undefined,
       team_id: user.value.team_id,
       username: ''
+    }
+
+    if (props.isEditMode && props.user) {
+      formData.value.bbs_sales_person_id = props.user.sales_person?.find(sp => sp.CompanyId === COMPANIES.BBS)?.id
+      formData.value.sps_sales_person_id = props.user.sales_person?.find(sp => sp.CompanyId === COMPANIES.SPS)?.id
     }
 
     nextTick(() => {
@@ -134,6 +180,8 @@ watch(() => props.isDrawerOpen, async (isOpen) => {
     //     }
     //   }
     // }
+
+    console.log(formData.value)
   }
 })
 
@@ -197,14 +245,23 @@ watch(() => props.isDrawerOpen, async (isOpen) => {
                 />
               </VCol>
               <VCol cols="12">
-                <AppSelect 
-                  v-model="formData.sales_person_id" 
-                  label="Bind Sales Person"
-                  placeholder="Select Sales Person" 
-                  item-title="title" 
-                  item-value="value" 
-                  :rules="[]"
-                  :items="localSalesPersons" 
+                <AppSelect
+                  v-model="formData.sps_sales_person_id"
+                  label="Bind SPS Sales Person"
+                  :items="localSalesPersons.sps"
+                  item-title="title"
+                  item-value="value"
+                  clearable
+                />
+              </VCol>
+              <VCol cols="12">
+                <AppSelect
+                  v-model="formData.bbs_sales_person_id"
+                  label="Bind BBS Sales Person"
+                  :items="localSalesPersons.bbs"
+                  item-title="title"
+                  item-value="value"
+                  clearable
                 />
               </VCol>
               <VCol cols="12" v-if="isAdmin">

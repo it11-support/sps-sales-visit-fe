@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import AppDateTimePicker from '@/@core/components/app-form-elements/AppDateTimePicker.vue';
+import { useActivityStore } from '@/@core/stores';
 import type { ICustomerData } from '@core/types';
 import dayjs from 'dayjs';
 import LinkSalesPersonModal from '../user/LinkSalesPersonModal.vue';
 import CustomerItemList from './CustomerItemList.vue';
-import { useActivityStore } from '@/@core/stores';
 const props = defineProps<{ data: ICustomerData, onFinish?: () => Promise<void> }>()
 const { data } = toRefs(props)
 const { onFinish } = props
@@ -22,7 +22,7 @@ const stickyRef = ref<HTMLElement | null>(null)
 const activityStore = useActivityStore()
 const formData = ref({
   assigned_by: userData.value.id,
-  assigned_to: data.value.sales_person?.user?.id,
+  assigned_to: data.value.sales_person?.user?.[0].id ?? null,
   customer_id: data.value.CardCode,
   scheduled_date: '',
   activity_type_id: 0,
@@ -50,7 +50,7 @@ onMounted(async () => {
 
 watch(showScheduleForm, (val) => {
   if(val){
-    formData.value.assigned_to = data.value.sales_person?.user?.id
+    formData.value.assigned_to = data.value.sales_person?.user?.[0].id ?? null
   }
 })
 

@@ -33,6 +33,7 @@ watch(debouncedQuery, (val) => {
 // Headers
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
+  { title: 'Compnay', key: 'CompanyId' },
   { title: 'Customer', key: 'CardName' },
   { title: 'Sales Person', key: 'SlpName' },
   { title: 'Group Name', key: 'GroupName' },
@@ -106,6 +107,35 @@ const deleteCustomer = async (id: string) => {
   customerStore.fetchCustomers()
 }
 
+const updateSelected = (val: string) => {
+  const selectedCompanies = customerStore.filters.companyIds ?? []
+
+  let newValue: string[]
+
+  if (selectedCompanies.includes(val)) {
+    // hapus val
+    newValue = selectedCompanies.filter(item => item !== val)
+  } else {
+    // tambah val
+    newValue = [...selectedCompanies, val]
+  }
+
+  customerStore.updateFilters({ companyIds: newValue })
+}
+
+
+
+const selectedCompanies = computed<string[]>({
+  get() {
+    return customerStore.filters.companyIds ?? []
+  },
+  set(val) {
+    const current = customerStore.filters.companyIds ?? []
+    if (JSON.stringify(current) === JSON.stringify(val)) return
+    customerStore.updateFilters({ companyIds: val.length ? val : undefined })
+  }
+})
+
 </script>
 
 <template>
@@ -120,7 +150,36 @@ const deleteCustomer = async (id: string) => {
     </VBreadcrumbs>
     <VCard class="mb-6">
       <VCardItem class="pb-4">
-        <VCheckbox v-model="showFilter" label="Show Filters"></VCheckbox>
+        <VRow class="d-flex align-center">
+          <VCol cols="12" class="d-flex flex-wrap align-center">
+            <!-- Show Filters -->
+            <VCheckbox 
+              v-model="showFilter" 
+              label="Show Filters"
+              hide-details
+              class="mr-6"             
+            />
+            <!-- Company -->
+            <label class="mr-4 pl-4">Company: </label>
+            <div class="d-flex flex-wrap">
+              <VCheckbox
+                v-model="selectedCompanies"
+                :label="COMPANIES.SPS"
+                :value="COMPANIES.SPS"
+                hide-details          
+                class="mr-4"
+                
+              />
+              <VCheckbox
+                v-model="selectedCompanies"
+                :label="COMPANIES.BBS"
+                :value="COMPANIES.BBS"
+                hide-details
+               
+              />
+            </div>
+          </VCol>
+        </VRow>
       </VCardItem>
       <VCardText v-if="showFilter">
         <VRow>
@@ -268,6 +327,15 @@ const deleteCustomer = async (id: string) => {
             <VIcon small class="mr-1">tabler-eye</VIcon>
             View
           </a>
+        </template>
+        <template #item.CompanyId="{ item }">
+          <div class="d-flex align-center gap-x-4">
+            <div class="d-flex flex-column">
+              <div class="text-sm">
+                {{ item.CompanyId }}
+              </div>
+            </div>
+          </div>
         </template>
         <template #item.CardName="{ item }">
           <div class="d-flex align-center gap-x-4">

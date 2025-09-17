@@ -7,6 +7,7 @@
 export {}
 declare global {
   const $api: typeof import('./src/utils/api')['$api']
+  const COMPANIES: typeof import('./src/utils/constants')['COMPANIES']
   const COOKIE_MAX_AGE_1_YEAR: typeof import('./src/utils/constants')['COOKIE_MAX_AGE_1_YEAR']
   const CreateUrl: typeof import('./src/@core/composable/CreateUrl')['CreateUrl']
   const DEFAULT_PER_PAGE: typeof import('./src/utils/constants')['DEFAULT_PER_PAGE']
@@ -52,6 +53,7 @@ declare global {
   const eagerComputed: typeof import('@vueuse/core')['eagerComputed']
   const effectScope: typeof import('vue')['effectScope']
   const emailValidator: typeof import('./src/@core/utils/validators')['emailValidator']
+  const export: typeof import('./src/utils/constants')['export']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const formatDate: typeof import('./src/@core/utils/formatters')['formatDate']
   const formatDateToMonthShort: typeof import('./src/@core/utils/formatters')['formatDateToMonthShort']
@@ -383,6 +385,7 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly $api: UnwrapRef<typeof import('./src/utils/api')['$api']>
+    readonly COMPANIES: UnwrapRef<typeof import('./src/utils/constants')['COMPANIES']>
     readonly COOKIE_MAX_AGE_1_YEAR: UnwrapRef<typeof import('./src/utils/constants')['COOKIE_MAX_AGE_1_YEAR']>
     readonly DEFAULT_PER_PAGE: UnwrapRef<typeof import('./src/utils/constants')['DEFAULT_PER_PAGE']>
     readonly DEFAULT_TOAST_TIMEOUT: UnwrapRef<typeof import('./src/utils/constants')['DEFAULT_TOAST_TIMEOUT']>
