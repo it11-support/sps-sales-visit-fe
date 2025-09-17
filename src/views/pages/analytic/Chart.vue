@@ -87,6 +87,124 @@ const createChartConfig = (
   }
 }
 
+const buildYoyChart = (
+  metricLabel: "Revenue" | "Volume" | "Customer",
+  fieldName:  "revenue" | "volume" | "active_customers",
+  spsMonths: string[]
+) =>  {
+  
+  const currentTheme = vuetifyTheme.current.value.colors
+  const variableTheme = vuetifyTheme.current.value.variables
+  const labelColor = `rgba(${hexToRgb(currentTheme['on-surface'])},${variableTheme['disabled-opacity']})`
+
+  const spsData = getCompanyField("yoy", "SPS", fieldName).value as number[];
+  const spsGrowth = getCompanyField("yoy", "SPS", `yoy_${fieldName}`).value as number[];
+  const bbsData = getCompanyField("yoy", "BBS", fieldName).value as number[];
+  const bbsGrowth = getCompanyField("yoy", "BBS", `yoy_${fieldName}`).value as number[];
+
+  const options = {
+    chart: {
+      height: 450,
+      type: "line",
+      stacked: false,
+    },
+    dataLabels: { enabled: false },
+    stroke: {
+      width: [1, 4, 1, 4],
+      curve: ["straight", "monotoneCubic", "straight", "monotoneCubic"],
+    },
+    title: {
+      text: `YoY ${metricLabel} Summary`,
+      align: "left",
+      offsetX: 110,
+      style: { color: currentTheme["on-background"] },
+    },
+    xaxis: {
+      categories: spsMonths,
+      labels: {
+        style: { colors: labelColor, fontSize: "0.8125rem" },
+      },
+    },
+    yaxis: [
+      {
+        seriesName: metricLabel,
+        axisTicks: { show: true },
+        axisBorder: { show: true, color: "#008FFB" },
+        labels: {
+          style: { colors: "#008FFB" },
+          formatter: numberFormatter,
+        },
+        title: { text: metricLabel, style: { color: "#008FFB" } },
+      },
+      {
+        seriesName: `YoY ${metricLabel} Growth`,
+        opposite: true,
+        axisTicks: { show: true },
+        axisBorder: { show: true, color: "#FEB019" },
+        labels: {
+          style: { colors: "#FEB019" },
+          formatter: percentFormatter,
+        },
+        title: { text: `YoY ${metricLabel} Growth (%)`, style: { color: "#FEB019" } },
+      },
+    ],
+    tooltip: {
+      shared: true,
+      intersect: false,
+      theme: "dark",
+      y: {
+        formatter: function (value: number, { seriesIndex, w }: any) {
+          const seriesName = w.config.series[seriesIndex].name;
+          if (seriesName.includes("Growth")) {
+            return percentFormatter(value);
+          }
+          return numberFormatter(value);
+        },
+      },
+    },
+    legend: {
+      horizontalAlign: "left",
+      offsetX: 40,
+      labels: { colors: "#ff5722" },
+    },
+  };
+
+  const series = [
+    {
+      name: `SPS ${metricLabel}`,
+      type: "column",
+      data: spsData,
+      yAxisIndex: 0,
+    },
+    {
+      name: `SPS YoY ${metricLabel} Growth`,
+      type: "line",
+      data: spsGrowth,
+      yAxisIndex: 1,
+    },
+    {
+      name: `BBS ${metricLabel}`,
+      type: "column",
+      data: bbsData,
+      yAxisIndex: 0,
+    },
+    {
+      name: `BBS YoY ${metricLabel} Growth`,
+      type: "line",
+      data: bbsGrowth,
+      yAxisIndex: 1,
+    },
+  ];
+
+  return { options, series };
+}
+
+const yoyRevenueChart = buildYoyChart("Revenue", "revenue", getCompanyField("yoy", "SPS", "month").value as string[]);
+const yoyVolumeChart = buildYoyChart("Volume", "volume", getCompanyField("yoy", "SPS", "month").value as string[]);
+const yoyCustomerChart = buildYoyChart("Customer", "active_customers", getCompanyField("yoy", "SPS", "month").value as string[]);
+
+console.log(yoyRevenueChart)
+
 const chartConfigs = computed(() => {
   const currentTheme = vuetifyTheme.current.value.colors
   const variableTheme = vuetifyTheme.current.value.variables
@@ -129,72 +247,7 @@ const chartConfigs = computed(() => {
       'bar',
       true
       ),
-      yoyChartOptions: {
-        chart: {
-          height: 450,
-          type: 'line',
-          stacked: false
-        },
-        dataLabels: { enabled: false },
-        stroke: {
-          width: [1, 4, 1, 4], // SPS Revenue, SPS Growth, BBS Revenue, BBS Growth
-          curve: ['straight', 'monotoneCubic', 'straight', 'monotoneCubic']
-        },
-        title: {
-          text: 'YoY Revenue Summary',
-          align: 'left',
-          offsetX: 110,
-          style: { color: currentTheme['on-background'] }
-        },
-        xaxis: {
-          categories: getCompanyField('yoy', 'SPS', 'month').value, // asumsikan SPS & BBS punya bulan sama
-          labels: {
-            style: { colors: labelColor, fontSize: '0.8125rem' }
-          }
-        },
-        yaxis: [
-          {
-            seriesName: 'Revenue',
-            axisTicks: { show: true },
-            axisBorder: { show: true, color: '#008FFB' },
-            labels: {
-              style: { colors: '#008FFB' },
-              formatter: numberFormatter
-            },
-            title: { text: "Revenue", style: { color: '#008FFB' } }
-          },
-          {
-            seriesName: 'YoY Revenue Growth',
-            opposite: true,
-            axisTicks: { show: true },
-            axisBorder: { show: true, color: '#FEB019' },
-            labels: {
-              style: { colors: '#FEB019' },
-              formatter: percentFormatter
-            },
-            title: { text: "YoY Revenue Growth (%)", style: { color: '#FEB019' } }
-          }
-        ],
-        tooltip: {
-          shared: true,
-          intersect: false,
-          theme: 'dark',
-          y: {
-          formatter: function (value: number, { seriesIndex, w }: any) {
-            const seriesName = w.config.series[seriesIndex].name;
-            if (seriesName.includes('Growth')) {
-              return percentFormatter(value);
-            }
-            return numberFormatter(value);
-          }
-        }
-        },
-        legend: {
-          horizontalAlign: 'left',
-          offsetX: 40,
-          labels: { colors: '#ff5722' }
-        }
-      },
+      yoyChartOptions: yoyRevenueChart.options,
       series: [
         {
           name: 'Revenue SPS',
@@ -207,31 +260,7 @@ const chartConfigs = computed(() => {
           data: getCompanyField('mom', 'BBS', 'revenue').value
         },        
       ],
-      yoySeries: [
-      {
-        name: 'SPS Revenue',
-        type: 'column',
-        data: getCompanyField('yoy', 'SPS', 'revenue').value,
-        yAxisIndex: 0
-      },
-      {
-        name: 'SPS YoY Growth',
-        type: 'line',
-        data: getCompanyField('yoy', 'SPS', 'yoy_revenue').value,
-        yAxisIndex: 1
-      },
-      {
-        name: 'BBS Revenue',
-        type: 'column',
-        data: getCompanyField('yoy', 'BBS', 'revenue').value,
-        yAxisIndex: 0
-      },
-      {
-        name: 'BBS YoY Growth',
-        type: 'line',
-        data: getCompanyField('yoy', 'BBS', 'yoy_revenue').value,
-        yAxisIndex: 1
-      }]
+      yoySeries: yoyRevenueChart.series
     },
     {
       title: 'Volume',
@@ -269,72 +298,7 @@ const chartConfigs = computed(() => {
       'bar',
       true
       ),
-      yoyChartOptions: {
-        chart: {
-          height: 450,
-          type: 'line',
-          stacked: false
-        },
-        dataLabels: { enabled: false },
-        stroke: {
-          width: [1, 4, 1, 4],
-          curve: ['straight', 'monotoneCubic', 'straight', 'monotoneCubic']
-        },
-        title: {
-          text: 'YoY Volume Summary',
-          align: 'left',
-          offsetX: 110,
-          style: { color: currentTheme['on-background'] }
-        },
-        xaxis: {
-          categories: getCompanyField('yoy', 'SPS', 'month').value, 
-          labels: {
-            style: { colors: labelColor, fontSize: '0.8125rem' }
-          }
-        },
-        yaxis: [
-          {
-            seriesName: 'Volume',
-            axisTicks: { show: true },
-            axisBorder: { show: true, color: '#008FFB' },
-            labels: {
-              style: { colors: '#008FFB' },
-              formatter: numberFormatter
-            },
-            title: { text: "Volume", style: { color: '#008FFB' } }
-          },
-          {
-            seriesName: 'YoY Volume Growth',
-            opposite: true,
-            axisTicks: { show: true },
-            axisBorder: { show: true, color: '#FEB019' },
-            labels: {
-              style: { colors: '#FEB019' },
-              formatter: percentFormatter
-            },
-            title: { text: "YoY Volume Growth (%)", style: { color: '#FEB019' } }
-          }
-        ],
-        tooltip: {
-          shared: true,
-          intersect: false,
-          theme: 'dark',
-          y: {
-          formatter: function (value: number, { seriesIndex, w }: any) {
-            const seriesName = w.config.series[seriesIndex].name;
-            if (seriesName.includes('Growth')) {
-              return percentFormatter(value);
-            }
-            return numberFormatter(value);
-          }
-        }
-        },
-        legend: {
-          horizontalAlign: 'left',
-          offsetX: 40,
-          labels: { colors: '#ff5722' }
-        }
-      },
+      yoyChartOptions: yoyVolumeChart.options,
       series: [
         {
           name: 'Volume SPS',
@@ -347,31 +311,7 @@ const chartConfigs = computed(() => {
           data: getCompanyField('mom', 'BBS', 'volume').value
         },        
       ],
-      yoySeries: [
-        {
-          name: 'SPS Volume',
-          type: 'column',
-          data: getCompanyField('yoy', 'SPS', 'volume').value,
-          yAxisIndex: 0
-        },
-        {
-          name: 'SPS YoY Volume Growth',
-          type: 'line',
-          data: getCompanyField('yoy', 'SPS', 'yoy_volume').value,
-          yAxisIndex: 1
-        },
-        {
-          name: 'BBS Volume',
-          type: 'column',
-          data: getCompanyField('yoy', 'BBS', 'volume').value,
-          yAxisIndex: 0
-        },
-        {
-          name: 'BBS YoY Volume Growth',
-          type: 'line',
-          data: getCompanyField('yoy', 'BBS', 'yoy_volume').value,
-          yAxisIndex: 1
-        }]
+      yoySeries: yoyVolumeChart.series
       },
       {
       title: 'Customers',
@@ -409,72 +349,7 @@ const chartConfigs = computed(() => {
       'bar',
       true
       ),
-      yoyChartOptions: {
-        chart: {
-          height: 450,
-          type: 'line',
-          stacked: false
-        },
-        dataLabels: { enabled: false },
-        stroke: {
-          width: [1, 4, 1, 4],
-          curve: ['straight', 'monotoneCubic', 'straight', 'monotoneCubic']
-        },
-        title: {
-          text: 'YoY Customer Summary',
-          align: 'left',
-          offsetX: 110,
-          style: { color: currentTheme['on-background'] }
-        },
-        xaxis: {
-          categories: getCompanyField('yoy', 'SPS', 'month').value, // asumsikan SPS & BBS punya bulan sama
-          labels: {
-            style: { colors: labelColor, fontSize: '0.8125rem' }
-          }
-        },
-        yaxis: [
-          {
-            seriesName: 'Customer',
-            axisTicks: { show: true },
-            axisBorder: { show: true, color: '#008FFB' },
-            labels: {
-              style: { colors: '#008FFB' },
-              formatter: numberFormatter
-            },
-            title: { text: "Customer", style: { color: '#008FFB' } }
-          },
-          {
-            seriesName: 'YoY Customer Growth',
-            opposite: true,
-            axisTicks: { show: true },
-            axisBorder: { show: true, color: '#FEB019' },
-            labels: {
-              style: { colors: '#FEB019' },
-              formatter: percentFormatter
-            },
-            title: { text: "YoY Customer Growth (%)", style: { color: '#FEB019' } }
-          }
-        ],
-        tooltip: {
-          shared: true,
-          intersect: false,
-          theme: 'dark',
-          y: {
-          formatter: function (value: number, { seriesIndex, w }: any) {
-            const seriesName = w.config.series[seriesIndex].name;
-            if (seriesName.includes('Growth')) {
-              return percentFormatter(value);
-            }
-            return numberFormatter(value);
-          }
-        }
-        },
-        legend: {
-          horizontalAlign: 'left',
-          offsetX: 40,
-          labels: { colors: '#ff5722' }
-        }
-      },
+      yoyChartOptions: yoyCustomerChart.options,
       series: [
         {
           name: 'Customer SPS',
@@ -487,31 +362,7 @@ const chartConfigs = computed(() => {
           data: getCompanyField('mom', 'BBS', 'active_customers').value
         },        
       ],
-      yoySeries: [
-        {
-          name: 'SPS Customer',
-          type: 'column',
-          data: getCompanyField('yoy', 'SPS', 'active_customers').value,
-          yAxisIndex: 0
-        },
-        {
-          name: 'SPS YoY Customer Growth',
-          type: 'line',
-          data: getCompanyField('yoy', 'SPS', 'yoy_active_customers').value,
-          yAxisIndex: 1
-        },
-        {
-          name: 'BBS Customer',
-          type: 'column',
-          data: getCompanyField('yoy', 'BBS', 'active_customers').value,
-          yAxisIndex: 0
-        },
-        {
-          name: 'BBS YoY Customer Growth',
-          type: 'line',
-          data: getCompanyField('yoy', 'BBS', 'yoy_active_customers').value,
-          yAxisIndex: 1
-        }]
+      yoySeries: yoyCustomerChart.series
     }
   ]
 })
