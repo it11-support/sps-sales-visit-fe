@@ -23,7 +23,6 @@ export const useSalesSummaryStore = defineStore('salesSummary', {
         const url = createUrl(`sales/summary`, {query: {month: this.month.value}})
         const response = await useApi<any>(url)
         this.summary = response.data.value.data
-        console.log(this.summary)
       } catch (error) {
         if (error) {
           console.error('Error fetching sales summary:', error)
@@ -38,8 +37,6 @@ export const useSalesSummaryStore = defineStore('salesSummary', {
         value: month,
         label: this.monthList[month - 1].label
       }
-
-      console.log(this.month)
     }    
   }
 })

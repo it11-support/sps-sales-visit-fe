@@ -7,6 +7,8 @@ const vuetifyTheme = useTheme()
 
 const refVueApexChart = ref()
 const yoyRefVueApexChart = ref()
+const momRefVueApexChart  = ref()
+
 const currentTab = ref<number>(0)
 const salesSummaryStore = useSalesSummaryStore()
 
@@ -24,7 +26,34 @@ const getCompanyField = (
   type: 'mom' | 'yoy',
   company: 'SPS' | 'BBS',
   field: keyof ISalesSummary
-) => computed(() => (salesSummaryStore.summary[type][company] ?? []).map(item => item[field] ?? 0))
+) =>
+  computed(() =>
+    (salesSummaryStore.summary[type][company] ?? []).map((item, index, arr) => {
+      if (field === 'month') {
+        return item[field];
+      }
+
+      const fieldName = field.toString();
+
+      if (fieldName.startsWith('mom_') || fieldName.startsWith('yoy_')) {
+        const baseField = fieldName.replace(/^mom_/, '').replace(/^yoy_/, '');
+
+        const current = (item[baseField as keyof ISalesSummary] ?? 0) as number;
+        const prev =
+          index > 0
+            ? ((arr[index - 1]?.[baseField as keyof ISalesSummary] ?? 0) as number)
+            : 0;
+
+        if (prev === 0) {
+          return current > 0 ? 100 : 0;
+        }
+
+        return ((current - prev) / prev) * 100;
+      }
+
+      return (item[field] ?? 0) as number;
+    })
+  );
 
 
 const createChartConfig = (
@@ -87,6 +116,90 @@ const createChartConfig = (
   }
 }
 
+const buildMomChart = (
+  metricLabel: "Revenue" | "Volume" | "Customer",
+  fieldName: "revenue" | "volume" | "active_customers",
+  spsMonths: string[]
+) => {
+  const currentTheme = vuetifyTheme.current.value.colors;
+  const variableTheme = vuetifyTheme.current.value.variables;
+  const labelColor = `rgba(${hexToRgb(currentTheme["on-surface"])},${variableTheme["disabled-opacity"]})`;
+
+  const spsGrowth = getCompanyField("mom", "SPS", `mom_${fieldName}`).value as string[];
+  const bbsGrowth = getCompanyField("mom", "BBS", `mom_${fieldName}`).value as string[];
+
+  const options = {
+    chart: {
+      height: 450,
+      type: "line",
+      stacked: false,
+    },
+    dataLabels: { enabled: false },
+    stroke: {
+      width: [3, 3],
+      curve: ["monotoneCubic", "monotoneCubic"],
+    },
+    title: {
+      text: `MoM ${metricLabel} Growth`,
+      align: "left",
+      offsetX: 110,
+      style: { color: currentTheme["on-background"] },
+    },
+    xaxis: {
+      categories: spsMonths,
+      labels: {
+        style: { colors: labelColor, fontSize: "0.8125rem" },
+      },
+    },
+    yaxis: [
+      {
+        seriesName: `MoM ${metricLabel} Growth`,
+        axisTicks: { show: true },
+        axisBorder: { show: true, color: "#FEB019" },
+        labels: {
+          style: { colors: "#FEB019" },
+          formatter: percentFormatter,
+        },
+        title: { text: `MoM ${metricLabel} Growth (%)`, style: { color: "#FEB019" } },
+      },
+    ],
+    tooltip: {
+      shared: true,
+      intersect: false,
+      theme: "dark",
+      y: {
+        formatter: function (value: number, { seriesIndex, w }: any) {
+          return percentFormatter(value);
+        },
+      },
+    },
+    legend: {
+      horizontalAlign: "left",
+      offsetX: 40,
+      labels: { colors: "#ff5722" },
+    },
+  };
+
+  const series = [
+    {
+      name: `SPS MoM ${metricLabel} Growth`,
+      type: "line",
+      data: spsGrowth,
+      yAxisIndex: 0,
+    },
+    {
+      name: `BBS MoM ${metricLabel} Growth`,
+      type: "line",
+      data: bbsGrowth,
+      yAxisIndex: 0,
+    },
+  ];
+
+  return { options, series };
+};
+
+
+
 const buildYoyChart = (
   metricLabel: "Revenue" | "Volume" | "Customer",
   fieldName:  "revenue" | "volume" | "active_customers",
@@ -97,10 +210,10 @@ const buildYoyChart = (
   const variableTheme = vuetifyTheme.current.value.variables
   const labelColor = `rgba(${hexToRgb(currentTheme['on-surface'])},${variableTheme['disabled-opacity']})`
 
-  const spsData = getCompanyField("yoy", "SPS", fieldName).value as number[];
-  const spsGrowth = getCompanyField("yoy", "SPS", `yoy_${fieldName}`).value as number[];
-  const bbsData = getCompanyField("yoy", "BBS", fieldName).value as number[];
-  const bbsGrowth = getCompanyField("yoy", "BBS", `yoy_${fieldName}`).value as number[];
+  const spsData = getCompanyField("yoy", "SPS", fieldName).value as string[];
+  const spsGrowth = getCompanyField("yoy", "SPS", `yoy_${fieldName}`).value as string[];
+  const bbsData = getCompanyField("yoy", "BBS", fieldName).value as string[];
+  const bbsGrowth = getCompanyField("yoy", "BBS", `yoy_${fieldName}`).value as string[];
 
   const options = {
     chart: {
@@ -199,16 +312,16 @@ const buildYoyChart = (
   return { options, series };
 }
 
-const yoyRevenueChart = buildYoyChart("Revenue", "revenue", getCompanyField("yoy", "SPS", "month").value as string[]);
+const yoyRevenueChart = buildYoyChart("Revenue", "revenue", getCompanyField("yoy", "SPS", "month").value as string[] );
 const yoyVolumeChart = buildYoyChart("Volume", "volume", getCompanyField("yoy", "SPS", "month").value as string[]);
 const yoyCustomerChart = buildYoyChart("Customer", "active_customers", getCompanyField("yoy", "SPS", "month").value as string[]);
 
-console.log(yoyRevenueChart)
+const momRevenueChart = buildMomChart("Revenue", "revenue", getCompanyField("mom", "SPS", "month").value as string[] );
+const momVolumeChart = buildMomChart("Volume", "volume", getCompanyField("mom", "SPS", "month").value as string[]);
+const momCustomerChart = buildMomChart("Customer", "active_customers", getCompanyField("mom", "SPS", "month").value as string[]);
+
 
 const chartConfigs = computed(() => {
-  const currentTheme = vuetifyTheme.current.value.colors
-  const variableTheme = vuetifyTheme.current.value.variables
-  const labelColor = `rgba(${hexToRgb(currentTheme['on-surface'])},${variableTheme['disabled-opacity']})`
 
   return [
     {
@@ -248,6 +361,7 @@ const chartConfigs = computed(() => {
       true
       ),
       yoyChartOptions: yoyRevenueChart.options,
+      momChartOptions: momRevenueChart.options,
       series: [
         {
           name: 'Revenue SPS',
@@ -260,7 +374,8 @@ const chartConfigs = computed(() => {
           data: getCompanyField('mom', 'BBS', 'revenue').value
         },        
       ],
-      yoySeries: yoyRevenueChart.series
+      yoySeries: yoyRevenueChart.series,
+      momSeries: momRevenueChart.series,
     },
     {
       title: 'Volume',
@@ -299,6 +414,7 @@ const chartConfigs = computed(() => {
       true
       ),
       yoyChartOptions: yoyVolumeChart.options,
+      momChartOptions: momVolumeChart.options,
       series: [
         {
           name: 'Volume SPS',
@@ -311,7 +427,8 @@ const chartConfigs = computed(() => {
           data: getCompanyField('mom', 'BBS', 'volume').value
         },        
       ],
-      yoySeries: yoyVolumeChart.series
+      yoySeries: yoyVolumeChart.series,
+      momSeries: momVolumeChart.series
       },
       {
       title: 'Customers',
@@ -350,6 +467,7 @@ const chartConfigs = computed(() => {
       true
       ),
       yoyChartOptions: yoyCustomerChart.options,
+      momChartOptions: momCustomerChart.options,
       series: [
         {
           name: 'Customer SPS',
@@ -362,7 +480,8 @@ const chartConfigs = computed(() => {
           data: getCompanyField('mom', 'BBS', 'active_customers').value
         },        
       ],
-      yoySeries: yoyCustomerChart.series
+      yoySeries: yoyCustomerChart.series,
+      momSeries: momCustomerChart.series
     }
   ]
 })
@@ -414,6 +533,15 @@ const chartConfigs = computed(() => {
         :key="currentTab"
         :options="chartConfigs[Number(currentTab)].chartOptions"
         :series="chartConfigs[Number(currentTab)].series"
+        height="400"
+        width="800"
+      />
+
+      <VueApexCharts
+        ref="momRefVueApexChart"
+        :key="'mom-' + currentTab"
+        :options="chartConfigs[Number(currentTab)].momChartOptions"
+        :series="chartConfigs[Number(currentTab)].momSeries"
         height="400"
         width="800"
       />
