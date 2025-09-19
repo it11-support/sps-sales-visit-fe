@@ -5,10 +5,6 @@ import { useTheme } from 'vuetify';
 
 const vuetifyTheme = useTheme()
 
-const refVueApexChart = ref()
-const yoyRefVueApexChart = ref()
-const momRefVueApexChart  = ref()
-
 const currentTab = ref<number>(0)
 const salesSummaryStore = useSalesSummaryStore()
 
@@ -56,77 +52,120 @@ const getCompanyField = (
   );
 
 
-const createChartConfig = (
-  title: string,
-  categories: string[],
-  yaxis: any[],
-  series: any[],
-  type: 'bar' | 'line' | 'column' = 'line',
-  stacked = false
-) => {
-  const currentTheme = vuetifyTheme.current.value.colors
-  const variableTheme = vuetifyTheme.current.value.variables
-  const labelColor = `rgba(${hexToRgb(currentTheme['on-surface'])},${variableTheme['disabled-opacity']})`
+const generateChartData = (
+  fieldName: "revenue" | "volume" | "active_customers",
+  type: 'mom' | 'yoy',
+  company: 'SPS' | 'BBS'
+) =>  getCompanyField(type, company, fieldName).value as string[]
 
-  return {
+const generateLineChartData = (
+  fieldName: "revenue" | "volume" | "active_customers",
+  type: 'mom' | 'yoy',
+  company: 'SPS' | 'BBS'
+) => getCompanyField(type, company, `${type}_${fieldName}`).value as string[]
+
+const buildColumnChart = (
+  metricLabel: "Revenue" | "Volume" | "Customer",
+  fieldName: "revenue" | "volume" | "active_customers",
+  months: string[],
+  type: 'mom' | 'yoy',
+) => {
+  const currentTheme = vuetifyTheme.current.value.colors;
+  const variableTheme = vuetifyTheme.current.value.variables;
+  const labelColor = `rgba(${hexToRgb(currentTheme["on-surface"])},${variableTheme["disabled-opacity"]})`
+
+  const options = {
     chart: {
-      type,
-      stacked,
       height: 450,
+      type: "line",
+      stacked: false,
     },
-    plotOptions: {
-    bar: {
-      columnWidth: '90%', 
-      barHeight: '100%'
-    }
-  },
     dataLabels: { enabled: false },
     stroke: {
       width: [1, 2, 2],
       curve: ['straight', 'monotoneCubic'],
     },
     title: {
-      text: title,
-      align: 'left',
+      text: `${type.toUpperCase()} ${metricLabel} Summary`,
+      align: "left",
       offsetX: 110,
-      style: { color: currentTheme['on-background'] },
+      style: { color: currentTheme["on-background"] },
     },
     xaxis: {
-      categories,
+      categories: months,
       labels: {
-        style: { colors: labelColor, fontSize: '0.8125rem' },
+        style: { colors: labelColor, fontSize: "0.8125rem" },
       },
     },
-    yaxis,
+    yaxis: [
+      {
+        seriesName: `SPS ${metricLabel}`,
+        labels: { 
+          formatter: numberFormatter, 
+          style: {
+            colors: '#008FFB',
+          }, 
+        },
+        title: { text: `SPS ${metricLabel}`, style: { color: '#008FFB' } },
+      },
+      {
+       seriesName: `BBS ${metricLabel}`,
+        opposite: true,
+        labels: { 
+          formatter: numberFormatter, 
+          style: {
+            colors: '#00E396D9',
+          }, 
+        },
+        title: { text: `BBS ${metricLabel}`, style: { color: '#00E396D9' } },
+      }
+    ],
     tooltip: {
-      theme: 'dark',
-      fixed: {
-        enabled: true,
-        position: 'topLeft',
-        offsetY: 30,
-        offsetX: 60,
+      shared: true,
+      intersect: false,
+      theme: "dark",
+      y: {
+        formatter: function (value: number, { seriesIndex, w }: any) {
+          const seriesName = w.config.series[seriesIndex].name;
+          if (seriesName.includes("Growth")) {
+            return percentFormatter(value);
+          }
+          return numberFormatter(value);
+        },
       },
     },
     legend: {
-      horizontalAlign: 'left',
+      horizontalAlign: "left",
       offsetX: 40,
-      labels: { colors: '#ff5722' },
+      labels: { colors: "#ff5722" },
     },
-    series,
   }
+  const series = [
+    {
+      name: `SPS ${metricLabel}`,
+      type: "column",
+      data: generateChartData(fieldName, type, 'SPS'),
+      yAxisIndex: 0,
+    },   
+    {
+      name: `BBS ${metricLabel}`,
+      type: "column",
+      data: generateChartData(fieldName, type, 'BBS'),
+      yAxisIndex: 0,
+    },
+  ];
+  return {options, series}
 }
 
-const buildMomChart = (
+const buildLineChart = (
   metricLabel: "Revenue" | "Volume" | "Customer",
   fieldName: "revenue" | "volume" | "active_customers",
-  spsMonths: string[]
+  months: string[],
+  type: 'mom' | 'yoy',
 ) => {
   const currentTheme = vuetifyTheme.current.value.colors;
   const variableTheme = vuetifyTheme.current.value.variables;
   const labelColor = `rgba(${hexToRgb(currentTheme["on-surface"])},${variableTheme["disabled-opacity"]})`;
-
-  const spsGrowth = getCompanyField("mom", "SPS", `mom_${fieldName}`).value as string[];
-  const bbsGrowth = getCompanyField("mom", "BBS", `mom_${fieldName}`).value as string[];
 
   const options = {
     chart: {
@@ -146,7 +185,7 @@ const buildMomChart = (
       style: { color: currentTheme["on-background"] },
     },
     xaxis: {
-      categories: spsMonths,
+      categories: months,
       labels: {
         style: { colors: labelColor, fontSize: "0.8125rem" },
       },
@@ -184,304 +223,75 @@ const buildMomChart = (
     {
       name: `SPS MoM ${metricLabel} Growth`,
       type: "line",
-      data: spsGrowth,
+      data: generateLineChartData(fieldName, type, 'SPS'),
       yAxisIndex: 0,
     },
     {
       name: `BBS MoM ${metricLabel} Growth`,
       type: "line",
-      data: bbsGrowth,
+      data: generateLineChartData(fieldName, type, 'BBS'),
       yAxisIndex: 0,
-    },
-  ];
-
-  return { options, series };
-};
-
-
-
-const buildYoyChart = (
-  metricLabel: "Revenue" | "Volume" | "Customer",
-  fieldName:  "revenue" | "volume" | "active_customers",
-  spsMonths: string[]
-) =>  {
-  
-  const currentTheme = vuetifyTheme.current.value.colors
-  const variableTheme = vuetifyTheme.current.value.variables
-  const labelColor = `rgba(${hexToRgb(currentTheme['on-surface'])},${variableTheme['disabled-opacity']})`
-
-  const spsData = getCompanyField("yoy", "SPS", fieldName).value as string[];
-  const spsGrowth = getCompanyField("yoy", "SPS", `yoy_${fieldName}`).value as string[];
-  const bbsData = getCompanyField("yoy", "BBS", fieldName).value as string[];
-  const bbsGrowth = getCompanyField("yoy", "BBS", `yoy_${fieldName}`).value as string[];
-
-  const options = {
-    chart: {
-      height: 450,
-      type: "line",
-      stacked: false,
-    },
-    dataLabels: { enabled: false },
-    stroke: {
-      width: [1, 4, 1, 4],
-      curve: ["straight", "monotoneCubic", "straight", "monotoneCubic"],
-    },
-    title: {
-      text: `YoY ${metricLabel} Summary`,
-      align: "left",
-      offsetX: 110,
-      style: { color: currentTheme["on-background"] },
-    },
-    xaxis: {
-      categories: spsMonths,
-      labels: {
-        style: { colors: labelColor, fontSize: "0.8125rem" },
-      },
-    },
-    yaxis: [
-      {
-        seriesName: metricLabel,
-        axisTicks: { show: true },
-        axisBorder: { show: true, color: "#008FFB" },
-        labels: {
-          style: { colors: "#008FFB" },
-          formatter: numberFormatter,
-        },
-        title: { text: metricLabel, style: { color: "#008FFB" } },
-      },
-      {
-        seriesName: `YoY ${metricLabel} Growth`,
-        opposite: true,
-        axisTicks: { show: true },
-        axisBorder: { show: true, color: "#FEB019" },
-        labels: {
-          style: { colors: "#FEB019" },
-          formatter: percentFormatter,
-        },
-        title: { text: `YoY ${metricLabel} Growth (%)`, style: { color: "#FEB019" } },
-      },
-    ],
-    tooltip: {
-      shared: true,
-      intersect: false,
-      theme: "dark",
-      y: {
-        formatter: function (value: number, { seriesIndex, w }: any) {
-          const seriesName = w.config.series[seriesIndex].name;
-          if (seriesName.includes("Growth")) {
-            return percentFormatter(value);
-          }
-          return numberFormatter(value);
-        },
-      },
-    },
-    legend: {
-      horizontalAlign: "left",
-      offsetX: 40,
-      labels: { colors: "#ff5722" },
-    },
-  };
-
-  const series = [
-    {
-      name: `SPS ${metricLabel}`,
-      type: "column",
-      data: spsData,
-      yAxisIndex: 0,
-    },
-    {
-      name: `SPS YoY ${metricLabel} Growth`,
-      type: "line",
-      data: spsGrowth,
-      yAxisIndex: 1,
-    },
-    {
-      name: `BBS ${metricLabel}`,
-      type: "column",
-      data: bbsData,
-      yAxisIndex: 0,
-    },
-    {
-      name: `BBS YoY ${metricLabel} Growth`,
-      type: "line",
-      data: bbsGrowth,
-      yAxisIndex: 1,
     },
   ];
 
   return { options, series };
 }
 
-const yoyRevenueChart = buildYoyChart("Revenue", "revenue", getCompanyField("yoy", "SPS", "month").value as string[] );
-const yoyVolumeChart = buildYoyChart("Volume", "volume", getCompanyField("yoy", "SPS", "month").value as string[]);
-const yoyCustomerChart = buildYoyChart("Customer", "active_customers", getCompanyField("yoy", "SPS", "month").value as string[]);
+const momRevenueChartConfig = buildColumnChart('Revenue', 'revenue', getCompanyField('mom', 'SPS', 'month').value as string[], 'mom')
+const momVolumeChartConfig = buildColumnChart('Volume', 'volume', getCompanyField('mom', 'SPS', 'month').value as string[], 'mom')
+const momCustomerChartConfig = buildColumnChart('Customer', 'active_customers', getCompanyField('mom', 'SPS', 'month').value as string[], 'mom');
 
-const momRevenueChart = buildMomChart("Revenue", "revenue", getCompanyField("mom", "SPS", "month").value as string[] );
-const momVolumeChart = buildMomChart("Volume", "volume", getCompanyField("mom", "SPS", "month").value as string[]);
-const momCustomerChart = buildMomChart("Customer", "active_customers", getCompanyField("mom", "SPS", "month").value as string[]);
+const yoyRevenueChartConfig = buildColumnChart('Revenue', 'revenue', getCompanyField('yoy', 'SPS', 'month').value as string[], 'yoy')
+const yoyVolumeChartConfig = buildColumnChart('Volume', 'volume', getCompanyField('yoy', 'SPS', 'month').value as string[], 'yoy')
+const yoyCustomerChartConfig = buildColumnChart('Customer', 'active_customers', getCompanyField('yoy', 'SPS', 'month').value as string[], 'yoy');
+
+
+const momRevenueLineChartConfig = buildLineChart('Revenue', 'revenue', getCompanyField('mom', 'SPS', 'month').value as string[], 'mom')
+const momVolumeLineChartConfig = buildLineChart('Volume', 'volume', getCompanyField('mom', 'SPS', 'month').value as string[], 'mom')
+const momCustomerLineChartConfig = buildLineChart('Customer', 'active_customers', getCompanyField('mom', 'SPS', 'month').value as string[], 'mom');
+
+const yoyRevenueLineChartConfig = buildLineChart('Revenue', 'revenue', getCompanyField('yoy', 'SPS', 'month').value as string[], 'yoy')
+const yoyVolumeLineChartConfig = buildLineChart('Volume', 'volume', getCompanyField('yoy', 'SPS', 'month').value as string[], 'yoy')
+const yoyCustomerLineChartConfig = buildLineChart('Customer', 'active_customers', getCompanyField('yoy', 'SPS', 'month').value as string[], 'yoy');
 
 
 const chartConfigs = computed(() => {
-
   return [
     {
       title: 'Revenue',
       icon: 'tabler-coin',
-      chartOptions: createChartConfig(
-        'MoM Revenue Summary',
-        getCompanyField('mom', 'SPS', 'month').value as string[],
-        [
-        {
-          seriesName: 'SPS Revenue',
-          labels: { 
-            formatter: numberFormatter, 
-            style: {
-              colors: '#008FFB',
-            }, 
-          },
-          title: { text: 'SPS Revenue', style: { color: '#008FFB' } },
-        },
-        {
-          seriesName: 'BBS Revenue',
-          opposite: true,
-          labels: { 
-            formatter: numberFormatter, 
-            style: {
-              colors: '#00E396D9',
-            }, 
-          },
-          title: { text: 'BBS Revenue', style: { color: '#00E396D9' } },
-        },
-      ],
-       [
-        { name: 'Revenue SPS', type: 'bar', data: getCompanyField('mom', 'SPS', 'revenue').value },
-        { name: 'Revenue BBS', type: 'bar', data: getCompanyField('mom', 'BBS', 'revenue').value },
-      ],
-      'bar',
-      true
-      ),
-      yoyChartOptions: yoyRevenueChart.options,
-      momChartOptions: momRevenueChart.options,
-      series: [
-        {
-          name: 'Revenue SPS',
-          type: 'bar',
-          data: getCompanyField('mom', 'SPS', 'revenue').value
-        },
-        {
-          name: 'Revenue BBS',
-          type: 'bar',
-          data: getCompanyField('mom', 'BBS', 'revenue').value
-        },        
-      ],
-      yoySeries: yoyRevenueChart.series,
-      momSeries: momRevenueChart.series,
+      momBarOptions: momRevenueChartConfig.options,
+      yoyBarOptions: yoyRevenueChartConfig.options,
+      momLineOptions: momRevenueLineChartConfig.options,
+      yoyLineOptions: yoyRevenueLineChartConfig.options,
+      momBarSeries: momRevenueChartConfig.series,
+      yoyBarSeries: yoyRevenueChartConfig.series,
+      momLineSeries: momRevenueLineChartConfig.series,
+      yoyLineSeries: yoyRevenueLineChartConfig.series
     },
     {
       title: 'Volume',
       icon: 'tabler-chart-bar',
-      chartOptions: createChartConfig(
-        'MoM Volume Summary',
-        getCompanyField('mom', 'SPS', 'month').value as string[],
-        [
-        {
-          seriesName: 'SPS Volume',
-          labels: { 
-            formatter: numberFormatter, 
-            style: {
-              colors: '#008FFB',
-            }, 
-          },
-          title: { text: 'SPS Volume', style: { color: '#008FFB' } },
-        },
-        {
-          seriesName: 'BBS Volume',
-          opposite: true,
-          labels: { 
-            formatter: numberFormatter, 
-            style: {
-              colors: '#00E396D9',
-            }, 
-          },
-          title: { text: 'BBS Volume', style: { color: '#00E396D9' } },
-        },
-      ],
-       [
-        { name: 'Volume SPS', type: 'bar', data: getCompanyField('mom', 'SPS', 'volume').value },
-        { name: 'Volume BBS', type: 'bar', data: getCompanyField('mom', 'BBS', 'volume').value },
-      ],
-      'bar',
-      true
-      ),
-      yoyChartOptions: yoyVolumeChart.options,
-      momChartOptions: momVolumeChart.options,
-      series: [
-        {
-          name: 'Volume SPS',
-          type: 'bar',
-          data: getCompanyField('mom', 'SPS', 'volume').value
-        },
-        {
-          name: 'Volume BBS',
-          type: 'bar',
-          data: getCompanyField('mom', 'BBS', 'volume').value
-        },        
-      ],
-      yoySeries: yoyVolumeChart.series,
-      momSeries: momVolumeChart.series
+      momBarOptions: momVolumeChartConfig.options,
+      yoyBarOptions: yoyVolumeChartConfig.options,
+      momLineOptions: momVolumeLineChartConfig.options,
+      yoyLineOptions: yoyVolumeLineChartConfig.options,
+      momBarSeries: momVolumeChartConfig.series,
+      yoyBarSeries: yoyVolumeChartConfig.series,
+      momLineSeries: momVolumeLineChartConfig.series,
+      yoyLineSeries: yoyVolumeLineChartConfig.series,
       },
       {
       title: 'Customers',
       icon: 'tabler-users',
-      chartOptions: createChartConfig(
-        'MoM Customer Summary',
-        getCompanyField('mom', 'SPS', 'month').value as string[],
-        [
-        {
-          seriesName: 'SPS Customer',
-          labels: { 
-            formatter: numberFormatter, 
-            style: {
-              colors: '#008FFB',
-            }, 
-          },
-          title: { text: 'SPS Customer', style: { color: '#008FFB' } },
-        },
-        {
-          seriesName: 'BBS Customer',
-          opposite: true,
-          labels: { 
-            formatter: numberFormatter, 
-            style: {
-              colors: '#00E396D9',
-            }, 
-          },
-          title: { text: 'BBS Customer', style: { color: '#00E396D9' } },
-        },
-      ],
-       [
-        { name: 'Customer SPS', type: 'bar', data: getCompanyField('mom', 'SPS', 'active_customers').value },
-        { name: 'Customer BBS', type: 'bar', data: getCompanyField('mom', 'BBS', 'active_customers').value },
-      ],
-      'bar',
-      true
-      ),
-      yoyChartOptions: yoyCustomerChart.options,
-      momChartOptions: momCustomerChart.options,
-      series: [
-        {
-          name: 'Customer SPS',
-          type: 'bar',
-          data: getCompanyField('mom', 'SPS', 'active_customers').value
-        },
-        {
-          name: 'Customer BBS',
-          type: 'bar',
-          data: getCompanyField('mom', 'BBS', 'active_customers').value
-        },        
-      ],
-      yoySeries: yoyCustomerChart.series,
-      momSeries: momCustomerChart.series
+      momBarOptions: momCustomerChartConfig.options,
+      yoyBarOptions: yoyCustomerChartConfig.options,
+      momLineOptions: momCustomerLineChartConfig.options,
+      yoyLineOptions: yoyCustomerLineChartConfig.options,
+      momBarSeries: momCustomerChartConfig.series,
+      yoyBarSeries: yoyCustomerChartConfig.series,
+      momLineSeries: momCustomerLineChartConfig.series,
+      yoyLineSeries: yoyCustomerLineChartConfig.series,
     }
   ]
 })
@@ -500,7 +310,6 @@ const chartConfigs = computed(() => {
         v-slot="{ isSelected, toggle }"
         :value="index"
       >
-      
         <div
           style="block-size: 120px; inline-size: 140px;"
           :style="isSelected ? 'border-color:rgb(var(--v-theme-primary)) !important' : ''"
@@ -527,34 +336,30 @@ const chartConfigs = computed(() => {
       </VSlideGroupItem>
     </VSlideGroup>
     <div class="chart-scroll-wrapper">
-      <div class="chart-column">
+      <div class="chart-column" v-for="key in ['momBar', 'momLine', 'yoyBar', 'yoyLine']">
        <VueApexCharts
-        ref="refVueApexChart"
-        :key="currentTab"
-        :options="chartConfigs[Number(currentTab)].chartOptions"
-        :series="chartConfigs[Number(currentTab)].series"
+        :ref="key + 'RefVueApexChart'"
+        :options="(chartConfigs[Number(currentTab)] as any)[`${key}Options`]"
+        :series="(chartConfigs[Number(currentTab)] as any)[`${key}Series`]"
         height="400"
-        width="800"
+        :width=" key === 'yoyBar' || key === 'yoyLine' ? 600 : 800"
       />
 
-      <VueApexCharts
-        ref="momRefVueApexChart"
-        :key="'mom-' + currentTab"
-        :options="chartConfigs[Number(currentTab)].momChartOptions"
-        :series="chartConfigs[Number(currentTab)].momSeries"
-        height="400"
-        width="800"
-      />
-
-      <VueApexCharts
-        ref="yoyRefVueApexChart"
-        :key="'yoy-' + currentTab"
-        :options="chartConfigs[Number(currentTab)].yoyChartOptions"
-        :series="chartConfigs[Number(currentTab)].yoySeries"
-        height="400"
-        width="800"
-        class="mt-6"
-      />
       </div>
     </div>
 </template>
+
+
+<style lang="scss" scoped>
+.chart-scroll-wrapper {
+  overflow-x: auto;
+  padding-block-end: 1rem;
+}
+
+.chart-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-inline-size: max-content;
+}
+</style>
