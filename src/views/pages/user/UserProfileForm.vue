@@ -3,8 +3,8 @@ import { useUserStore } from '@/@core/stores';
 import { useCustomerStore } from '@/@core/stores/customer';
 import { useRoleStore } from '@/@core/stores/role';
 import { useConfigStore } from '@core/stores/config';
+import avatar1 from '@images/avatars/user-default.png';
 import { VForm } from 'vuetify/components/VForm';
-import avatar1 from '@images/avatars/user-default.png'
 
 const configStore = useConfigStore()
 const customerStore = useCustomerStore()
@@ -58,7 +58,7 @@ const submitUserHandler = async () => {
       method: 'PUT',
       body: JSON.parse(JSON.stringify({
         ...userData.value,
-        ...(password.value ? { new_password: password.value } : {}),
+        ...(password.value ? { password: password.value } : {}),
       })),
       onResponseError({ response }) {
         errors.value = response._data.errors
