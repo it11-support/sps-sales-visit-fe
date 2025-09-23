@@ -86,6 +86,8 @@ export const useCustomerStore = defineStore('customer', {
       this.customers = data.value.data.data
       this.pagination = { ...this.pagination, ...data.value.data }
       this.loadingList = false
+
+      console.log(JSON.stringify(this.filters.sort_options))
     },
 
     async fetchCustomerById(id: string) {
@@ -144,7 +146,7 @@ export const useCustomerStore = defineStore('customer', {
     updateSortOptions(options: any) {
       if (!this.isReady) return
       this.updateFilters({
-        sort_options: [options.sortBy]
+        sort_options: options.sortBy
       })
     },
 

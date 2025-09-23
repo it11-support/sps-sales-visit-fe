@@ -312,7 +312,7 @@ export const useActivityStore = defineStore('activity', {
     updateSortOptions(options: any) {
       if (!this.isReady) return
       this.updateFilters({
-        sort_options: [options.sortBy]
+        sort_options: options.sortBy
       }, true)
     },
     setPage(page: number) {

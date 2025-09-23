@@ -11,22 +11,14 @@ function stringifyQueryWithBrackets(query: Record<string, any>) {
   for (const [key, maybeVal] of Object.entries(query)) {
     const val = toValue(maybeVal)
 
-    if (val === undefined || val === null) {
-      continue
-    }
+    if (val === undefined || val === null) continue
 
-    if (Array.isArray(val)) {
-      // untuk setiap item, tambahkan sebagai key[]
-      for (const item of val) {
-        const encKey = encodeURIComponent(`${key}[]`)
-        const encVal = encodeURIComponent(String(toValue(item)))
-        parts.push(`${encKey}=${encVal}`)
-      }
-    } else {
-      const encKey = encodeURIComponent(key)
-      const encVal = encodeURIComponent(String(val))
-      parts.push(`${encKey}=${encVal}`)
-    }
+    const encKey = encodeURIComponent(key)
+    // stringify array/object supaya PHP bisa decode
+    const encVal = encodeURIComponent(
+      typeof val === 'object' ? JSON.stringify(val) : String(val)
+    )
+    parts.push(`${encKey}=${encVal}`)
   }
 
   return parts.join('&')
@@ -35,9 +27,7 @@ function stringifyQueryWithBrackets(query: Record<string, any>) {
 export const createUrl = (url: MaybeRefOrGetter<string>, options?: Options) =>
   computed(() => {
     const _url = toValue(url)
-    if (!options?.query) {
-      return _url
-    }
+    if (!options?.query) return _url
 
     const _query = toValue(options.query)
     const queryString = stringifyQueryWithBrackets(_query)

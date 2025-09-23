@@ -95,7 +95,7 @@ const handleShowSalesPersonModal = (item: ISalesPerson) => {
 const handleSalesPersonLink = async () => {
   await handleUserBinding({
     type: salesPersonModal.value.type,
-    userId: selectedItem.value?.user?.id || selectedUser.value, 
+    userId: selectedItem.value?.user?.[0].id || selectedUser.value, 
     salesPersonId: selectedItem.value?.SlpCode,
     callback: fetchSalesPersons,
     onFinish: () => {
@@ -165,7 +165,7 @@ const handleSalesPersonLink = async () => {
             <div class="text-sm">
               {{ item.SlpName }}
             </div>
-            <VChip v-if="item.user" label size="small" color="success">{{ item.user.name }}</VChip>            
+            <VChip v-for="user in item.user" v-if="item.user" label size="small" color="success">{{ user.name }}</VChip>            
           </div>
         </template>
         <template #item.action="{ item }">

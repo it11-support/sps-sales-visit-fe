@@ -151,7 +151,7 @@ export const useUserStore = defineStore('userStore', {
     updateSortOptions(options: any) {
       if (!this.isReady) return
       this.updateQuery({
-        sort_options: [options.sortBy]
+        sort_options: options.sortBy
       })
     },
     setEditMode(editMode: boolean) {

@@ -22,7 +22,7 @@ const stickyRef = ref<HTMLElement | null>(null)
 const activityStore = useActivityStore()
 const formData = ref({
   assigned_by: userData.value.id,
-  assigned_to: data.value.sales_person?.user?.[0].id ?? null,
+  assigned_to: data.value.sales_person?.user?.[0]?.id ?? null,
   customer_id: data.value.CardCode,
   scheduled_date: '',
   activity_type_id: 0,
@@ -50,7 +50,7 @@ onMounted(async () => {
 
 watch(showScheduleForm, (val) => {
   if(val){
-    formData.value.assigned_to = data.value.sales_person?.user?.[0].id ?? null
+    formData.value.assigned_to = data.value.sales_person?.user?.[0]?.id ?? null
   }
 })
 
