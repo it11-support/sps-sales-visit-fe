@@ -3,6 +3,7 @@ import { IMonthlySummary, IMonthlySummaryItem, useStatisticStore } from '@/@core
 
 interface Props {
   id: string
+  companyId: string
 }
 
 enum AVG_CRITERIA {
@@ -15,7 +16,7 @@ const statStore = useStatisticStore()
 
 const props = defineProps<Props>()
 const momPanel = ref(false)
-const {id} = toRefs(props)
+const { id, companyId } = toRefs(props)
 
 
 
@@ -24,7 +25,7 @@ onMounted(async () => {
 })
 
 const averageSales = computed(() => {
-  const summaries = statStore.monthly_summary ?? []
+  const summaries = statStore.summary[props.companyId]?.monthly_summary ?? []
 
   if (summaries.length === 0) return 0
 
@@ -53,7 +54,7 @@ const calculateAverage = (val: number, avg: number): string => {
 }
 
 const averageItems = computed(() => {
-  const summaries = statStore.monthly_summary ?? [];
+  const summaries = statStore.summary[props.companyId]?.monthly_summary ?? [];
 
   if (summaries.length === 0) return 0;
 
@@ -66,13 +67,13 @@ const averageItems = computed(() => {
 
 
 const maxPurchasedItems = computed(() => {
-  return statStore.monthly_summary.reduce((acc: number, summary: IMonthlySummary) => {
+  return statStore.summary[props.companyId]?.monthly_summary.reduce((acc: number, summary: IMonthlySummary) => {
     return Math.max(acc, summary.items?.length || 0)
   }, 0)
 })
 
 const maxSales = computed(() => {
-  return statStore.monthly_summary.reduce((acc: number, summary: IMonthlySummary) => {
+  return statStore.summary[props.companyId]?.monthly_summary.reduce((acc: number, summary: IMonthlySummary) => {
     return Math.max(acc, summary.items?.reduce((sum: number, item: IMonthlySummaryItem) => {
       return sum + (item.total_sales ?? 0)
     }, 0) || 0)
@@ -80,7 +81,7 @@ const maxSales = computed(() => {
 })
 
 const itemCounts = computed(() => {
-  return statStore.monthly_summary.reduce((acc: { [month: string]: { count: number, totalSales: number, totalVolume: number } }, data: IMonthlySummary) => {
+  return statStore.summary[props.companyId]?.monthly_summary.reduce((acc: { [month: string]: { count: number, totalSales: number, totalVolume: number } }, data: IMonthlySummary) => {
     const month = data.month;
 
     const totalSales = data.items.reduce((sum, item) => sum + item.total_sales, 0);
@@ -111,11 +112,12 @@ const changesData = computed(() => {
     volumeChangePercentage: number
   }> = {};
 
-  const months = Object.keys(itemCounts.value).reverse();
+  const months = computed(() => Object.keys(itemCounts.value ?? {}).reverse())
 
-  months.forEach((month, index) => {
+
+  months.value.forEach((month, index) => {
     const currentData = itemCounts.value[month];
-    const previousMonth = months[index + 1]; 
+    const previousMonth = months.value[index + 1]; 
     const previousData = itemCounts.value[previousMonth];
 
     if (previousData) {
@@ -166,10 +168,26 @@ const changesData = computed(() => {
 });
 
 const widgetData = computed(() => ([
-  { title: 'Average Purchased Items', value: averageItems.value.toFixed(2), icon: 'tabler-timeline' },
-  { title: 'Average Sales', value: formatMoney(averageSales.value, true), icon: 'tabler-coin' },
-  { title: 'Max Purchased Items', value: maxPurchasedItems.value, icon: 'tabler-shopping-cart-star' },
-  { title: 'Max Sales', value: formatMoney(maxSales.value, true), icon: 'tabler-shopping-cart-dollar' },
+  {
+    title: 'Average Purchased Items',
+    value: (averageItems.value ?? 0).toFixed(2),
+    icon: 'tabler-timeline',
+  },
+  {
+    title: 'Average Sales',
+    value: formatMoney(averageSales.value ?? 0, true),
+    icon: 'tabler-coin',
+  },
+  {
+    title: 'Max Purchased Items',
+    value: maxPurchasedItems.value ?? 0,
+    icon: 'tabler-shopping-cart-star',
+  },
+  {
+    title: 'Max Sales',
+    value: formatMoney(maxSales.value ?? 0, true),
+    icon: 'tabler-shopping-cart-dollar',
+  },
 ]))
 
 </script>

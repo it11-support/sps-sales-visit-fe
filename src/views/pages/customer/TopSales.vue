@@ -3,6 +3,7 @@ import { useStatisticStore } from '@/@core/stores/statistic';
 
 interface Props {
   id: string
+  companyId: string
 }
 
 const statStore = useStatisticStore()
@@ -15,7 +16,7 @@ onMounted(async () => {
   await statStore.fetchMoMSummary(id.value)
 })
 
-const topSales = computed(() => statStore.top_items)
+const topSales = computed(() => statStore.summary[props.companyId]?.top_items ?? [])
 
 </script>
 
