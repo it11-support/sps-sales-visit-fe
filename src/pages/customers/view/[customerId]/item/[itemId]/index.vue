@@ -88,8 +88,8 @@ const handleRefresh = (stopLoading: () => void) => {
 </script>
 
 <template>
-  <CustomerOverview :data="customer" :id="customer.CardCode" />
-  <SalesStatistic :id="customer.CardCode" />
+  <CustomerOverview :data="customer" :id="customer.id" />
+  <SalesStatistic :id="customer.id" />
   <VCol cols="12">
     <AppCardActions
       :loading="configStore.loading"

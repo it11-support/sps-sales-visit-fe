@@ -10,19 +10,25 @@ const baseDomain = import.meta.env.VITE_BASE_DOMAIN
 const activityStore = useActivityStore()
 const statStore = useStatisticStore()
 
-onMounted(async () => {
+onMounted(async () => { 
   await activityStore.fetchActivityReport(props.assignmentId)
-  await statStore.fetchMoMSummary(activityStore.report.assignment.customer_id)
+  const defaultCustomerId = Number(activityStore.customers.find((customer) => customer.CompanyId === activityStore.activeTab )?.id)
+  await statStore.fetchMoMSummary(defaultCustomerId?.toString() ?? '')
 })
 
-const monthly_summary = computed(() => statStore.monthly_summary)
-const competitors = computed(() => activityStore.report.competitors)
+
+const currentReport = computed(() => activityStore.activityReport[activityStore.activeTab])
+
+const customer = computed(() => activityStore.customers.find((customer) => customer.CompanyId === activityStore.activeTab ))
+
+const monthly_summary = computed(() => statStore.summary[activityStore.activeTab]?.monthly_summary)
+const competitors = computed(() => activityStore.activityReport[activityStore.activeTab]?.competitors ?? [])
 const summary = computed(() => {
   if (!monthly_summary.value?.length) return []
 
   const raw = [...monthly_summary.value]
     .reverse()
-    .slice(0, 3)
+    .slice(0, 2)
     .map(({ month, items }) => {
       const total_sales = items.reduce((sum, item) => sum + item.total_sales, 0)
       const total_item = items.length
@@ -116,6 +122,20 @@ const handleViewOnMap = () => {
               </VCol>
           </VRow>
           <VRow>
+            <VCol cols="12">
+              <VTabs v-model="activityStore.activeTab">
+                <VTab
+                  v-for="name in activityStore.tabs"
+                  :key="name"
+                  :value="name"
+                  @click="activityStore.setActiveTab(name)"
+                >
+                  {{ name }}
+                </VTab>
+            </VTabs>
+            </VCol>
+          </VRow>
+          <VRow>
             <VCol cols="12" md="6" sm="12" lg="6">
               <VCardText>
                 <VRow>
@@ -131,17 +151,23 @@ const handleViewOnMap = () => {
                     <VListItem v-if="!activityStore.loadingAssignment">                     
                       <VListItemTitle class="d-flex mb-1">
                         <span class="me-2" style="min-inline-size: 120px;">Outlet Name</span>
-                        <span>{{ activityStore.report?.assignment?.customer?.CardName }}</span>
+                        <div>
+                          <span>{{ customer?.CardName }}</span>
+                        </div>                       
                       </VListItemTitle>
 
                       <VListItemTitle class="d-flex"> <VListItemTitle class="d-flex"></VListItemTitle>
                         <span class="me-2" style="min-inline-size: 120px;">Outlet PIC</span>
-                        <span>{{ activityStore.report?.assignment?.customer?.CntctPrsn }}</span>
+                        <div>
+                          <span>{{ customer?.CntctPrsn }}</span>
+                        </div>                      
                       </VListItemTitle>
 
                       <VListItemTitle class="d-flex">
                         <span class="me-2" style="min-inline-size: 120px;">Status</span>
-                        <span>{{ activityStore.report.assignment?.customer?.NonActive === "Y" ? 'Inactive' : 'Active' }}</span>
+                         <div>
+                          <span>{{ customer?.NonActive === "Y" ? 'Inactive' : 'Active' }}</span>
+                        </div>                         
                       </VListItemTitle>
                     </VListItem>
                    
@@ -154,13 +180,13 @@ const handleViewOnMap = () => {
                       :src="`${baseDomain}/storage/${activityStore.report?.assignment?.image_path}`"
                     />
                   </VCol>
-                  <VCol class="text-no-wrap" cols="12" v-if="activityStore.activityReport.assignment?.check_in !== null">
+                  <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.check_in !== undefined">
                     <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
-                    <span>{{ formatDate(activityStore.activityReport.assignment?.check_in as unknown as  string, true ) }}</span>
+                    <span>{{ formatDate(activityStore.currentReport.assignment?.check_in as unknown as  string, true ) }}</span>
                   </VCol>
-                  <VCol class="text-no-wrap" cols="12" v-if="activityStore.activityReport.assignment?.check_out !== null">
+                  <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.check_out !== undefined">
                     <span class="me-2" style="min-inline-size: 120px;">Check Out Date</span>
-                    <span>{{ formatDate(activityStore.activityReport.assignment?.check_out as unknown as  string, true ) }}</span>
+                    <span>{{ formatDate(activityStore.currentReport.assignment?.check_out as unknown as  string, true ) }}</span>
                   </VCol>
                   <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
                     <VBtn color="success" size="small" @click="handleViewOnMap">
@@ -255,8 +281,8 @@ const handleViewOnMap = () => {
                         type="article"
                       />
                     </template>
-                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.product_issue" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
-                      <VListItem v-for="item in  activityStore.report?.product_issue.split('\n') || []" :key="item">
+                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && currentReport.product_issue" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
+                      <VListItem v-for="item in currentReport.product_issue?.split('\n') || []" :key="item">
                         <VListItemTitle >
                           {{ item }}
                         </VListItemTitle>
@@ -276,8 +302,8 @@ const handleViewOnMap = () => {
                         type="article"
                       />
                     </template>
-                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.next_action" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
-                      <VListItem v-for="item in activityStore.report?.next_action.split('\n') || []" :key="item">
+                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && currentReport.next_action" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
+                      <VListItem v-for="item in currentReport.next_action.split('\n') || []" :key="item">
                         <VListItemTitle>
                           {{ item }}
                         </VListItemTitle>
@@ -297,8 +323,8 @@ const handleViewOnMap = () => {
                         type="article"
                       />
                     </template>
-                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && activityStore.report?.additional_note" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
-                      <VListItem v-for="item in activityStore.report?.additional_note.split('\n') || []" :key="item">
+                    <VList v-if="!statStore.loadingState && !activityStore.loadingAssignment && currentReport.additional_note" class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6">
+                      <VListItem v-for="item in currentReport.additional_note.split('\n') || []" :key="item">
                         <VListItemTitle>
                           {{ item }}
                         </VListItemTitle>
@@ -402,10 +428,10 @@ const handleViewOnMap = () => {
                       <tbody class="text-base">
                         <tr>
                           <td class="text-no-wrap">
-                            {{ activityStore.report?.reason_qty_drop?.reason }}
+                            {{ activityStore.activityReport[activityStore.activeTab].reason_qty_drop?.reason }}
                           </td>
                           <td class="text-no-wrap">
-                            {{ activityStore.report?.activity_purpose?.purpose }}
+                            {{ activityStore.activityReport[activityStore.activeTab].activity_purpose?.purpose }}
                           </td>
                         </tr>
                       </tbody>

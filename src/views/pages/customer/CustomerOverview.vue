@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import AppDateTimePicker from '@/@core/components/app-form-elements/AppDateTimePicker.vue';
-import { useActivityStore } from '@/@core/stores';
+import { useActivityStore, useCustomerStore } from '@/@core/stores';
 import type { ICustomerData } from '@core/types';
 import dayjs from 'dayjs';
 import LinkSalesPersonModal from '../user/LinkSalesPersonModal.vue';
@@ -11,19 +11,23 @@ const { onFinish } = props
 
 const userData = useCookie<any>('userData')
 const showScheduleForm = ref(false)
+const addBbsCustomer = ref(false)
 const date = ref(new Date())
 const notes = ref('')
 const selectedType = ref(null)
+const selectedBBsCustomer = ref<number | null>(null)
 const showLinkSalesPersonModal = ref(false)
 const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
 const isSticky = ref(false)
 const stickyRef = ref<HTMLElement | null>(null)
 const activityStore = useActivityStore()
-const formData = ref({
+const customerStore = useCustomerStore()
+const formData = ref<any>({
   assigned_by: userData.value.id,
-  assigned_to: data.value.sales_person?.user?.[0]?.id ?? null,
-  customer_id: data.value.CardCode,
+  assigned_to: data.value.sales_person?.id ?? 0,
+  customer_id: data.value.id, // SPS
+  bbs_customer_id: 0,
   scheduled_date: '',
   activity_type_id: 0,
   notes: '',
@@ -46,6 +50,7 @@ const items = [
 
 onMounted(async () => {
   await activityStore.fetchActivityTypes()
+  await customerStore.fetchCustomerOptions(COMPANIES.BBS)
 })
 
 watch(showScheduleForm, (val) => {
@@ -85,6 +90,19 @@ const formatSelectedDate = (val: string) => {
 const updateSelectedType = (val: number) => {
  formData.value.activity_type_id = val
 }
+
+
+const updateSelectedCustomer = (val: number) => {
+  selectedBBsCustomer.value = val
+  formData.value.bbs_customer_id = val
+}
+
+watch(() => addBbsCustomer.value, (val) => {
+  if (!val) {
+    selectedBBsCustomer.value = null
+    formData.value.bbs_customer_id = null
+  }
+})
 
 const updateNotes = (val: string) => {
   formData.value.notes = val
@@ -191,9 +209,11 @@ const checkSticky = () => {
                   class="d-flex align-items-center"
                 >
                   <label
-                    class="v-label text-body-2 text-high-emphasis"
-                    for="mobile"
-                  >Sales Person</label>
+                      class="v-label text-body-2 text-high-emphasis"
+                      for="mobile"
+                  >
+                    Sales Person
+                  </label>
                 </VCol>
 
                 <VCol
@@ -215,7 +235,9 @@ const checkSticky = () => {
                   <label
                     class="v-label text-body-2 text-high-emphasis"
                     for="mobile"
-                  >Customer</label>
+                  >
+                    Customer
+                  </label>
                 </VCol>
 
                 <VCol
@@ -226,6 +248,53 @@ const checkSticky = () => {
                 </VCol>
               </VRow>
             </VCol>
+            <VCol cols="12" class="px-1">
+              <VRow no-gutters>
+                <!-- 👉 Mobile -->
+                <VCol
+                  cols="12"
+                  md="9"
+                >
+                  <VCheckbox
+                    label="BBS Customer"
+                    v-model="addBbsCustomer"
+                  />
+                </VCol>
+              </VRow>
+            </VCol>
+            <VCol cols="12" v-if="addBbsCustomer">
+              <VRow no-gutters>
+                <!-- 👉 Mobile -->
+                <VCol
+                  cols="12"
+                  md="3"
+                  class="d-flex align-items-center"
+                >
+                  <label
+                    class="v-label text-body-2 text-high-emphasis"
+                    for="mobile"
+                  >
+                    BBS Customer
+                  </label>
+                </VCol>
+
+                <VCol
+                  cols="12"
+                  md="9"
+                >
+                <AppAutocomplete
+                  autocomplete="off"
+                  @update:model-value="updateSelectedCustomer"
+                  v-model="selectedBBsCustomer"
+                  :items="customerStore.customerOptions"
+                  placeholder="Select BBS Customer"
+                  clearable
+                  clear-icon="tabler-x"
+                />
+                </VCol>
+              </VRow>
+            </VCol>
+
             <VCol cols="12">
               <VRow no-gutters>
                 <!-- 👉 Mobile -->
@@ -266,7 +335,9 @@ const checkSticky = () => {
                   <label
                     class="v-label text-body-2 text-high-emphasis"
                     for="mobile"
-                  >Activity Type</label>
+                  >
+                    Activity Type
+                  </label>
                 </VCol>
 
                 <VCol

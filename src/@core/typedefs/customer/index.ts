@@ -2,6 +2,7 @@ import { ISalesInvoice } from "../salesinvoice"
 import { ISalesPerson } from "../salesperson"
 
 export interface ICustomerData {
+  id: number
   CompanyId: string
   CardCode: string
   CardName: string

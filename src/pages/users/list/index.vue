@@ -10,6 +10,11 @@ import type { IUser } from '@core/types';
 
 const searchQuery = ref('')
 const selectedSalesPerson = ref()
+const salesPersonData = ref<any>({
+    bbs_sales_person_id: undefined,
+    sps_sales_person_id: undefined
+  }
+)
 const salesPersonModal = ref({
   type : 'link',
   show: false
@@ -40,6 +45,67 @@ const headers = [
 ]
 
 userStore.$reset()
+
+const localSalesPersons = computed(() => {
+  let options = [...salesPersonStore.filteredSalesPersonOptions]
+  const currentUserId = user.value.id
+
+  // Ambil selected IDs per Company (buat user yang sedang di-edit)
+  let spsSelectedId = salesPersonData.value.sps_sales_person_id
+  let bbsSelectedId = salesPersonData.value.bbs_sales_person_id
+
+  // Filter: hide jika sudah terhubung dengan user lain
+  options = options.filter(opt => {
+    if (!opt.user || opt.user.length === 0) return true
+    return opt.user.some((u: IUser) => u.id === salesPersonData.value.id)
+  })
+
+  // Auto-select jika login user ada di salesPersons
+  const match = salesPersonStore.salesPersons.find(sp =>
+    sp.user?.some(u => u.id === currentUserId)
+  )
+
+  if (match) {
+    if (match.CompanyId === COMPANIES.SPS && !spsSelectedId) {
+      spsSelectedId = match.SlpCode
+      salesPersonData.value.sps_sales_person_id = spsSelectedId
+    }
+    if (match.CompanyId === 'BBS' && !bbsSelectedId) {
+      bbsSelectedId = match.SlpCode
+      salesPersonData.value.bbs_sales_person_id = bbsSelectedId
+    }
+  }
+
+  // Jika selectedId belum ada di options, tambahkan manual
+  if (spsSelectedId && !options.some(opt => opt.value === spsSelectedId)) {
+    const matchSps = salesPersonStore.salesPersons.find(sp => sp.SlpCode === spsSelectedId)
+    if (matchSps) {
+      options.unshift({
+        title: matchSps.SlpName,
+        value: matchSps.id,
+        user: matchSps.user ?? [],
+        type: matchSps.CompanyId
+      })
+    }
+  }
+
+  if (bbsSelectedId && !options.some(opt => opt.value === bbsSelectedId)) {
+    const matchBbs = salesPersonStore.salesPersons.find(sp => sp.SlpCode === bbsSelectedId)
+    if (matchBbs) {
+      options.unshift({
+        title: matchBbs.SlpName,
+        value: matchBbs.id,
+        user: matchBbs.user ?? [],
+        type: matchBbs.CompanyId
+      })
+    }
+  }
+
+  const sps = options.filter(opt => opt.type === COMPANIES.SPS)
+  const bbs = options.filter(opt => opt.type === COMPANIES.BBS)
+
+  return { sps, bbs }
+})
 
 onMounted(async() => {
   salesPersonStore.updateSalesPersonOptions()
@@ -91,6 +157,13 @@ watch(salesPersonModal, async(newVal) => {
   newVal.show && newVal.type === 'link' && await salesPersonStore.updateSalesPersonOptions()
 }, { deep: true })
 
+watch(salesPersonModal, (newModal) => {
+  if (!newModal.show) {
+    salesPersonData.value.sps_sales_person_id = undefined
+    salesPersonData.value.bbs_sales_person_id = undefined
+  }
+}, { deep: true })
+
 // Show delete confirm dialog
 const showDeleteModal = (item: IUser) => {
   isConfirmDialogVisible.value = true
@@ -102,7 +175,8 @@ const handleSalesPersonLink = async () => {
   await handleUserBinding({
     type: salesPersonModal.value.type,
     userId: userStore.selectedUser?.id, 
-    salesPersonId: selectedSalesPerson.value,
+    spsSalesPersonId: salesPersonData.value.sps_sales_person_id, 
+    bbsSalesPersonId: salesPersonData.value.bbs_sales_person_id,
     callback: userStore.fetchUsers, 
     onFinish: () => {
       salesPersonModal.value = {...salesPersonModal.value, show: false}
@@ -123,7 +197,7 @@ const deleteSelectedUser = async () => {
 
 // Open link menu
 const handleClickLinkMenu = (item: IUser) => {
-  if (item.sales_person) {
+  if (item.sales_person?.length) {
     salesPersonModal.value = {show: true, type: 'unlink'}
   } else {
     salesPersonModal.value = {show: true, type: 'link'}
@@ -320,9 +394,9 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
                 <template v-if="item.role?.role !== 'admin'">
                   <VListItem @click="handleClickLinkMenu(item)">
                     <template #prepend >
-                      <VIcon :icon="!item.sales_person ? 'tabler-link' : 'tabler-link-off'" />
+                      <VIcon :icon="!item.sales_person?.length ? 'tabler-link' : 'tabler-link-off'" />
                     </template>
-                    <VListItemTitle>{{ !item.sales_person ? 'Link Sales Person' : 'Unlink Sales Person' }}</VListItemTitle>
+                    <VListItemTitle>{{ !item.sales_person?.length ? 'Link Sales Person' : 'Unlink Sales Person' }}</VListItemTitle>
                   </VListItem>
                 </template>                
                 <div>
@@ -354,13 +428,27 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
             <AppSelect
               :disabled="configStore.loading"
               :loading="configStore.loading"
-              v-model="selectedSalesPerson"
+              v-model="salesPersonData.sps_sales_person_id"
               clearable
               clear-icon="tabler-x"
               item-title="title"
               item-value="value"
-              :items="salesPersonStore.salesPersonOptions.filter((item) => item.user === null)"
-              label="Sales Person"
+              :items="localSalesPersons.sps"
+              label="Sales Person SPS"
+              retun-object
+            />
+          </VCardText>
+          <VCardText>
+            <AppSelect
+              :disabled="configStore.loading"
+              :loading="configStore.loading"
+              v-model="salesPersonData.bbs_sales_person_id"
+              clearable
+              clear-icon="tabler-x"
+              item-title="title"
+              item-value="value"
+              :items="localSalesPersons.bbs"
+              label="Sales Person BBS"
               retun-object
             />
           </VCardText>

@@ -14,12 +14,14 @@ interface Filters {
   team_id?: number
 }
 
+
 export const useActivityStore = defineStore('activity', {
   state: () => ({
     isReady: false,
+    tabs: [] as string[],
     activityTypes: [] as {value: number, label: string}[],
     activity: {} as IActivity,
-    report: {} as IActivityReport,
+    report: {} as IActivityReport, 
     loadingId: null as number | null,
     activities: [] as IActivity[],
     loadingList: false,
@@ -56,25 +58,53 @@ export const useActivityStore = defineStore('activity', {
       team_id: undefined,
       activity_type_id: undefined,
     } as Filters,
-    activityReport: {
-      products: [] as IProduct[],
-      customer: {} as ICustomerData,
-      assignment_id: 0,
-      assignment: {} as IActivity,
-      reason_qty_drop_id: undefined,
-      activity_purpose_id: undefined,
-      non_active_product: '',
-      product_issue: '',
-      next_action: '',
-      additional_note: '',
-      competitors: [] as ICompetitor[],
-      reason: undefined,
-      purpose: undefined
-    } as IActivityReport,
+    activityReport: {} as Record<string, IActivityReport>,
+    activeTab: 'SPS' as string,
     customers: [] as ICustomerData[],
-    allCompetitorOptions: ref<ICompetitor[]>([])
+    allCompetitorOptions: ref<Record<string, ICompetitor[]>>({}) 
   }),
+   getters: {
+    currentReport(state): IActivityReport {
+      if (!state.activityReport[state.activeTab]) {
+        state.activityReport[state.activeTab] = {
+          products: [],
+          customer: {} as any,
+          assignment_id: 0,
+          assignment: {} as any,
+          reason_qty_drop_id: undefined,
+          activity_purpose_id: undefined,
+          non_active_product: '',
+          product_issue: '',
+          next_action: '',
+          additional_note: '',
+          competitors: [],
+        }
+      }
+      return state.activityReport[state.activeTab]
+    },
+  },
   actions: {
+    initReport(tab: string) {
+      if (!this.activityReport[tab]) {
+        this.activityReport[tab] = this.createDefaultReport()
+      }
+      return this.activityReport[tab]
+    },
+    createDefaultReport(): IActivityReport {
+      return  {
+        products: [],
+        customer: {} as any,
+        assignment_id: 0,
+        assignment: {} as any,
+        reason_qty_drop_id: undefined,
+        activity_purpose_id: undefined,
+        non_active_product: '',
+        product_issue: '',
+        next_action: '',
+        additional_note: '',
+        competitors: [],
+      }
+    },
     emptyActivityReport(): IActivityReport {
       return {
         products: [] as IProduct[],
@@ -123,6 +153,38 @@ export const useActivityStore = defineStore('activity', {
         return
       }
       this.activity = data.value.data
+      this.customers = this.activity.customers
+      this.tabs = this.activity.customers.map((customer: any) => (
+        customer.CompanyId
+      ))
+
+      const reports: Record<string, IActivityReport> = {}
+      
+      data.value.data.assignment_details?.forEach((report: any) => {
+        const companyId = report.CompanyId       
+      })
+
+      data.value.data.assignment_details?.forEach((report: any) => {
+        const companyId = report.CompanyId
+        return reports[companyId] = {
+          assignment_id: report.assignment_id,
+          assignment: this.activity,
+          customer: report.customer,
+          products: report.products ?? [],
+          reason_qty_drop_id: report.reason_qty_drop_id,
+          activity_purpose_id: report.activity_purpose_id,
+          reason_qty_drop: report.reason_qty_drop,
+          activity_purpose: report.activity_purpose,
+          non_active_product: report.non_active_product,
+          product_issue: report.product_issue,
+          next_action: report.next_action,
+          additional_note: report.additional_note,
+          competitors: report.competitors ?? []
+        }
+      })
+
+      this.activityReport = reports
+      await nextTick()      
       this.loadingAssignment = false
     },
 
@@ -137,8 +199,35 @@ export const useActivityStore = defineStore('activity', {
 
       const payload = data.value.data ?? this.emptyActivityReport();
 
+      const reports: Record<string, IActivityReport> = {}
+
       this.report = { ...payload };
       this.activityReport = { ...payload };
+      this.tabs = data.value.data.customers.map((customer: any) => (
+        customer.CompanyId
+      ))
+
+      data.value.data.assignment_details?.forEach((report: any) => {
+        const companyId = report.CompanyId
+        return reports[companyId] = {
+          assignment_id: report.assignment_id,
+          assignment: this.activity,
+          customer: report.customer,
+          products: report.products ?? [],
+          reason_qty_drop_id: report.reason_qty_drop_id,
+          activity_purpose_id: report.activity_purpose_id,
+          reason_qty_drop: report.reason_qty_drop,
+          activity_purpose: report.activity_purpose,
+          non_active_product: report.non_active_product,
+          product_issue: report.product_issue,
+          next_action: report.next_action,
+          additional_note: report.additional_note,
+          competitors: report.competitors ?? []
+        }
+      })
+
+      this.activityReport = reports
+      this.customers = data.value.data.customers
 
       this.loadingAssignment = false;
     },
@@ -178,7 +267,7 @@ export const useActivityStore = defineStore('activity', {
         }
       });
 
-      this.allCompetitorOptions = Array.from(uniqueCompetitors.values()).map((competitor: ICompetitor) => ({
+      this.allCompetitorOptions[this.activeTab] = Array.from(uniqueCompetitors.values()).map((competitor: ICompetitor) => ({
         value: competitor.id,
         title: `${competitor.name}`,
         name: `${competitor.name} - ${competitor.address}`,
@@ -203,7 +292,7 @@ export const useActivityStore = defineStore('activity', {
       this.loading = true
       
       const reportPayload = {
-        ...this.activityReport,
+        reports: this.activityReport,
         status: isDraft ? 'draft' : 'completed'
       }
 
@@ -215,6 +304,7 @@ export const useActivityStore = defineStore('activity', {
         headers: {
           'Content-Type': 'application/json'
         }
+        
       })
       if (error.value) {
         console.error('Error fetching activity detail:', error.value)
@@ -227,7 +317,7 @@ export const useActivityStore = defineStore('activity', {
       this.loading = true
       const reportPayload = {
         ...this.activityReport,
-        status: final ? 'completed' : 'draft'
+        status: final ? 'completed' : 'draft',
       }
       const payload = JSON.stringify(reportPayload);
       const { data, error } = await useApi<any>(`activity/report/${id}`, {
@@ -266,7 +356,8 @@ export const useActivityStore = defineStore('activity', {
       }
     },
     async clearActivityReport() {
-      this.activityReport = this.emptyActivityReport()
+      const tab = this.activeTab
+      this.activityReport[tab] = this.emptyActivityReport()
       this.report = this.emptyActivityReport()
     },
     async updateFilters(newFilters: Partial<Filters>, shouldFetch = true) {
@@ -278,17 +369,18 @@ export const useActivityStore = defineStore('activity', {
       if (newFilters.sales_person_id) {
         const filterCustomerOptions = this.customers
           .filter((customer: any) =>
-            Number(customer.SlpCode) === Number(newFilters.sales_person_id)
+            Number(customer.id) === Number(newFilters.sales_person_id)
           )
           .map((customer: any) => ({
-            value: customer.CardCode,
+            value: customer.id,
             title: customer.CardName,
-            sales_person_id: Number(customer.SlpCode)
+            sales_person_id: Number(customer.id)
           }));
+
         this.customerOptions = filterCustomerOptions;
       } else {
         this.customerOptions = this.customers.map((customer: any) => ({
-          value: customer.CardCode,
+          value: customer.id,
           title: customer.CardName,
           sales_person_id: Number(customer.sales_person_id)
         }));
@@ -308,6 +400,12 @@ export const useActivityStore = defineStore('activity', {
       await this.fetchActivities()
       await this.fetchCustomer()
       this.isReady = true
+    },
+    setActiveTab(tab: string) {
+      this.activeTab = tab
+      if (!this.activityReport[tab]) {
+        this.activityReport[tab] = this.createDefaultReport()
+      }
     },
     updateSortOptions(options: any) {
       if (!this.isReady) return
@@ -338,8 +436,8 @@ export const useActivityStore = defineStore('activity', {
       }
 
       this.salesPersonsOptions = salesPersonsData.value.data.salesPersons.map((sales: any) => ({
-        title: sales.SlpName,
-        value: sales.SlpCode
+        title: `${sales.SlpName} (${sales.CompanyId})`,
+        value: sales.id
       }))
       this.loading = false
     },
@@ -357,24 +455,36 @@ export const useActivityStore = defineStore('activity', {
       
       this.customerOptions = this.customers.map((customer: any) => ({
         title: customer.CardName,
-        value: customer.CardCode,
-        sales_person_id: customer.SlpCode
+        value: customer.id,
+        sales_person_id: customer.id
       }))
 
       this.loading = false
     },
     
     updateForm(form: Partial<IActivityReport>) {
-      this.activityReport = {
-        ...this.activityReport,
-        ...form
+      const current = this.currentReport
+
+      this.activityReport[this.activeTab] = {
+        ...current,
+        ...form,
+        products: form.products
+          ? form.products.map(p => ({ ...p }))
+          : current.products,
+        competitors: form.competitors
+          ? form.competitors.map(c => ({ ...c }))
+          : current.competitors,
+      }
+    },
+    addCompetitor(competitor: ICompetitor) {
+      const report = this.currentReport
+
+      if (!report.competitors.some(c => c.name === competitor.name)) {
+        report.competitors.push(competitor)
       }
 
-    }, 
-    addCompetitor(competitor: ICompetitor) {
-      this.activityReport.competitors?.push(competitor)
-      if (!this.allCompetitorOptions.some(opt => opt.name === competitor.name)) {
-        this.allCompetitorOptions.push(competitor)
+      if (!this.allCompetitorOptions[this.activeTab].some(opt => opt.name === competitor.name)) {
+        this.allCompetitorOptions[this.activeTab].push(competitor)
       }
     }
   }

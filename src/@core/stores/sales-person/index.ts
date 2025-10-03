@@ -1,4 +1,4 @@
-import { ISalesPerson } from "@/@core/typedefs";
+import { ISalesPerson, IUser } from "@/@core/typedefs";
 
 export const useSalesPersonStore = defineStore('salesPersonStore', {
   state: () => ({
@@ -10,7 +10,7 @@ export const useSalesPersonStore = defineStore('salesPersonStore', {
     },
     spsSalesPersons: [] as { title: string, value: string, user: any, type: string }[],
     bbsSalesPersons: [] as { title: string, value: string, user: any, type: string }[],
-    salesPersonOptions: [] as { title: string, value: number, user: any }[],
+    salesPersonOptions: [] as { title: string, value: string, user: IUser[], type: string }[],
     filteredSalesPersonOptions: [] as { title: string, value: string, user: any, type: string }[],
     teamOptions: [] as { title: string, value: number }[]
   }),
@@ -35,7 +35,7 @@ export const useSalesPersonStore = defineStore('salesPersonStore', {
 
       this.spsSalesPersons = allOptions.filter(opt => opt.type === COMPANIES.SPS)
       this.bbsSalesPersons = allOptions.filter(opt => opt.type === COMPANIES.BBS)
-
+      this.salesPersonOptions = allOptions
       this.loading = false
     },
     async updateQuery(query: any) {

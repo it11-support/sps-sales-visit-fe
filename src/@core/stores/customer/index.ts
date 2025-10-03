@@ -41,6 +41,7 @@ export const useCustomerStore = defineStore('customer', {
     priceListOptions: [] as { value: string; title: string }[],
     cityOptions: [] as { value: string; title: string }[],
     selectedRows: [] as ICustomerData[],
+    customerOptions: [] as { value: number; title: string }[],
     pagination: {
       current_page: 1,
       last_page: 1,
@@ -71,6 +72,28 @@ export const useCustomerStore = defineStore('customer', {
   }),
 
   actions: {
+
+    async fetchCustomerOptions(companyId: string | null = null) {
+     try {
+      this.loadingList = true
+      const url = createUrl(`customer/get-options`, {query: { companyId }})
+      const { data } = await useApi<any>(url)
+
+      this.customerOptions = data.value.data.map((company: any) => ({
+        value: company.id,
+        title: `${company.CardName} (${company.CardCode})` || company.CardName
+      }))
+
+
+     } catch (error) {
+       console.error('Error fetching customer options:', error)
+       this.loadingList = false
+       return
+     } finally {
+      this.loadingList = false
+     }
+    },
+
     async fetchCustomers() {
       this.loadingList = true
      
@@ -87,7 +110,6 @@ export const useCustomerStore = defineStore('customer', {
       this.pagination = { ...this.pagination, ...data.value.data }
       this.loadingList = false
 
-      console.log(JSON.stringify(this.filters.sort_options))
     },
 
     async fetchCustomerById(id: string) {

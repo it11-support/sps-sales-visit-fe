@@ -27,7 +27,7 @@ export interface IActivity extends FormData {
   scheduled_date: Date
   notes: string
   status: string
-  customer: ICustomerData 
+  customers: ICustomerData[] 
   activity: IActivityType
   lat?: number
   lng?: number
@@ -36,11 +36,13 @@ export interface IActivity extends FormData {
   check_out?: string
   image_path?: string
   file?: File
+  activity_details?: IActivityReport[]
 }
 
 export interface IActivityReport {
   products?: IProduct[]
   customer: ICustomerData
+  customers?: ICustomerData[]
   assignment_id: number
   assignment: IActivity
   reason_qty_drop_id?: number

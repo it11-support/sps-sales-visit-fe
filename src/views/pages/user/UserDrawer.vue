@@ -162,26 +162,6 @@ watch(() => props.isDrawerOpen, async (isOpen) => {
     nextTick(() => {
       form.value?.resetValidation()
     })
-
-    // if (formData.value.sales_person_id) {
-    //   const exists = localSalesPersons.value.some(
-    //     sp => sp.value === formData.value.sales_person_id
-    //   )
-    //   console.log(exists)
-    //   if (!exists) {
-    //     const match = salesPersonStore.salesPersons.find(
-    //       sp => sp.SlpCode === formData.value.sales_person_id
-    //     )
-    //     if (match) {
-    //       localSalesPersons.value.unshift({
-    //         title: match.SlpName,
-    //         value: match.SlpCode,
-    //       })
-    //     }
-    //   }
-    // }
-
-    console.log(formData.value)
   }
 })
 

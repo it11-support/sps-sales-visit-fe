@@ -2,7 +2,7 @@ import { useConfigStore } from "@core/stores/config";
 
 const configStore = useConfigStore()
 export const handleUserBinding = async(params: any) => {
-  const { type, userId, salesPersonId, callback, onFinish } = params
+  const { type, userId, spsSalesPersonId, bbsSalesPersonId, callback, onFinish } = params
   configStore.overlay = true;
   try {
     if (type === 'unlink') {
@@ -17,7 +17,8 @@ export const handleUserBinding = async(params: any) => {
         method: 'POST', 
         body: {
           user_id: userId,
-          sales_person_id: salesPersonId,
+          sps_sales_person_id: spsSalesPersonId, 
+          bbs_sales_person_id: bbsSalesPersonId,
         },
       })
     }

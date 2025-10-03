@@ -8,7 +8,7 @@ const isAdmin = computed(() => user.value.role.role === 'admin')
 const isSpv = computed(() => user.value.role.role === 'spv')
 
 const searchQuery = ref('')
-const salesPersonId = computed(() => user.value.sales_person?.SlpCode)
+const salesPersonId = computed(() => user.value.sales_person.filter((sp: any) => sp.CompanyId ==='SPS'))
 const debouncedQuery = useDebounce(searchQuery, 400)
 const router = useRouter()
 const showFilters = ref(false)
@@ -45,7 +45,7 @@ onMounted(async () => {
   } else if(isSpv.value) {
     await activityStore.initialize(undefined, user.value.team_id)
   } else {
-    await activityStore.initialize(salesPersonId.value)
+    await activityStore.initialize(salesPersonId.value.id)
   } 
 })
 
@@ -281,8 +281,8 @@ const handleCheckIn = async(id: number) => {
       <template #item.customer="{ item }">
         <div class="d-flex align-center gap-x-4">
           <div class="d-flex flex-column">
-            <div class="text-sm">
-              {{ item.customer.CardName }}
+            <div class="text-sm" v-for="customer in item.customers" :key="customer.id">
+              {{ `${customer.CardName} - ${customer.CompanyId}`   }}
             </div>
           </div>
         </div>

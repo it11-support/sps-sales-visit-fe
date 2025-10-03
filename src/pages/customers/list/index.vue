@@ -323,7 +323,7 @@ const selectedCompanies = computed<string[]>({
         multi-sort
       >
         <template #item.actions="{ item }">
-          <a :href="`${'view/' + item.CardCode}`">
+          <a :href="`${'view/' + item.id}`">
             <VIcon small class="mr-1">tabler-eye</VIcon>
             View
           </a>

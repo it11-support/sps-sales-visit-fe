@@ -36,6 +36,14 @@ export interface IFilter {
   range: number | undefined
 }
 
+export type IYoYSummary = Record<
+  string,
+  {
+    monthly_summary: IMonthlySummary[];
+    top_items: IMonthlySummaryItem[];
+    total_sales_all_items: number;
+  }
+>
 export const useStatisticStore = defineStore('statistic', {
     state: () => ({
         yoy_summary: [] as IYearOnYearStatistic[],
@@ -46,6 +54,7 @@ export const useStatisticStore = defineStore('statistic', {
         monthly_summary: [] as IMonthlySummary[],
         top_items: [] as IMonthlySummaryItem[],
         total_sales_all_items: 0,
+        summary: {} as IYoYSummary,
         loadingState: false,
         filter: {
           rank: 5,
@@ -73,9 +82,11 @@ export const useStatisticStore = defineStore('statistic', {
         this.loadingState = true
         try {
           const response = await useApi<any>(createUrl(`customer/sales-summary-monthly/${id}`, { query: { range: this.filter.range, rank: this.filter.rank } }))
+          this.summary = response.data.value.data
           this.monthly_summary = response.data.value.data.monthly_summary
           this.top_items = response.data.value.data.top_items
-          this.total_sales_all_items = response.data.value.data.total_sales_all_items         
+          this.total_sales_all_items = response.data.value.data.total_sales_all_items
+
         } catch (error) {
           if (error) {
             console.error('Error fetching yoy summary:', error)

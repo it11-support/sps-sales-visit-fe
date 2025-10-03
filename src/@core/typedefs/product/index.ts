@@ -1,5 +1,6 @@
 export interface IProduct {
   ItemCode: string
+  CompanyId: string
   ItemName: string
   ItemGroup: string
   Weight: number
