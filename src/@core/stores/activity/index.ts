@@ -207,6 +207,7 @@ export const useActivityStore = defineStore('activity', {
         customer.CompanyId
       ))
 
+      console.log(data.value.data)
       data.value.data.assignment_details?.forEach((report: any) => {
         const companyId = report.CompanyId
         return reports[companyId] = {
@@ -222,7 +223,13 @@ export const useActivityStore = defineStore('activity', {
           product_issue: report.product_issue,
           next_action: report.next_action,
           additional_note: report.additional_note,
-          competitors: report.competitors ?? []
+          competitors: report.competitors ?? [],
+          image_path: data.value.data.image_path,
+          accuracy: data.value.data.accuracy,
+          check_in: data.value.data.check_in,
+          check_out: data.value.data.check_out,
+          lat: data.value.data.lat, 
+          lng: data.value.data.lng
         }
       })
 

@@ -177,7 +177,7 @@ const handleViewOnMap = () => {
                       :width="$vuetify.display.smAndDown ? 200 : 400"
                       aspect-ratio="4/3"
                       cover
-                      :src="`${baseDomain}/storage/${activityStore.report?.assignment?.image_path}`"
+                      :src="`${baseDomain}/storage/${activityStore.activityReport[activityStore.activeTab]?.image_path}`"
                     />
                   </VCol>
                   <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.check_in !== undefined">

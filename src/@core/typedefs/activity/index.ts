@@ -54,6 +54,12 @@ export interface IActivityReport {
   additional_note?: string
   competitors: ICompetitor[]
   activity_purpose?: IActivityPurpose
+  image_path?: string
+  accuracy?: string
+  check_in?: string
+  check_out?: string
+  lat?: string
+  lng?: string
 }
 
 export interface ISupplierProduct {
