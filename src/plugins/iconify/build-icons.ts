@@ -13,15 +13,20 @@
 import { promises as fs } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'url'
+import { createRequire } from 'module'
+
+const require = createRequire(import.meta.url)
+
 
 // Installation: npm install --save-dev @iconify/tools @iconify/utils @iconify/json @iconify/iconify
 import { cleanupSVG, importDirectory, isEmptyColor, parseColors, runSVGO } from '@iconify/tools'
 import type { IconifyJSON } from '@iconify/types'
 import { getIcons, getIconsCSS, stringToIcon } from '@iconify/utils'
 
-const tablerIconPath = import.meta.resolve('@iconify-json/tabler/icons.json')
-const mdiIconPath = import.meta.resolve('@iconify-json/mdi/icons.json')
-const faIconPath = import.meta.resolve('@iconify-json/fa/icons.json')
+const tablerIconPath = require.resolve('@iconify-json/tabler/icons.json')
+
+const mdiIconPath = require.resolve('@iconify-json/mdi/icons.json')
+const faIconPath = require.resolve('@iconify-json/fa/icons.json')
 /**
  * Script configuration
  */
@@ -155,7 +160,7 @@ const target = join(__dirname, 'icons.css')
     const organizedList = organizeIconsList(sources.icons)
 
     for (const prefix in organizedList) {
-      const filename = import.meta.resolve(`@iconify/json/json/${prefix}.json`)
+      const filename = require.resolve(`@iconify/json/json/${prefix}.json`)
 
       sourcesJSON.push({
         filename,
