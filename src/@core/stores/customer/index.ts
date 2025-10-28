@@ -41,7 +41,7 @@ export const useCustomerStore = defineStore('customer', {
     priceListOptions: [] as { value: string; title: string }[],
     cityOptions: [] as { value: string; title: string }[],
     selectedRows: [] as ICustomerData[],
-    customerOptions: [] as { value: number; title: string }[],
+    customerOptions: [] as { value: number; title: string, companyId: string }[],
     pagination: {
       current_page: 1,
       last_page: 1,
@@ -73,15 +73,16 @@ export const useCustomerStore = defineStore('customer', {
 
   actions: {
 
-    async fetchCustomerOptions(companyId: string | null = null) {
+    async fetchCustomerOptions(companyId: string | null = null, salesPersonId: string | null = null) {
      try {
       this.loadingList = true
-      const url = createUrl(`customer/get-options`, {query: { companyId }})
+      const url = createUrl(`customer/get-options`, {query: { companyId, salesPersonId }})
       const { data } = await useApi<any>(url)
 
       this.customerOptions = data.value.data.map((company: any) => ({
         value: company.id,
-        title: `${company.CardName} (${company.CardCode})` || company.CardName
+        title: `${company.CardName} (${company.CardCode})` || company.CardName,
+        companyId: company.CompanyId
       }))
 
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useConfigStore } from '@/@core/stores/config'
+import { useSalesInvoiceStore } from '@/@core/stores/salesinvoice'
 import { ISalesInvoice } from '@/@core/typedefs/salesinvoice'
 import { SortItem } from '@/@core/types'
 import SalesInvoiceTable from './SalesInvoiceTable.vue'
-import { useSalesInvoiceStore } from '@/@core/stores/salesinvoice'
 
 const startDate = ref('')
 const endDate = ref('')

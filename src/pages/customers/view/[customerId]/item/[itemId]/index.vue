@@ -37,11 +37,17 @@ onMounted(async () => {
 
 
 const { data: customerData, execute: fetchCustomer } = await useApi<any>(createUrl(`customer/${router.params.customerId}`))
+const { data: momSummaryData, execute: fetchMoMSummary} = await useApi<any>(createUrl(`customer/sales-summary-monthly/${router.params.customerId}`))
 
 const customer = computed(() => {
   return customerData.value.data
 })
 
+const summaries = computed(() => {
+  return momSummaryData.value.data
+})
+
+console.log('summaries', summaries.value)
 const headers = [
   { title: 'Invoice', value: 'DocNum', sortable: true },
   { title: 'Inv Date', value: 'DocDate', sortable: true },
@@ -88,8 +94,8 @@ const handleRefresh = (stopLoading: () => void) => {
 </script>
 
 <template>
-  <CustomerOverview :data="customer" :id="customer.id" />
-  <SalesStatistic :id="customer.id" />
+  <CustomerOverview :data="customer" />
+  <SalesStatistic :id="router.params.customerId" :summaries="summaries" />
   <VCol cols="12">
     <AppCardActions
       :loading="configStore.loading"

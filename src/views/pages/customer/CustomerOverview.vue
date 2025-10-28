@@ -12,10 +12,13 @@ const { onFinish } = props
 const userData = useCookie<any>('userData')
 const showScheduleForm = ref(false)
 const addBbsCustomer = ref(false)
+const addSpsCustomer = ref(false)
+
 const date = ref(new Date())
 const notes = ref('')
 const selectedType = ref(null)
-const selectedBBsCustomer = ref<number | null>(null)
+const selectedBBSCustomer = ref<number | null>(null)
+const selectedSPSCustomer = ref<number | null>(null)
 const showLinkSalesPersonModal = ref(false)
 const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
@@ -26,8 +29,8 @@ const customerStore = useCustomerStore()
 const formData = ref<any>({
   assigned_by: userData.value.id,
   assigned_to: data.value.sales_person?.id ?? 0,
-  customer_id: data.value.id, // SPS
-  bbs_customer_id: 0,
+  bbs_customer_id: data.value.CompanyId === COMPANIES.SPS ? 0 : data.value.id,
+  sps_customer_id: data.value.CompanyId === COMPANIES.BBS ? 0 : data.value.id,
   scheduled_date: '',
   activity_type_id: 0,
   notes: '',
@@ -50,7 +53,11 @@ const items = [
 
 onMounted(async () => {
   await activityStore.fetchActivityTypes()
-  await customerStore.fetchCustomerOptions(COMPANIES.BBS)
+  const company = data.value.CompanyId === COMPANIES.SPS ? COMPANIES.BBS : COMPANIES.SPS
+  const salesPersonId = data.value.sales_person?.id ?? null
+  await customerStore.fetchCustomerOptions(company, salesPersonId!)
+  console.log(formData.value)
+  console.log(data.value.id)
 })
 
 watch(showScheduleForm, (val) => {
@@ -92,15 +99,27 @@ const updateSelectedType = (val: number) => {
 }
 
 
-const updateSelectedCustomer = (val: number) => {
-  selectedBBsCustomer.value = val
-  formData.value.bbs_customer_id = val
+const updateSelectedCustomer = (val: number, companyId: string) => {
+  if(companyId === COMPANIES.SPS) {
+    selectedSPSCustomer.value = val
+    formData.value.sps_customer_id = val
+  } else if(companyId === COMPANIES.BBS) {
+    selectedBBSCustomer.value = val
+    formData.value.bbs_customer_id = val
+  }
 }
 
 watch(() => addBbsCustomer.value, (val) => {
   if (!val) {
-    selectedBBsCustomer.value = null
+    selectedBBSCustomer.value = null
     formData.value.bbs_customer_id = null
+  }
+})
+
+watch(() => addSpsCustomer.value, (val) => {
+  if (!val) {
+    selectedSPSCustomer.value = null
+    formData.value.sps_customer_id = null
   }
 })
 
@@ -248,7 +267,7 @@ const checkSticky = () => {
                 </VCol>
               </VRow>
             </VCol>
-            <VCol cols="12" class="px-1">
+            <VCol v-if="data.CompanyId === COMPANIES.SPS" cols="12" class="px-1">
               <VRow no-gutters>
                 <!-- 👉 Mobile -->
                 <VCol
@@ -258,6 +277,20 @@ const checkSticky = () => {
                   <VCheckbox
                     label="BBS Customer"
                     v-model="addBbsCustomer"
+                  />
+                </VCol>
+              </VRow>
+            </VCol>
+            <VCol v-else cols="12" class="px-1">
+              <VRow no-gutters>
+                <!-- 👉 Mobile -->
+                <VCol
+                  cols="12"
+                  md="9"
+                >
+                  <VCheckbox
+                    label="SPS Customer"
+                    v-model="addSpsCustomer"
                   />
                 </VCol>
               </VRow>
@@ -284,10 +317,43 @@ const checkSticky = () => {
                 >
                 <AppAutocomplete
                   autocomplete="off"
-                  @update:model-value="updateSelectedCustomer"
-                  v-model="selectedBBsCustomer"
+                  @update:model-value="(e: number) => updateSelectedCustomer(e, COMPANIES.BBS)"
+                  v-model="selectedBBSCustomer"
                   :items="customerStore.customerOptions"
                   placeholder="Select BBS Customer"
+                  clearable
+                  clear-icon="tabler-x"
+                />
+                </VCol>
+              </VRow>
+            </VCol>
+
+            <VCol cols="12" v-if="addSpsCustomer">
+              <VRow no-gutters>
+                <!-- 👉 Mobile -->
+                <VCol
+                  cols="12"
+                  md="3"
+                  class="d-flex align-items-center"
+                >
+                  <label
+                    class="v-label text-body-2 text-high-emphasis"
+                    for="mobile"
+                  >
+                    SPS Customer
+                  </label>
+                </VCol>
+
+                <VCol
+                  cols="12"
+                  md="9"
+                >
+                <AppAutocomplete
+                  autocomplete="off"
+                  @update:model-value="(e: number) => updateSelectedCustomer(e, COMPANIES.SPS)"
+                  v-model="selectedSPSCustomer"
+                  :items="customerStore.customerOptions"
+                  placeholder="Select SPS Customer"
                   clearable
                   clear-icon="tabler-x"
                 />

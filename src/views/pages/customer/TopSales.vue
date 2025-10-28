@@ -16,7 +16,7 @@ onMounted(async () => {
   await statStore.fetchMoMSummary(id.value)
 })
 
-const topSales = computed(() => statStore.summary[props.companyId]?.top_items ?? [])
+const topSales = computed(() => statStore.summary?.top_items ?? [])
 
 </script>
 

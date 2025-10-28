@@ -12,12 +12,16 @@
  */
 import { promises as fs } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'url'
 
 // Installation: npm install --save-dev @iconify/tools @iconify/utils @iconify/json @iconify/iconify
 import { cleanupSVG, importDirectory, isEmptyColor, parseColors, runSVGO } from '@iconify/tools'
 import type { IconifyJSON } from '@iconify/types'
 import { getIcons, getIconsCSS, stringToIcon } from '@iconify/utils'
 
+const tablerIconPath = import.meta.resolve('@iconify-json/tabler/icons.json')
+const mdiIconPath = import.meta.resolve('@iconify-json/mdi/icons.json')
+const faIconPath = import.meta.resolve('@iconify-json/fa/icons.json')
 /**
  * Script configuration
  */
@@ -86,9 +90,9 @@ const sources: BundleScriptConfig = {
     // 'json/gg.json',
 
     // Iconify JSON file (@iconify/json is a package name, /json/ is directory where files are, then filename)
-    require.resolve('@iconify-json/tabler/icons.json'),
+    tablerIconPath,
     {
-      filename: require.resolve('@iconify-json/mdi/icons.json'),
+      filename: mdiIconPath,
       icons: [
         'close-circle',
         'language-javascript',
@@ -96,7 +100,7 @@ const sources: BundleScriptConfig = {
       ],
     },
     {
-      filename: require.resolve('@iconify-json/fa/icons.json'),
+      filename: faIconPath,
       icons: [
         'circle',
       ],
@@ -117,6 +121,10 @@ const sources: BundleScriptConfig = {
 }
 
 // File to save bundle to
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
 const target = join(__dirname, 'icons.css')
 
 /**
@@ -147,7 +155,7 @@ const target = join(__dirname, 'icons.css')
     const organizedList = organizeIconsList(sources.icons)
 
     for (const prefix in organizedList) {
-      const filename = require.resolve(`@iconify/json/json/${prefix}.json`)
+      const filename = import.meta.resolve(`@iconify/json/json/${prefix}.json`)
 
       sourcesJSON.push({
         filename,

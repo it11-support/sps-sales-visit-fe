@@ -36,14 +36,11 @@ export interface IFilter {
   range: number | undefined
 }
 
-export type IYoYSummary = Record<
-  string,
-  {
+export type IYoYSummary = {
     monthly_summary: IMonthlySummary[];
     top_items: IMonthlySummaryItem[];
     total_sales_all_items: number;
   }
->
 export const useStatisticStore = defineStore('statistic', {
     state: () => ({
         yoy_summary: [] as IYearOnYearStatistic[],

@@ -42,9 +42,13 @@ const statStore = useStatisticStore()
 const props = defineProps<Props>()
 const range = ref<number | undefined>()
 
-const labels = computed(() => statStore.summary[props.companyId]?.monthly_summary.map((item: IMonthlySummary) => item.month))
+onMounted(async () => {
+  console.log(statStore.summary)
+})
+console.log(statStore.summary)
+const labels = computed(() => statStore.summary?.monthly_summary.map((item: IMonthlySummary) => item.month))
 const datasetSales = computed(() => {
-  const summary = statStore.summary[props.companyId]?.monthly_summary
+  const summary = statStore.summary?.monthly_summary
   if (!summary || summary.length === 0) {
     return {
       labels: [],
@@ -71,7 +75,7 @@ const datasetSales = computed(() => {
 })
 
 const topFiveSales = computed(() => {
-  const summary = statStore.summary[props.companyId]?.monthly_summary
+  const summary = statStore.summary?.monthly_summary
   if (!summary || summary.length === 0) return []
 
   const totalByItem: Record<string, number> = {}
@@ -89,12 +93,12 @@ const topFiveSales = computed(() => {
 })
 
 const datasetInvoice = computed(() => {
-  if (!statStore.summary[props.companyId]?.monthly_summary?.length) return []
+  if (!statStore.summary?.monthly_summary?.length) return []
 
   return topFiveSales.value.map((desc, index) => {
     return {
       label: desc.description,
-      data: statStore.summary[props.companyId]?.monthly_summary.map((monthData: IMonthlySummary) => {
+      data: statStore.summary?.monthly_summary.map((monthData: IMonthlySummary) => {
         const item = monthData.items.find(i => i.description === desc.description)
         return item ? item.invoice_count : 0
       }),
@@ -109,7 +113,7 @@ const datasetVolume = computed(() => {
   return topFiveSales.value.map((desc, index) => {
     return {
       label: desc.description,
-      data: statStore.summary[props.companyId]?.monthly_summary.map((monthData: IMonthlySummary) => {
+      data: statStore.summary?.monthly_summary.map((monthData: IMonthlySummary) => {
         const item = monthData.items.find(i => i.description === desc.description)
         return item?.volume ? item.volume : 0
       }),
@@ -125,7 +129,7 @@ const datasetRevenue = computed(() => {
   return topFiveSales.value.map((desc: any, index: number) => {
     return {
       label: desc.description,
-      data: statStore.summary[props.companyId]?.monthly_summary.map((monthData: IMonthlySummary) => {
+      data: statStore.summary?.monthly_summary.map((monthData: IMonthlySummary) => {
         const item = monthData.items.find(i => i.description === desc.description)
         return item ? item.total_sales : 0
       }),
@@ -312,8 +316,8 @@ function getColor(index: number) {
         </div>
 
         <!-- Other statistic components -->
-        <TopSales :id="props.id" :companyId="props.companyId" />
-        <MonthOnMonthStatistic :id="props.id" :companyId="props.companyId"/>
+        <TopSales :id="props.id" :company-id="props.companyId"/>
+        <MonthOnMonthStatistic :id="props.id" :company-id="props.companyId"/>
         <YearOnYearStatistic :id="props.id" />
       </VCardText>
     </AppCardActions>

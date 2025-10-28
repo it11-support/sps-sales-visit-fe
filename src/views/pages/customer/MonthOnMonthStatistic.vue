@@ -25,7 +25,7 @@ onMounted(async () => {
 })
 
 const averageSales = computed(() => {
-  const summaries = statStore.summary[props.companyId]?.monthly_summary ?? []
+  const summaries = statStore.summary?.monthly_summary ?? []
 
   if (summaries.length === 0) return 0
 
@@ -54,7 +54,7 @@ const calculateAverage = (val: number, avg: number): string => {
 }
 
 const averageItems = computed(() => {
-  const summaries = statStore.summary[props.companyId]?.monthly_summary ?? [];
+  const summaries = statStore.summary?.monthly_summary ?? [];
 
   if (summaries.length === 0) return 0;
 
@@ -67,13 +67,13 @@ const averageItems = computed(() => {
 
 
 const maxPurchasedItems = computed(() => {
-  return statStore.summary[props.companyId]?.monthly_summary.reduce((acc: number, summary: IMonthlySummary) => {
+  return statStore.summary?.monthly_summary.reduce((acc: number, summary: IMonthlySummary) => {
     return Math.max(acc, summary.items?.length || 0)
   }, 0)
 })
 
 const maxSales = computed(() => {
-  return statStore.summary[props.companyId]?.monthly_summary.reduce((acc: number, summary: IMonthlySummary) => {
+  return statStore.summary?.monthly_summary.reduce((acc: number, summary: IMonthlySummary) => {
     return Math.max(acc, summary.items?.reduce((sum: number, item: IMonthlySummaryItem) => {
       return sum + (item.total_sales ?? 0)
     }, 0) || 0)
@@ -81,7 +81,7 @@ const maxSales = computed(() => {
 })
 
 const itemCounts = computed(() => {
-  return statStore.summary[props.companyId]?.monthly_summary.reduce((acc: { [month: string]: { count: number, totalSales: number, totalVolume: number } }, data: IMonthlySummary) => {
+  return statStore.summary?.monthly_summary.reduce((acc: { [month: string]: { count: number, totalSales: number, totalVolume: number } }, data: IMonthlySummary) => {
     const month = data.month;
 
     const totalSales = data.items.reduce((sum, item) => sum + item.total_sales, 0);
