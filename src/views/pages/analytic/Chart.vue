@@ -74,6 +74,12 @@ const buildColumnChart = (
   const variableTheme = vuetifyTheme.current.value.variables;
   const labelColor = `rgba(${hexToRgb(currentTheme["on-surface"])},${variableTheme["disabled-opacity"]})`
 
+  const labelType = type === 'mom' ? 'MoM' : 'YoY';
+  const spsData = generateChartData(fieldName, type, 'SPS').map(Number)
+  const bbsData = generateChartData(fieldName, type, 'BBS').map(Number)
+
+  const maxVal = Math.max(...spsData, ...bbsData) * 1.005 // Calculate max label value + 0.5%
+
   const options = {
     chart: {
       height: 450,
@@ -86,7 +92,7 @@ const buildColumnChart = (
       curve: ['straight', 'monotoneCubic'],
     },
     title: {
-      text: `${type.toUpperCase()} ${metricLabel} Summary`,
+      text: `${labelType} ${metricLabel} Summary`,
       align: "left",
       offsetX: 110,
       style: { color: currentTheme["on-background"] },
@@ -99,26 +105,17 @@ const buildColumnChart = (
     },
     yaxis: [
       {
-        seriesName: `SPS ${metricLabel}`,
+        seriesName: `${metricLabel}`,
+        min: 0,
+        max: maxVal,
         labels: { 
           formatter: numberFormatter, 
           style: {
             colors: '#008FFB',
           }, 
         },
-        title: { text: `SPS ${metricLabel}`, style: { color: '#008FFB' } },
+        title: { text: `SPS - BBS ${metricLabel}`, style: { color: '#008FFB' } },
       },
-      {
-       seriesName: `BBS ${metricLabel}`,
-        opposite: true,
-        labels: { 
-          formatter: numberFormatter, 
-          style: {
-            colors: '#00E396D9',
-          }, 
-        },
-        title: { text: `BBS ${metricLabel}`, style: { color: '#00E396D9' } },
-      }
     ],
     tooltip: {
       shared: true,
@@ -167,6 +164,8 @@ const buildLineChart = (
   const variableTheme = vuetifyTheme.current.value.variables;
   const labelColor = `rgba(${hexToRgb(currentTheme["on-surface"])},${variableTheme["disabled-opacity"]})`;
 
+  const labelType = type === 'mom' ? 'MoM' : 'YoY';
+
   const options = {
     chart: {
       height: 450,
@@ -179,7 +178,7 @@ const buildLineChart = (
       curve: ["monotoneCubic", "monotoneCubic"],
     },
     title: {
-      text: `MoM ${metricLabel} Growth`,
+      text: `${labelType} ${metricLabel} Growth`,
       align: "left",
       offsetX: 110,
       style: { color: currentTheme["on-background"] },
@@ -192,14 +191,14 @@ const buildLineChart = (
     },
     yaxis: [
       {
-        seriesName: `MoM ${metricLabel} Growth`,
+        seriesName: `${labelType} ${metricLabel} Growth`,
         axisTicks: { show: true },
         axisBorder: { show: true, color: "#FEB019" },
         labels: {
           style: { colors: "#FEB019" },
           formatter: percentFormatter,
         },
-        title: { text: `MoM ${metricLabel} Growth (%)`, style: { color: "#FEB019" } },
+        title: { text: `${labelType} ${metricLabel} Growth (%)`, style: { color: "#FEB019" } },
       },
     ],
     tooltip: {
@@ -221,13 +220,13 @@ const buildLineChart = (
 
   const series = [
     {
-      name: `SPS MoM ${metricLabel} Growth`,
+      name: `SPS ${labelType} ${metricLabel} Growth`,
       type: "line",
       data: generateLineChartData(fieldName, type, 'SPS'),
       yAxisIndex: 0,
     },
     {
-      name: `BBS MoM ${metricLabel} Growth`,
+      name: `BBS ${labelType} ${metricLabel} Growth`,
       type: "line",
       data: generateLineChartData(fieldName, type, 'BBS'),
       yAxisIndex: 0,
