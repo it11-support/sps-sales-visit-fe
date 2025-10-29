@@ -37,6 +37,9 @@ const formData = ref<any>({
   status: 'assigned',
 })
 
+let scrollTimeout: any
+
+
 const salesPersonName = data.value.sales_person ? data.value.sales_person.SlpName : '-'
 
 const items = [
@@ -56,8 +59,6 @@ onMounted(async () => {
   const company = data.value.CompanyId === COMPANIES.SPS ? COMPANIES.BBS : COMPANIES.SPS
   const salesPersonId = data.value.sales_person?.id ?? null
   await customerStore.fetchCustomerOptions(company, salesPersonId!)
-  console.log(formData.value)
-  console.log(data.value.id)
 })
 
 watch(showScheduleForm, (val) => {
@@ -149,9 +150,15 @@ onBeforeUnmount(() => {
 })
 
 const checkSticky = () => {
-  if (!stickyRef.value) return
-  const top = stickyRef.value.getBoundingClientRect().top
-  isSticky.value = top <= 62
+  clearTimeout(scrollTimeout)
+  scrollTimeout = setTimeout(() => {
+    if (!stickyRef.value) return
+    const top = stickyRef.value.getBoundingClientRect().top
+    const newState = top <= 64
+    if (newState !== isSticky.value) {
+      isSticky.value = newState
+    }
+  }, 50)
 }
 
 </script>

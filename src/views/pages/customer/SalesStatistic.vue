@@ -42,11 +42,9 @@ const statStore = useStatisticStore()
 const props = defineProps<Props>()
 const range = ref<number | undefined>()
 
-onMounted(async () => {
-  console.log(statStore.summary)
-})
-console.log(statStore.summary)
-const labels = computed(() => statStore.summary?.monthly_summary.map((item: IMonthlySummary) => item.month))
+const labels = computed(() =>
+  statStore.summary?.monthly_summary?.map((item: IMonthlySummary) => item.month) ?? []
+)
 const datasetSales = computed(() => {
   const summary = statStore.summary?.monthly_summary
   if (!summary || summary.length === 0) {

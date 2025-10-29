@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { useApi } from '@/composables/useApi';
 import SalesStatistic from '@/views/pages/customer/SalesStatistic.vue';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { ISalesInvoice } from '@/@core/typedefs/salesinvoice';
-import CustomerOverview from '@/views/pages/customer/CustomerOverview.vue';
-import SalesInvoice from '@/views/pages/customer/SalesInvoice.vue';
 import { useCustomerStore, useStatisticStore } from '@/@core/stores';
 import { ICustomerData } from '@/@core/typedefs';
+import CustomerOverview from '@/views/pages/customer/CustomerOverview.vue';
+import SalesInvoice from '@/views/pages/customer/SalesInvoice.vue';
 
 
 const route = useRoute('customers-view-customerId')
@@ -46,14 +44,6 @@ watch(searchQuery, (newVal) => {
     <CustomerOverview :data="customer" :onFinish="fetchCustomer"/>
     <SalesStatistic :id="id" :companyId="customer?.CompanyId" />
     <SalesInvoice :id="id" />
-  </VRow>
-  <div v-else-if="!customerStore.loadingDetail">
-    <VAlert
-      type="error"
-      variant="tonal"
-    >
-      Customer with id  {{ id }} not found!
-    </VAlert>
-  </div>
+  </VRow> 
   </section>
 </template>

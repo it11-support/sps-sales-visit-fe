@@ -95,7 +95,7 @@ const handleRefresh = (stopLoading: () => void) => {
 
 <template>
   <CustomerOverview :data="customer" />
-  <SalesStatistic :id="router.params.customerId" :summaries="summaries" />
+  <SalesStatistic :id="router.params.customerId" :companyId="customer.companyId" />
   <VCol cols="12">
     <AppCardActions
       :loading="configStore.loading"
