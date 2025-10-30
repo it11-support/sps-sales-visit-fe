@@ -148,6 +148,20 @@ watch(
   },
   { deep: true }
 )
+watch(selectedCompanies, 
+  (val, val1) => {
+    if(val.length !== val1.length) {
+      filters.value = {
+        ...filters.value,
+        sales_person_id: null,
+        group_name: null,
+        payment_term: null,
+        city: null
+      }
+    }
+  },
+  { deep: true }
+)
 </script>
 
 <template>
