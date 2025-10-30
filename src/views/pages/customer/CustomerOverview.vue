@@ -38,7 +38,8 @@ const formData = ref<any>({
 })
 
 let scrollTimeout: any
-
+const ENTER_THRESHOLD = 64 
+const EXIT_THRESHOLD = 80 
 
 const salesPersonName = data.value.sales_person ? data.value.sales_person.SlpName : '-'
 
@@ -67,7 +68,7 @@ watch(showScheduleForm, (val) => {
   }
 })
 
-const title = computed(() => `${data.value.CardName.toUpperCase()}`)
+const title = computed(() => `${data.value.CardName.toUpperCase()} (${data.value.CompanyId})`)
 
 const handleShowScheduleForm = () => {
   if(data.value.sales_person?.user == null) {
@@ -154,9 +155,11 @@ const checkSticky = () => {
   scrollTimeout = setTimeout(() => {
     if (!stickyRef.value) return
     const top = stickyRef.value.getBoundingClientRect().top
-    const newState = top <= 64
-    if (newState !== isSticky.value) {
-      isSticky.value = newState
+
+    if (!isSticky.value && top <= ENTER_THRESHOLD) {
+      isSticky.value = true
+    } else if (isSticky.value && top > EXIT_THRESHOLD) {
+      isSticky.value = false
     }
   }, 50)
 }

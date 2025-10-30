@@ -130,6 +130,40 @@ const buildColumnChart = (
           return numberFormatter(value);
         },
       },
+      custom: function({ series, seriesIndex, dataPointIndex, w }: any) {
+        const labels = w.config.series.map((s: any) => s.name);
+        const values = series.map((s: any) => s[dataPointIndex] || 0);
+        const total = values.reduce((a: number, b: number) => a + b, 0);
+        const xLabel = w.globals.categoryLabels[dataPointIndex]; 
+        
+        let html = `<div style="padding:8px; width:200px;">`;
+        html += `<div style="font-weight:bold; margin-bottom:4px;">${xLabel}</div>`;
+
+        labels.forEach((name: string, i: number) => {
+          const color = w.globals.colors[i] || '#999';
+
+          html += `
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};"></span>
+                <span>${name}</span>
+              </div>
+              <span>${numberFormatter(values[i])}</span>
+            </div>`;
+        });
+
+        if(metricLabel !== 'Customer'){
+          html += `<hr style="margin:4px 0;"/>`;
+          html += `
+            <div style="display:flex;justify-content:space-between;font-weight:bold;color:#ff4d4d;">
+              <span>Total</span>
+              <span>${numberFormatter(total)}</span>
+            </div>
+          `;
+          html += `</div>`;
+        }
+        return html;
+      }
     },
     legend: {
       horizontalAlign: "left",
@@ -149,7 +183,7 @@ const buildColumnChart = (
       type: "column",
       data: generateChartData(fieldName, type, 'BBS'),
       yAxisIndex: 0,
-    },
+    }
   ];
   return {options, series}
 }

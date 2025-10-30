@@ -1,13 +1,13 @@
 import { IActivity, IActivityReport, ICompetitor, ICustomerData, IProduct, IReasonQtyDrop, SortItem } from "@/@core/types"
 
-interface Filters {
+export interface Filters {
   search?: string
-  sales_person_id?: number
-  customer_id?: number
+  sales_person_id?: number | null
+  customer_id?: number | null
   per_page: number
   page: number
   sort_options: SortItem[]
-  status?: string
+  status?: string | null
   start_date?: Date | string
   end_date?: Date | string
   activity_type_id?: number,
@@ -207,7 +207,6 @@ export const useActivityStore = defineStore('activity', {
         customer.CompanyId
       ))
 
-      console.log(data.value.data)
       data.value.data.assignment_details?.forEach((report: any) => {
         const companyId = report.CompanyId
         return reports[companyId] = {

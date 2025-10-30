@@ -518,17 +518,6 @@ const handleViewOnMap = () => {
           <VCardText id="scrollTarget">
             <VRow>
               <VCol cols="12" lg="6" md="6" sm="12">
-                <AppSelect
-                  v-model="activityStore.currentReport.reason_qty_drop_id"
-                  :items="activityStore.reasonQtyDropOptions"
-                  label="Reason Quantity Drop"
-                  placeholder="Reason Quantity Drop"
-                  clearable
-                  clear-icon="tabler-x"
-                  :rules="[requiredValidator]"
-                />
-              </VCol>
-              <VCol cols="12" lg="6" md="6" sm="12">
                 <AppSelect              
                   v-model="activityStore.currentReport.activity_purpose"
                   @update:model-value="activityStore.updateForm({ activity_purpose_id: $event })"
@@ -540,6 +529,17 @@ const handleViewOnMap = () => {
                   :rules="[requiredValidator]"
                 />
               </VCol>
+              <VCol cols="12" lg="6" md="6" sm="12">
+                <AppSelect
+                  v-model="activityStore.currentReport.reason_qty_drop_id"
+                  :items="activityStore.reasonQtyDropOptions"
+                  label="Reason Quantity Drop"
+                  placeholder="Reason Quantity Drop"
+                  clearable
+                  clear-icon="tabler-x"
+                  :rules="[requiredValidator]"
+                />
+              </VCol>              
             </VRow>
             <VRow>
               <VCol cols="12" lg="6" md="6" sm="12">

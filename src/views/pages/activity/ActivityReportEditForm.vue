@@ -13,7 +13,7 @@ interface Props {
 }
 
 export type CompetitorOption = ICompetitor & {
-  isNew?: boolean
+  isNew?: boolean;
   rawName?: string
 }
 const props = defineProps<Props>()
@@ -520,23 +520,23 @@ const handleViewOnMap = () => {
           <VCardText id="scrollTarget">
             <VRow>
               <VCol cols="12" lg="6" md="6" sm="12">
-                <AppSelect
-                  v-model="activityStore.currentReport.reason_qty_drop_id"
-                  :items="activityStore.reasonQtyDropOptions"
-                  label="Reason Quantity Drop"
-                  placeholder="Reason Quantity Drop"
-                  clearable
-                  clear-icon="tabler-x"
-                  :rules="[requiredValidator]"
-                />
-              </VCol>
-              <VCol cols="12" lg="6" md="6" sm="12">
                 <AppSelect              
                   v-model="activityStore.currentReport.activity_purpose"
                   @update:model-value="activityStore.updateForm({ activity_purpose_id: $event })"
                   :items="activityStore.activityPuposesOptions"
                   label="Activity Purpose"
                   placeholder="Activity Purpose"
+                  clearable
+                  clear-icon="tabler-x"
+                  :rules="[requiredValidator]"
+                />
+              </VCol>
+              <VCol cols="12" lg="6" md="6" sm="12">
+                <AppSelect
+                  v-model="activityStore.currentReport.reason_qty_drop_id"
+                  :items="activityStore.reasonQtyDropOptions"
+                  label="Reason Quantity Drop"
+                  placeholder="Reason Quantity Drop"
                   clearable
                   clear-icon="tabler-x"
                   :rules="[requiredValidator]"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useCustomerStore } from '@/@core/stores/customer'
+import { Filters, useCustomerStore } from '@/@core/stores/customer'
 import { useSalesPersonStore } from '@/@core/stores/sales-person'
 
 const customerStore = useCustomerStore()
@@ -26,6 +26,13 @@ const loadingPaymentOptions = ref(true)
 const loadingPriceListOptions = ref(true)
 const loadingCityOptions = ref(true)
 
+const filters = ref<Partial<Filters>>({
+  sales_person_id: null,
+  group_name: null,
+  payment_term: null,
+  city: null
+})
+
 watch(debouncedQuery, (val) => {
   customerStore.updateFilters({ search: val })
 })
@@ -33,7 +40,7 @@ watch(debouncedQuery, (val) => {
 // Headers
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
-  { title: 'Compnay', key: 'CompanyId' },
+  { title: 'Company', key: 'CompanyId' },
   { title: 'Customer', key: 'CardName' },
   { title: 'Sales Person', key: 'SlpName' },
   { title: 'Group Name', key: 'GroupName' },
@@ -123,8 +130,6 @@ const updateSelected = (val: string) => {
   customerStore.updateFilters({ companyIds: newValue })
 }
 
-
-
 const selectedCompanies = computed<string[]>({
   get() {
     return customerStore.filters.companyIds ?? []
@@ -136,6 +141,13 @@ const selectedCompanies = computed<string[]>({
   }
 })
 
+watch(
+  filters,
+  (newVal) => {
+    customerStore.updateFilters({ ...newVal})
+  },
+  { deep: true }
+)
 </script>
 
 <template>
@@ -185,25 +197,31 @@ const selectedCompanies = computed<string[]>({
         <VRow>
           <!-- 👉 Select Role -->
           <VCol cols="12" sm="4" v-if="isAdmin || isSpv">
-            <AppSelect 
-              v-model="customerStore.filters.sales_person_id"
-              @update:model-value="customerStore.updateFilters({ sales_person_id: $event })"
+            <AppCombobox 
+              v-model="filters.sales_person_id"          
               placeholder="Filter by sales person" 
-              :items="salesStore.salesPersonOptions.filter(item => item.user !== null)"
+              :items="salesStore.salesPersonOptions.filter(item => item.user !== null).filter(item => selectedCompanies.includes(item.type))"
               clearable
               clear-icon="tabler-x" 
               :loading="loadingSalesPerson"
+              :return-object="false"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
             />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect 
-              v-model="customerStore.filters.group_name"
-              @update:model-value="customerStore.updateFilters({ group_name: $event })"
-              placeholder="Filter by group name"
+            <AppCombobox 
+              v-model="filters.group_name"
+              placeholder="Filter by group name" 
               :items="customerStore.groupNameOptions"
               clearable
               clear-icon="tabler-x" 
               :loading="loadingGroupName"
+              :return-object="false"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
             />
           </VCol>
 
@@ -218,14 +236,17 @@ const selectedCompanies = computed<string[]>({
             />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect
-              v-model="customerStore.filters.payment_term"
-              @update:model-value="customerStore.updateFilters({ payment_term: $event })"
+            <AppCombobox
+              v-model="filters.payment_term"
               placeholder="Filter by Payment Term"
               :items="customerStore.paymentTermOptions"
               clearable
               clear-icon="tabler-x" 
               :loading="loadingPaymentOptions"
+              :return-object="false"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
             />
           </VCol>
           <VCol cols="12" md="4" sm="4">
@@ -240,14 +261,17 @@ const selectedCompanies = computed<string[]>({
             />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect
-              v-model="customerStore.filters.city"
-              @update:model-value="customerStore.updateFilters({ city: $event })"
+            <AppCombobox
+              v-model="filters.city"
               placeholder="Filter by City / Area"
               :items="customerStore.cityOptions" 
               clearable 
               clear-icon="tabler-x" 
               :loading="loadingCityOptions"
+              :return-object="false"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
             />
           </VCol>
         </VRow>

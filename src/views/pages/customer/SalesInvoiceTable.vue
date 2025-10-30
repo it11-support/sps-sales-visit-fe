@@ -103,14 +103,22 @@ const calculateTotalWeight = (items: any): string => {
           <td v-if="groupBy === 'ItemCode'" :colspan="1"  class="text-left">
            {{  }}
           </td>            
-          <td :colspan="groupBy === 'DocNum' ? 3 : 2"  class="text-left">
+          <td :colspan="groupBy === 'ItemCode' ? 2 : 3"  class="text-left">
             {{ formatDate(item.items[0].value.DocDate, false, { day: '2-digit', month: 'short', year: 'numeric'})  }}
           </td>
-          <td class="text-left font-weight-bold text-primary">
+          
+          <td  class="text-left font-weight-bold text-primary">
             {{ calculateTotalWeight(item.items) }}
           </td>
+
           <td></td>
           <td class="text-left font-weight-bold text-primary">
+            {{ Number(item.items[0].value.DiscLine) }}
+          </td>
+          <td class="text-left font-weight-bold text-primary">
+            {{ Number(item.items[0].value.DiscTotal) }}
+          </td>
+          <td  class="text-left font-weight-bold text-primary">
             {{ calculateTotalSales(item.items) }}
           </td>
         </tr>        
@@ -132,6 +140,12 @@ const calculateTotalWeight = (items: any): string => {
        </template>
        <template #item.PriceBefDisc="{ item }">
          {{ formatMoney(item.PriceBefDisc) }}
+       </template>
+       <template #item.DiscLine="{ item }">
+         {{ Number(item.DiscLine) }}
+       </template>
+        <template #item.DiscTotal="{ item }">
+         {{ Number(item.DiscTotal) }}
        </template>
        <template #item.TotalSales="{ item }">
          {{ formatMoney(item.TotalSales) }}

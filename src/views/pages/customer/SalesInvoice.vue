@@ -30,6 +30,8 @@ const headers = [
   { title: 'Item Code', value: 'ItemCode', sortable: true },
   { title: 'Volume (Kg)', value:'total_weight', sortable: true },
   { title: 'Price', value: 'PriceBefDisc', sortable: true },
+  { title: 'Discount Line', value: 'DiscLine', sortable: true},
+  { title: 'Discount Total', value: 'DiscTotal', sortable: true},
   { title: 'Total', value: 'TotalSales', sortable: true },
 ]
 

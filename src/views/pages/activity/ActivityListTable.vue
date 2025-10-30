@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useActivityStore, useAuthStore } from '@/@core/stores';
+import { Filters, useActivityStore, useAuthStore } from '@/@core/stores';
 
 const activityStore = useActivityStore()
 const authStore = useAuthStore()
@@ -13,6 +13,12 @@ const debouncedQuery = useDebounce(searchQuery, 400)
 const router = useRouter()
 const showFilters = ref(false)
 const loadingSalesPersonsOptions = ref(true)
+
+const filters = ref<Partial<Filters>>({
+  sales_person_id: null,
+  customer_id: null,
+  status: null
+})
 
 const STATUS = {
   ASSIGNED: 'assigned',
@@ -63,6 +69,13 @@ watch(debouncedQuery, (val) => {
   activityStore.updateFilters({ search: val })
 })
 
+watch(
+  filters,
+  (newVal) => {
+    activityStore.updateFilters({ ...newVal})
+  },
+  { deep: true }
+)
 const getStatus = (status: string) => {
     switch (status) {
       case STATUS.ASSIGNED:
@@ -117,15 +130,18 @@ const handleCheckIn = async(id: number) => {
           cols="12"
           sm="4"
         >
-          <AppSelect 
-            v-model="activityStore.filters.sales_person_id"
+          <AppCombobox 
+            v-model="filters.sales_person_id"
             :disabled="loadingSalesPersonsOptions"
-            :loading="loadingSalesPersonsOptions"
-            @update:model-value="activityStore.updateFilters({ sales_person_id: $event })"
+            :loading="loadingSalesPersonsOptions"          
             placeholder="Filter by sales person" 
             :items="activityStore.salesPersonsOptions" 
             clearable 
             clear-icon="tabler-x"
+            :return-object="false"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
           />
         </VCol>
         <VCol 
@@ -133,20 +149,22 @@ const handleCheckIn = async(id: number) => {
           cols="12"
           sm="4"
         >
-          <AppSelect 
-            v-model="activityStore.filters.customer_id"
-            @update:model-value="activityStore.updateFilters({ customer_id: $event })"
+          <AppCombobox 
+            v-model="filters.customer_id"
             placeholder="Filter by Customer" 
             :items="activityStore.customerOptions"
             clearable 
             clear-icon="tabler-x"
+            :return-object="false"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
           />
         </VCol>
         <VCol cols="12" sm="4">
-          <AppSelect 
-            v-model="activityStore.filters.status"
+          <AppCombobox 
+            v-model="filters.status"
             :disabled="activityStore.loading"
-            @update:model-value="activityStore.updateFilters({ status: $event })"
             placeholder="Filter by status" 
             :items="[
               { title: 'Assigned', value: 'assigned' },
@@ -159,6 +177,10 @@ const handleCheckIn = async(id: number) => {
             ]"
             clearable 
             clear-icon="tabler-x"
+            :return-object="false"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
           />          
         </VCol>
         <VCol cols="12" sm="4">

@@ -250,10 +250,10 @@ const submitHandler = async () => {
         <VRow>
           <VCol cols="12" lg="6" md="6" sm="12">
             <AppSelect
-              v-model="report.reason_qty_drop_id"
-              :items="activityStore.reasonQtyDropOptions"
-              label="Reason Quantity Drop"
-              placeholder="Reason Quantity Drop"
+              v-model="report.activity_purpose_id"              
+              :items="activityStore.activityPuposesOptions"
+              label="Activity Purpose"
+              placeholder="Activity Purpose"
               clearable
               clear-icon="tabler-x"
               :rules="[requiredValidator]"
@@ -261,10 +261,10 @@ const submitHandler = async () => {
           </VCol>
           <VCol cols="12" lg="6" md="6" sm="12">
             <AppSelect
-              v-model="report.activity_purpose_id"              
-              :items="activityStore.activityPuposesOptions"
-              label="Activity Purpose"
-              placeholder="Activity Purpose"
+              v-model="report.reason_qty_drop_id"
+              :items="activityStore.reasonQtyDropOptions"
+              label="Reason Quantity Drop"
+              placeholder="Reason Quantity Drop"
               clearable
               clear-icon="tabler-x"
               :rules="[requiredValidator]"

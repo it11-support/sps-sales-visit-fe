@@ -9,15 +9,15 @@ interface Meta {
   total: number
 }
 
-interface Filters {
+export interface Filters {
   search?: string
   status?: string
-  sales_person_id?: number
+  sales_person_id?: number | null
   team_id?: number
-  group_name?: string
-  payment_term?: string
+  group_name?: string | null
+  payment_term?: string | null
   price_list?: string
-  city?: string
+  city?: string | null
   per_page: number
   page: number
   sort_options: SortItem[]
