@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 // import ActivityReportEditForm from '@/views/pages/activity/ActivityReportEditForm.vue';
-import ActivityReportNewForm from '@/views/pages/activity/ActivityReportNewForm.vue';
+import ActivityReportForm from '@/views/pages/activity/ActivityReportForm.vue';
 const router = useRoute('activity-id-report-edit' as any)
 const assignmentId = router.params.id
 
@@ -8,5 +8,5 @@ const assignmentId = router.params.id
 
 
 <template>
-  <ActivityReportNewForm :assignment-id="assignmentId"/>
+  <ActivityReportForm :assignment-id="assignmentId"/>
 </template>
