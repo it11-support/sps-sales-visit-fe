@@ -18,12 +18,6 @@ const numberFormatter = (val: number) => {
   return val
 }
 
-watch(() => configStore.theme, (val) => {
-    console.log(val)
-  }, 
-  { deep: true }
-)
-
 
 const percentFormatter = (val: number) =>
   val !== null && val !== undefined ? `${val.toFixed(2)} %` : '-'
@@ -83,8 +77,8 @@ const buildColumnChart = (
   const currentTheme = vuetifyTheme.current.value.colors;
   const variableTheme = vuetifyTheme.current.value.variables;
   const labelColor = `rgba(${hexToRgb(currentTheme["on-surface"])},${variableTheme["disabled-opacity"]})`
+  const isDark = vuetifyTheme.global.name.value === 'dark'
 
-  const isDark = configStore.theme === 'dark'
   const labelType = type === 'mom' ? 'MoM' : 'YoY';
   const spsData = generateChartData(fieldName, type, 'SPS').map(Number)
   const bbsData = generateChartData(fieldName, type, 'BBS').map(Number)
@@ -301,7 +295,7 @@ const yoyCustomerLineChartConfig = buildLineChart('Customer', 'active_customers'
 
 
 const chartConfigs = computed(() => {
-  const isDark = configStore.theme === 'dark'
+  const isDark = vuetifyTheme.global.name.value === 'dark'
 
   const withTheme = (config: any) => ({
     ...config,
