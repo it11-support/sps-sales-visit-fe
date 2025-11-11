@@ -12,7 +12,7 @@ interface Meta {
 export interface Filters {
   search?: string
   status?: string
-  sales_person_id?: number | null
+  sales_person_id: number[]
   team_id?: number
   group_name?: string | null
   payment_term?: string | null
@@ -57,7 +57,7 @@ export const useCustomerStore = defineStore('customer', {
     filters: {
       search: '',
       status: undefined,
-      sales_person_id: undefined,
+      sales_person_id: [],
       group_name: undefined,
       payment_term: undefined,
       price_list: undefined,
@@ -156,9 +156,10 @@ export const useCustomerStore = defineStore('customer', {
       }))
       this.loadingList = false
     },
-     async initialize(salesPersonId?: number, teamId?: number) {
-      if(salesPersonId) {
-        await this.updateFilters({ sales_person_id: salesPersonId }, false)
+     async initialize(salesPersonIds?: number[], teamId?: number) {
+
+      if(salesPersonIds) {
+        await this.updateFilters({ sales_person_id: salesPersonIds }, false)
       }
       if(teamId) {
         await this.updateFilters({ team_id: teamId }, false)

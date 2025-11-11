@@ -1,12 +1,15 @@
 <script lang="ts" setup>
+import { useConfigStore } from '@/@core/stores';
 import { useSalesSummaryStore } from '@/@core/stores/sales';
 import { ISalesSummary } from '@/@core/typedefs';
 import { useTheme } from 'vuetify';
+const { proxy } = getCurrentInstance()!
 
 const vuetifyTheme = useTheme()
 
 const currentTab = ref<number>(0)
 const salesSummaryStore = useSalesSummaryStore()
+const configStore = useConfigStore()
 
 const numberFormatter = (val: number) => {
   if (val >= 1_000_000_000) return (val / 1_000_000_000).toFixed(2) + ' B'
@@ -14,6 +17,13 @@ const numberFormatter = (val: number) => {
   if (val >= 1_000) return (val / 1_000).toFixed(2) + ' K'
   return val
 }
+
+watch(() => configStore.theme, (val) => {
+    console.log(val)
+  }, 
+  { deep: true }
+)
+
 
 const percentFormatter = (val: number) =>
   val !== null && val !== undefined ? `${val.toFixed(2)} %` : '-'
@@ -56,13 +66,13 @@ const generateChartData = (
   fieldName: "revenue" | "volume" | "active_customers",
   type: 'mom' | 'yoy',
   company: 'SPS' | 'BBS'
-) =>  getCompanyField(type, company, fieldName).value as string[]
+) =>  getCompanyField(type, company, fieldName).value.map(Number)
 
 const generateLineChartData = (
   fieldName: "revenue" | "volume" | "active_customers",
   type: 'mom' | 'yoy',
   company: 'SPS' | 'BBS'
-) => getCompanyField(type, company, `${type}_${fieldName}`).value as string[]
+) => getCompanyField(type, company, `${type}_${fieldName}`).value.map(Number)
 
 const buildColumnChart = (
   metricLabel: "Revenue" | "Volume" | "Customer",
@@ -74,6 +84,7 @@ const buildColumnChart = (
   const variableTheme = vuetifyTheme.current.value.variables;
   const labelColor = `rgba(${hexToRgb(currentTheme["on-surface"])},${variableTheme["disabled-opacity"]})`
 
+  const isDark = configStore.theme === 'dark'
   const labelType = type === 'mom' ? 'MoM' : 'YoY';
   const spsData = generateChartData(fieldName, type, 'SPS').map(Number)
   const bbsData = generateChartData(fieldName, type, 'BBS').map(Number)
@@ -85,7 +96,7 @@ const buildColumnChart = (
       height: 450,
       type: "line",
       stacked: false,
-    },
+    }, colors: ['#008FFB', '#FB8C00'],
     dataLabels: { enabled: false },
     stroke: {
       width: [1, 2, 2],
@@ -95,12 +106,12 @@ const buildColumnChart = (
       text: `${labelType} ${metricLabel} Summary`,
       align: "left",
       offsetX: 110,
-      style: { color: currentTheme["on-background"] },
+      style: { color:  isDark ? '#fff' : '#111' },
     },
     xaxis: {
       categories: months,
       labels: {
-        style: { colors: labelColor, fontSize: "0.8125rem" },
+        style: { colors: isDark ? '#ccc' : '#333', fontSize: "0.8125rem" },
       },
     },
     yaxis: [
@@ -155,7 +166,7 @@ const buildColumnChart = (
         if(metricLabel !== 'Customer'){
           html += `<hr style="margin:4px 0;"/>`;
           html += `
-            <div style="display:flex;justify-content:space-between;font-weight:bold;color:#ff4d4d;">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;">
               <span>Total</span>
               <span>${numberFormatter(total)}</span>
             </div>
@@ -168,7 +179,7 @@ const buildColumnChart = (
     legend: {
       horizontalAlign: "left",
       offsetX: 40,
-      labels: { colors: "#ff5722" },
+      labels: { colors: "#fff" },
     },
   }
   const series = [
@@ -206,6 +217,7 @@ const buildLineChart = (
       type: "line",
       stacked: false,
     },
+    colors: ['#008FFB', '#FB8C00'],
     dataLabels: { enabled: false },
     stroke: {
       width: [3, 3],
@@ -227,12 +239,12 @@ const buildLineChart = (
       {
         seriesName: `${labelType} ${metricLabel} Growth`,
         axisTicks: { show: true },
-        axisBorder: { show: true, color: "#FEB019" },
+        axisBorder: { show: true, color: "#008FFB" },
         labels: {
-          style: { colors: "#FEB019" },
+          style: { colors: "#008FFB" },
           formatter: percentFormatter,
         },
-        title: { text: `${labelType} ${metricLabel} Growth (%)`, style: { color: "#FEB019" } },
+        title: { text: `${labelType} ${metricLabel} Growth (%)`, style: { color: "#008FFB" } },
       },
     ],
     tooltip: {
@@ -248,7 +260,7 @@ const buildLineChart = (
     legend: {
       horizontalAlign: "left",
       offsetX: 40,
-      labels: { colors: "#ff5722" },
+      labels: { colors: "#fff" },
     },
   };
 
@@ -289,14 +301,50 @@ const yoyCustomerLineChartConfig = buildLineChart('Customer', 'active_customers'
 
 
 const chartConfigs = computed(() => {
+  const isDark = configStore.theme === 'dark'
+
+  const withTheme = (config: any) => ({
+    ...config,
+    options: {
+      ...config.options,
+   
+      title: {
+        ...config.options.title,
+        style: { color: isDark ? '#fff' : '#2f2b3de6' },
+      },
+      xaxis: {
+        ...config.options.xaxis,
+        labels: {
+          ...config.options.xaxis.labels,
+          style: { colors: isDark ? '#ccc' : '#2f2b3de6' },
+        },
+      },
+      yaxis: config.options.yaxis?.map((y: any) => ({
+        ...y,
+        labels: {
+          ...y.labels,
+          style: { colors: isDark ? '#ccc' : '#2f2b3de6' },
+        },
+        title: {
+          ...y.title,
+          style: { color: isDark ? '#fff' : '#2f2b3de6' },
+        },
+      })),
+      legend: {
+        ...config.options.legend,
+        labels: { colors: isDark ? '#fff' : '#2f2b3de6' },
+      },
+    },
+  })
+
   return [
     {
       title: 'Revenue',
       icon: 'tabler-coin',
-      momBarOptions: momRevenueChartConfig.options,
-      yoyBarOptions: yoyRevenueChartConfig.options,
-      momLineOptions: momRevenueLineChartConfig.options,
-      yoyLineOptions: yoyRevenueLineChartConfig.options,
+      momBarOptions: withTheme(momRevenueChartConfig).options,
+      yoyBarOptions: withTheme(yoyRevenueChartConfig).options,
+      momLineOptions: withTheme(momRevenueLineChartConfig).options,
+      yoyLineOptions: withTheme(yoyRevenueLineChartConfig).options,
       momBarSeries: momRevenueChartConfig.series,
       yoyBarSeries: yoyRevenueChartConfig.series,
       momLineSeries: momRevenueLineChartConfig.series,
@@ -305,10 +353,10 @@ const chartConfigs = computed(() => {
     {
       title: 'Volume',
       icon: 'tabler-chart-bar',
-      momBarOptions: momVolumeChartConfig.options,
-      yoyBarOptions: yoyVolumeChartConfig.options,
-      momLineOptions: momVolumeLineChartConfig.options,
-      yoyLineOptions: yoyVolumeLineChartConfig.options,
+      momBarOptions: withTheme(momVolumeChartConfig).options,
+      yoyBarOptions: withTheme(yoyVolumeChartConfig).options,
+      momLineOptions: withTheme(momVolumeLineChartConfig).options,
+      yoyLineOptions: withTheme(yoyVolumeLineChartConfig).options,
       momBarSeries: momVolumeChartConfig.series,
       yoyBarSeries: yoyVolumeChartConfig.series,
       momLineSeries: momVolumeLineChartConfig.series,
@@ -317,10 +365,10 @@ const chartConfigs = computed(() => {
       {
       title: 'Customers',
       icon: 'tabler-users',
-      momBarOptions: momCustomerChartConfig.options,
-      yoyBarOptions: yoyCustomerChartConfig.options,
-      momLineOptions: momCustomerLineChartConfig.options,
-      yoyLineOptions: yoyCustomerLineChartConfig.options,
+      momBarOptions: withTheme(momCustomerChartConfig).options,
+      yoyBarOptions: withTheme(yoyCustomerChartConfig).options,
+      momLineOptions: withTheme(momCustomerLineChartConfig).options,
+      yoyLineOptions: withTheme(yoyCustomerLineChartConfig).options,
       momBarSeries: momCustomerChartConfig.series,
       yoyBarSeries: yoyCustomerChartConfig.series,
       momLineSeries: momCustomerLineChartConfig.series,
@@ -371,13 +419,13 @@ const chartConfigs = computed(() => {
     <div class="chart-scroll-wrapper">
       <div class="chart-column" v-for="key in ['momBar', 'momLine', 'yoyBar', 'yoyLine']">
        <VueApexCharts
+        :key="configStore.theme + key"
         :ref="key + 'RefVueApexChart'"
         :options="(chartConfigs[Number(currentTab)] as any)[`${key}Options`]"
         :series="(chartConfigs[Number(currentTab)] as any)[`${key}Series`]"
         height="400"
         :width=" key === 'yoyBar' || key === 'yoyLine' ? 600 : 800"
       />
-
       </div>
     </div>
 </template>

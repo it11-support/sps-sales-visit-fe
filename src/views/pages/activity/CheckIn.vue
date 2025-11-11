@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useActivityStore, useConfigStore } from '@/@core/stores';
-import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const modalProps = defineProps<{
   show: boolean
@@ -157,7 +157,7 @@ const handleSubmit = async () => {
       toggleModal()
       await activityStore.fetchActivityReport(modalProps.assignmentId.toString())
       await activityStore.fetchActivityById(modalProps.assignmentId.toString())
-      await router.push(`/activity/${modalProps.assignmentId}/report/edit`)
+      await router.push(`/activity/${modalProps.assignmentId}/report`)
     }
   } catch (err) {
     console.error(err)

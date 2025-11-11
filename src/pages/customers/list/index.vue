@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Filters, useCustomerStore } from '@/@core/stores/customer'
 import { useSalesPersonStore } from '@/@core/stores/sales-person'
+import { ISalesPerson } from '@/@core/typedefs'
 
 const customerStore = useCustomerStore()
 const salesStore = useSalesPersonStore()
@@ -27,7 +28,7 @@ const loadingPriceListOptions = ref(true)
 const loadingCityOptions = ref(true)
 
 const filters = ref<Partial<Filters>>({
-  sales_person_id: null,
+  sales_person_id: [],
   group_name: null,
   payment_term: null,
   city: null
@@ -65,7 +66,11 @@ onMounted(async() => {
   } else if(isSpv.value) {
     await customerStore.initialize(undefined, user.value.team_id)
   } else {
-    await customerStore.initialize(user.value.sales_person_id)
+    const ids = user.value.sales_person
+      .filter((sp: ISalesPerson) => selectedCompanies.value.includes(sp.CompanyId))
+      .map((sp: ISalesPerson) => sp.SlpCode)
+
+    await customerStore.initialize(ids)
   }
   salesStore.updateQuery({ per_page: -1, page: 1 })
 })
@@ -144,16 +149,32 @@ const selectedCompanies = computed<string[]>({
 watch(
   filters,
   (newVal) => {
-    customerStore.updateFilters({ ...newVal})
+    const isNotAdmin = !isAdmin.value && !isSpv.value
+    const finalSalesPersonIds = isNotAdmin
+      ? user.value.sales_person
+          .filter((sp: ISalesPerson) =>
+            selectedCompanies.value.includes(sp.CompanyId)
+          )
+          .map((sp: ISalesPerson) => Number(sp.SlpCode))
+      : Array.isArray(newVal.sales_person_id)
+        ? newVal.sales_person_id.map(Number)
+        : newVal.sales_person_id
+          ? [Number(newVal.sales_person_id)]
+          : []
+    
+    customerStore.updateFilters({
+      ...newVal,
+      sales_person_id: finalSalesPersonIds,
+    })
   },
-  { deep: true }
+  { deep: true, immediate: true }
 )
 watch(selectedCompanies, 
   (val, val1) => {
     if(val.length !== val1.length) {
       filters.value = {
         ...filters.value,
-        sales_person_id: null,
+        sales_person_id: [],
         group_name: null,
         payment_term: null,
         city: null
@@ -193,15 +214,13 @@ watch(selectedCompanies,
                 :label="COMPANIES.SPS"
                 :value="COMPANIES.SPS"
                 hide-details          
-                class="mr-4"
-                
+                class="mr-4"                
               />
               <VCheckbox
                 v-model="selectedCompanies"
                 :label="COMPANIES.BBS"
                 :value="COMPANIES.BBS"
-                hide-details
-               
+                hide-details               
               />
             </div>
           </VCol>

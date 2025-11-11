@@ -29,8 +29,8 @@ const customerStore = useCustomerStore()
 const formData = ref<any>({
   assigned_by: userData.value.id,
   assigned_to: data.value.sales_person?.id ?? 0,
-  bbs_customer_id: data.value.CompanyId === COMPANIES.SPS ? 0 : data.value.id,
-  sps_customer_id: data.value.CompanyId === COMPANIES.BBS ? 0 : data.value.id,
+  bbs_customer_id: data.value.CompanyId === COMPANIES.SPS ? null : data.value.id,
+  sps_customer_id: data.value.CompanyId === COMPANIES.BBS ? null : data.value.id,
   scheduled_date: '',
   activity_type_id: 0,
   notes: '',

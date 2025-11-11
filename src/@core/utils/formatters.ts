@@ -88,14 +88,22 @@ export const formatFullDateWithSuffix = (
  * @param {string} value date to format
  * @param {boolean} toTimeForCurrentDay Shall convert to time if day is today/current
  */
-export const formatDateToMonthShort = (value: string, toTimeForCurrentDay = true) => {
+export const formatDateToMonthShort = (
+  value: string,
+  toTimeForCurrentDay = true,
+  isLong = false
+) => {
   const date = new Date(value)
-  let formatting: Record<string, string> = { month: 'short', day: 'numeric' }
+  let formatting: Intl.DateTimeFormatOptions = {}
 
-  if (toTimeForCurrentDay && isToday(date))
+  if (toTimeForCurrentDay && isToday(date)) {
     formatting = { hour: 'numeric', minute: 'numeric' }
+  } else {
+    formatting = { month: isLong ? 'long' : 'short' }
+  }
 
-  return new Intl.DateTimeFormat('en-US', formatting).format(new Date(value))
+  return new Intl.DateTimeFormat('en-US', formatting).format(date)
 }
+
 
 export const prefixWithPlus = (value: number) => value > 0 ? `+${value}` : value

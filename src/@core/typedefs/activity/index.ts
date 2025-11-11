@@ -39,14 +39,19 @@ export interface IActivity extends FormData {
   activity_details?: IActivityReport[]
 }
 
+export interface IActivityDetails {
+  reason_qty_drop: IReasonQtyDrop
+  activity_purpose: IActivityPurpose
+}
 export interface IActivityReport {
   products?: IProduct[]
-  customer: ICustomerData
+  customer?: ICustomerData
   customers?: ICustomerData[]
   assignment_id: number
   assignment: IActivity
   reason_qty_drop_id?: number
   activity_purpose_id?: number
+  assignment_details?: IActivityDetails
   reason_qty_drop?: IReasonQtyDrop
   non_active_product?: string
   product_issue?: string

@@ -97,11 +97,12 @@ const getStatus = (status: string) => {
 
 
 const handleClickViewReport = (id: number) => {
+  console.log(id)
   router.push({ path: createUrl(`/activity/${id}/view-report`).value })
 }
 
 const handleClickEdit = (id: number) => {
-  router.push({ path: createUrl(`/activity/${id}/report/edit`).value })
+  router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
 
 const handleCheckIn = async(id: number) => {
@@ -232,15 +233,13 @@ const handleCheckIn = async(id: number) => {
       :items="activityStore.activities"
       :items-length="activityStore.pagination.total"
       :headers="headers" class="text-no-wrap" 
-      show-select 
-      :select-strategy="'all'"
       return-object 
       @update:options="activityStore.updateSortOptions" 
       @update:model-value="activityStore.setSelectedRows"
       multi-sort
     >
       <template #item.actions="{ item }">        
-        <div class="d-flex justify-between gap-x-4" v-if="item.status === STATUS.ASSIGNED && !isAdmin">     
+        <div class="d-flex justify-center gap-x-4" v-if="item.status === STATUS.ASSIGNED && !isAdmin">     
           <VBtn 
             v-if="item.assigned_to.id === user.id"
             :key="item.id" 
@@ -251,7 +250,7 @@ const handleCheckIn = async(id: number) => {
             color="primary"
             prepend-icon="tabler-play"
           >
-            Check In
+            Start
           </VBtn>
         </div>
          <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.COMPLETED">
@@ -264,7 +263,7 @@ const handleCheckIn = async(id: number) => {
             color="primary"
             prepend-icon="tabler-notes"
             >
-            View Report
+            View
           </VBtn>         
         </div>
         <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.DRAFT || item.status === STATUS.ONGOING && !isAdmin">
@@ -278,7 +277,7 @@ const handleCheckIn = async(id: number) => {
             color="primary"
             prepend-icon="tabler-edit"
             >
-            Edit Report
+            Edit
           </VBtn>
         </div>
       </template>
