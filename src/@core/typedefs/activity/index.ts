@@ -43,6 +43,22 @@ export interface IActivityDetails {
   reason_qty_drop: IReasonQtyDrop
   activity_purpose: IActivityPurpose
 }
+
+interface GrowthPeriodData {
+  month: number;
+  total_amount: string;
+  total_items: number;
+}
+
+interface CompanyGrowth {
+  growth_percent: string | null;
+  [period: string]: string | GrowthPeriodData | null;
+}
+
+export interface GrowthResponse {
+  [companyId: string]: CompanyGrowth;
+}
+
 export interface IActivityReport {
   products?: IProduct[]
   customer?: ICustomerData
@@ -55,6 +71,7 @@ export interface IActivityReport {
   reason_qty_drop?: IReasonQtyDrop
   non_active_product?: string
   product_issue?: string
+  group_growth?: GrowthResponse
   next_action?: string
   additional_note?: string
   competitors: ICompetitor[]

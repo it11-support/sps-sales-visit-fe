@@ -157,32 +157,42 @@ import { VSheet } from 'vuetify/components';
                   type="article"
                 />
               </template>
-              <VRow v-for="(data , name) in monthly_sales" :key="name">
+              <VRow v-for="(data , name) in details.group_growth" :key="name">
                 <VCol class="mb-2">
                 <div class="d-flex align-center justify-space-between">
                   <div class="text"> {{ name }}</div>
                   <div
                     :class="[
                       'font-weight-medium d-flex align-center',
-                      data.growth > 0 ? 'text-success' : 'text-error'
+                      Number(data.growth_percent) > 0 ? 'text-success' : 'text-error'
                     ]"
                   >
                     <VIcon
                       size="md"
-                      :color="data.growth > 0 ? 'success' : 'error'" 
-                      :icon="data.growth > 0 ? 'tabler-trending-up' : 'tabler-trending-down'"
+                      :color="Number(data.growth_percent) > 0 ? 'success' : 'error'" 
+                      :icon="Number(data.growth_percent) > 0 ? 'tabler-trending-up' : 'tabler-trending-down'"
                       />
-                    <span class="ms-1">({{ (data.growth).toFixed(2) }}%)</span>
+                    <span class="ms-1">({{ (Number(data.growth_percent)).toFixed(2) }}%)</span>
                   </div>
                 </div>
                 <div class="border-t border-gray-300 my-2"></div>
                 <VRow >
-                  <VCol cols="12" lg="12" v-for="([month, rawValue], index) in Object.entries(data).filter(([k]) => k !== 'growth' && k !== 'missing_items')" :key="month">
-                    <template v-if="typeof rawValue === 'object' && 'total_sales' in rawValue">
+                  <VCol
+                    cols="12"
+                    lg="12"
+                    v-for="([period, rawValue], index) in Object.entries(data).filter(([k]) => k !== 'growth_percent')"
+                    :key="period"
+                  >
+                    <template v-if="rawValue && typeof rawValue === 'object' && 'total_amount' in rawValue">
                       <div class="d-flex justify-space-between align-center">
-                        <span>{{ formatDateToMonthShort(month, false, true) }}</span>
-                        <span>{{ formatMoney(rawValue.total_sales) }}</span>
-                        <span class="text-center">{{ rawValue.items }} items</span>
+                        <!-- tampilkan nama period, misal "October 2025" -->
+                        <span>{{ period }}</span>
+
+                        <!-- format total_amount -->
+                        <span>{{ formatMoney(Number(rawValue?.total_amount ?? 0)) }}</span>
+
+                        <!-- total_items -->
+                        <span class="text-center">{{ rawValue?.total_items ?? 0 }} items</span>
                       </div>
                     </template>
                   </VCol>
@@ -265,7 +275,7 @@ import { VSheet } from 'vuetify/components';
               <VRow>
                 <VCol>
                   <div class="d-flex align-center justify-space-between">
-                    <div class="text">PRODUCT OFFER</div>
+                    <div class="text">PRODUCTS OFFERED</div>
                   </div>
                 </VCol>
               </VRow>

@@ -2,12 +2,13 @@
 import AppAutocomplete from '@/@core/components/app-form-elements/AppAutocomplete.vue'
 import AppSelect from '@/@core/components/app-form-elements/AppSelect.vue'
 import AppStepper from '@/@core/components/AppStepper.vue'
-import { useActivityStore, useConfigStore, useProductStore } from '@/@core/stores'
+import { useActivityStore, useConfigStore, useProductStore, useStatisticStore } from '@/@core/stores'
 import { ICompetitor } from '@/@core/typedefs'
 import { VWindow } from 'vuetify/components'
 import { VForm } from 'vuetify/components/VForm'
 import CheckIn from './CheckIn.vue'
 
+const statStore = useStatisticStore()
 
 const steps = [
   {
@@ -16,7 +17,7 @@ const steps = [
   },
   {
     title: "Products",
-    subtitle: "Product offerings & issues"
+    subtitle: "Product offering & issues"
   },
   {
     title: "Notes",

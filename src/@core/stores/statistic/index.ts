@@ -124,7 +124,6 @@ export const useStatisticStore = defineStore('statistic', {
         this.loadingState =true
         try {
           const response = await useApi<any>(createUrl(`customer/monthly-sales/${id}`))
-          console.log(response.data.value.data)
           this.monthly_sales = response.data.value.data
         } catch (error) {
           if (error) {

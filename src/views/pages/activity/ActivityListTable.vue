@@ -97,7 +97,6 @@ const getStatus = (status: string) => {
 
 
 const handleClickViewReport = (id: number) => {
-  console.log(id)
   router.push({ path: createUrl(`/activity/${id}/view-report`).value })
 }
 

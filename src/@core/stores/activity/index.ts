@@ -1,4 +1,5 @@
 import { IActivity, IActivityReport, ICompetitor, ICustomerData, IProduct, IReasonQtyDrop, SortItem } from "@/@core/types"
+import { useStatisticStore } from "../statistic"
 
 export interface Filters {
   search?: string
@@ -184,7 +185,6 @@ export const useActivityStore = defineStore('activity', {
           competitors: report.competitors ?? []
         }
       }
-      console.log(this.activityReport)
 
       await nextTick()      
       this.loadingAssignment = false
@@ -210,7 +210,6 @@ export const useActivityStore = defineStore('activity', {
       ))
 
       data.value.data.assignment_details?.forEach((report: any) => {
-        
         return reports = {
           assignment_id: report.assignment_id,
           assignment: this.activity,
@@ -221,6 +220,7 @@ export const useActivityStore = defineStore('activity', {
           reason_qty_drop: report.reason_qty_drop,
           activity_purpose: report.activity_purpose,
           non_active_product: report.non_active_product,
+          group_growth: report.grouped_growth,
           product_issue: report.product_issue,
           next_action: report.next_action,
           additional_note: report.additional_note,
@@ -263,7 +263,6 @@ export const useActivityStore = defineStore('activity', {
       const url = createUrl(`activity/get-options`)
       const { data: competitorsData, error } = await useApi<any>(url)
 
-      console.log(competitorsData)
       if (error.value) {
         console.error('Error fetching sales person options:', error.value)
         return
@@ -277,8 +276,6 @@ export const useActivityStore = defineStore('activity', {
         }
       });
 
-      console.log(uniqueCompetitors)
-
       this.allCompetitorOptions = Array.from(uniqueCompetitors.values()).map((competitor: ICompetitor) => ({
         value: competitor.id,
         title: `${competitor.name}`,
@@ -289,7 +286,6 @@ export const useActivityStore = defineStore('activity', {
         qty: competitor.qty
       }));
 
-      console.log(this.allCompetitorOptions)
 
       this.reasonQtyDropOptions = competitorsData.value.data.reasonQtyDrops.map((reason: IReasonQtyDrop) => ({
         value: reason.id,
@@ -304,12 +300,25 @@ export const useActivityStore = defineStore('activity', {
     },
     async storeActivityReport(isDraft = false) {
       this.loading = true
-      
-      const reportPayload = {
-        ...this.activityReport,
-        status: isDraft ? 'draft' : 'completed'
+      const statStore = useStatisticStore()
+
+       const growth: Record<string, Record<string, any>> = {};
+       for (const [company, periods] of Object.entries(statStore.monthly_sales ?? {})) {
+        growth[company] = {};
+        growth[company].growth = periods.growth ?? null;
+        for (const [period, data] of Object.entries(periods)) {
+          if(period === 'growth' || period === 'missing_items') continue
+          const { invoices, ...rest } = data as any; // hapus invoices
+          growth[company][period] = rest;
+        }
       }
 
+      const reportPayload = {
+        ...this.activityReport,
+        status: isDraft ? 'draft' : 'completed',
+        growth
+      }
+      
       const payload = JSON.stringify(reportPayload);
 
       const { data, error } = await useApi<any>(`activity/report`, {
