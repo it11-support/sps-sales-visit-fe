@@ -164,7 +164,7 @@ export const useCustomerStore = defineStore('customer', {
       if(teamId) {
         await this.updateFilters({ team_id: teamId }, false)
       }
-      await this.fetchCustomers()
+      // await this.fetchCustomers()
       this.isReady = true
     },
     updateSortOptions(options: any) {
