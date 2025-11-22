@@ -366,7 +366,7 @@ watch(selectedCompanies,
         :loading="customerStore.loadingList"
         v-model:items-per-page="customerStore.filters.per_page"
         v-model:model-value="customerStore.selectedRows"
-        v-model:page="customerStore.filters.page"
+        
         :items="customerStore.customers"
         item-value="CardCode"
         :items-length="customerStore.pagination.total"
