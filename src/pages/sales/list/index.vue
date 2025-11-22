@@ -156,6 +156,7 @@ const handleSalesPersonLink = async () => {
         show-select
         :select-strategy="'all'"
         return-object
+        :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
         @update:options="updateOptions"
         @update:model-value="updateSelectedRows"
         multi-sort

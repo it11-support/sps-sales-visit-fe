@@ -328,6 +328,7 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
         show-select
         :select-strategy="'all'"
         return-object
+        :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
         @update:options="userStore.updateSortOptions"
         @update:model-value="userStore.setSelectedRows"
         multi-sort

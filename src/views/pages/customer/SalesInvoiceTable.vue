@@ -89,6 +89,7 @@ const calculateTotalWeight = (items: any): string => {
       :headers="computedHeaders"
       class="text-no-wrap"      
       :select-strategy="'all'"
+      :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
       return-object 
       @update:options="(opt) => props.onUpdateOptions && props.onUpdateOptions(opt)"
       @update:model-value="(val) => props.onUpdateSelectedRows && props.onUpdateSelectedRows(val)"
