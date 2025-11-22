@@ -168,10 +168,17 @@ export const useCustomerStore = defineStore('customer', {
       this.isReady = true
     },
     updateSortOptions(options: any) {
-      if (!this.isReady) return
+      if (!this.isReady) return;
+
+      // Update page, perPage, dan sort secara bersamaan
       this.updateFilters({
-        sort_options: options.sortBy
-      })
+        page: options.page,
+        per_page: options.itemsPerPage,
+        sort_options: options.sortBy.map((s: any) => ({
+          key: s.key,
+          order: s.order,
+        })),
+      });
     },
 
     async updateFilters(newFilters: Partial<Filters>, shouldFetch = true) {
