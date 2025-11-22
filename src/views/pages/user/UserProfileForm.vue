@@ -259,7 +259,8 @@ const dormantOptions = [
           :headers="headers" class="text-no-wrap" 
           show-select 
           :select-strategy="'all'"
-          return-object 
+          return-object
+          :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
           @update:options="customerStore.updateSortOptions" 
           @update:model-value="customerStore.setSelectedRows"
           multi-sort>

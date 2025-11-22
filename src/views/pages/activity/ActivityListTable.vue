@@ -232,7 +232,8 @@ const handleCheckIn = async(id: number) => {
       :items="activityStore.activities"
       :items-length="activityStore.pagination.total"
       :headers="headers" class="text-no-wrap" 
-      return-object 
+      return-object
+      :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
       @update:options="activityStore.updateSortOptions" 
       @update:model-value="activityStore.setSelectedRows"
       multi-sort

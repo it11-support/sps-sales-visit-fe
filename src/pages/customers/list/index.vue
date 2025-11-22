@@ -365,8 +365,7 @@ watch(selectedCompanies,
       <VDataTableServer
         :loading="customerStore.loadingList"
         v-model:items-per-page="customerStore.filters.per_page"
-        v-model:model-value="customerStore.selectedRows"
-        
+        v-model:model-value="customerStore.selectedRows"        
         :items="customerStore.customers"
         item-value="CardCode"
         :items-length="customerStore.pagination.total"
@@ -374,6 +373,7 @@ watch(selectedCompanies,
         class="text-no-wrap"
         show-select
         :select-strategy="'all'"
+        :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
         return-object
         @update:options="customerStore.updateSortOptions"
         @update:model-value="customerStore.setSelectedRows"
