@@ -30,7 +30,7 @@ onMounted(async () => {
     sort_options: sortOptions,
     start_date: startDate,
     end_date: endDate,
-    // group_by: groupBy
+    group_by: groupBy
   })
   salesInvoiceStore.fetchSalesInvoices()
 })
@@ -105,43 +105,6 @@ const handleRefresh = (stopLoading: () => void) => {
       @refresh="handleRefresh"
       title="SALES INVOICES"
     >
-      <VCardText class="d-flex flex-wrap gap-4">
-        <VRow>
-          <VCol cols="12" lg="12" md="12">
-            <v-radio-group inline v-model="groupBy">
-              <v-radio label="Invoice" value="DocNum" disabled></v-radio>
-              <v-radio label="Item" value="ItemCode"></v-radio>
-            </v-radio-group>
-          </VCol>
-        </VRow>
-        <VSpacer />
-        <div class="me-3 d-flex gap-3">
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="startDate" label="Start Date" type="date" placeholder="Select Start Date"
-                :max="endDate"></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field v-model="endDate" label="End Date" type="date" placeholder="Select End Date"
-                :min="startDate"></v-text-field>
-            </v-col>
-          </v-row>
-        </div>
-
-        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-          <!-- 👉 Search  -->
-          <div style="inline-size: 12.625rem;">
-            <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
-          </div>
-
-          <!-- 👉 Export button -->
-          <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
-            Export
-          </VBtn> -->
-        </div>
-      </VCardText>
-
       <SalesInvoiceTable
         :sales-invoices-data="salesInvoicesData" 
         :customer-id="router.params.customerId"

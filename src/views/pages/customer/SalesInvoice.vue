@@ -50,7 +50,7 @@ const fetchSalesInvoices = async() => {
 
 // Watch all params that affect the API
 watch(
-  [sortOptions, startDate, endDate],
+  [sortOptions, startDate, endDate, debouncedQuery],
   fetchSalesInvoices,
   { deep: true, immediate: true } // immediate = fetch on mount
 )
@@ -95,21 +95,53 @@ const handleRefresh = (stopLoading: () => void) => {
       @refresh="handleRefresh"
       title="SALES INVOICES"
     >
-      <VCardText>
-        <v-radio-group v-model="groupBy">
-          <v-radio label="Invoice" value="DocNum" />
-          <v-radio label="Item" value="ItemCode" />
-        </v-radio-group>
-        <v-row>
-          <v-col md="6">
-            <v-text-field v-model="startDate" label="Start Date" type="date" :max="endDate" />
-          </v-col>
-          <v-col md="6">
-            <v-text-field v-model="endDate" label="End Date" type="date" :min="startDate" />
-          </v-col>
-        </v-row>
-        <AppTextField v-model="searchQuery" placeholder="Search..." clearable clear-icon="tabler-x" />
-      </VCardText>
+      <VCardText class="d-flex flex-wrap gap-4">
+        <div class="me-4 d-flex gap-3">
+          <AppSelect
+            :model-value="itemsPerPage"
+            :items="PAGINATION_ITEMS"
+            style="inline-size: 6.25rem;"
+            @update:model-value="itemsPerPage = parseInt($event, 10)"
+          />
+          
+        </div>
+        <VSpacer />
+
+        <VRow>
+          <VCol cols="12" lg="12" md="12">
+            <v-radio-group inline v-model="groupBy">
+              <v-radio label="Invoice" value="DocNum"></v-radio>
+              <v-radio label="Item" value="ItemCode"></v-radio>
+            </v-radio-group>
+          </VCol>
+        </VRow>
+        <VSpacer />
+        <div class="me-3 d-flex gap-3">
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="startDate" label="Start Date" type="date" placeholder="Select Start Date"
+                :max="endDate"></v-text-field>
+            </v-col>
+
+            <v-col cols="12" md="6">
+              <v-text-field v-model="endDate" label="End Date" type="date" placeholder="Select End Date"
+                :min="startDate"></v-text-field>
+            </v-col>
+          </v-row>
+        </div>
+
+        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+          <!-- 👉 Search  -->
+          <div style="inline-size: 12.625rem;">
+            <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
+          </div>
+
+            <!-- 👉 Export button -->
+            <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+              Export
+            </VBtn> -->
+          </div>
+        </VCardText>
 
       <SalesInvoiceTable
         :sales-invoices-data="salesInvoicesData"
