@@ -65,17 +65,17 @@ export interface IActivityReport {
   customers?: ICustomerData[]
   assignment_id: number
   assignment: IActivity
-  reason_qty_drop_id?: number
-  activity_purpose_id?: number
+  reason_qty_drop_ids?: number[]
+  activity_purpose_ids?: number[]
   assignment_details?: IActivityDetails
-  reason_qty_drop?: IReasonQtyDrop
+  reason_qty_drops?: IReasonQtyDrop[]
   non_active_product?: string
   product_issue?: string
   group_growth?: GrowthResponse
   next_action?: string
   additional_note?: string
   competitors: ICompetitor[]
-  activity_purpose?: IActivityPurpose
+  activity_purposes?: IActivityPurpose[]
   image_path?: string
   accuracy?: string
   check_in?: string

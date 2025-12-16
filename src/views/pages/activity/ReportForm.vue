@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import AppAutocomplete from '@/@core/components/app-form-elements/AppAutocomplete.vue'
-import AppSelect from '@/@core/components/app-form-elements/AppSelect.vue'
 import AppStepper from '@/@core/components/AppStepper.vue'
 import { useActivityStore, useConfigStore, useProductStore, useStatisticStore } from '@/@core/stores'
 import { ICompetitor } from '@/@core/typedefs'
@@ -58,8 +57,8 @@ const configStore = useConfigStore()
 let initializing = true
 
 const activityPurposeReport = ref({
-  activity_purpose: undefined as number | undefined,
-  reason_qty_drop_id: undefined as number | undefined,
+  activity_purposes: [] as number[] | undefined,
+  reason_qty_drops: [] as number[] | undefined,
 })
 
 const productReport = ref({
@@ -79,8 +78,8 @@ watch(
     if (!newVal || Object.keys(newVal).length === 0) return
 
     initializing = true
-    activityPurposeReport.value.activity_purpose = newVal.activity_purpose_id ?? undefined
-    activityPurposeReport.value.reason_qty_drop_id = newVal.reason_qty_drop_id ?? undefined
+    activityPurposeReport.value.activity_purposes = newVal.activity_purpose_ids ?? undefined
+    activityPurposeReport.value.reason_qty_drops = newVal.reason_qty_drop_ids ?? undefined
 
     productReport.value.products = newVal.products ?? undefined
     productReport.value.product_issue = newVal.product_issue ?? ''
@@ -88,7 +87,7 @@ watch(
     notesReport.value.additional_note = newVal.additional_note ?? ''
     competitors.splice(0, competitors.length, ...(newVal.competitors ?? []))
 
-    activityPurposeReport.value.activity_purpose
+    activityPurposeReport.value.activity_purposes
     // tunggu tick agar tidak langsung trigger watcher berikutnya
     nextTick(() => (initializing = false))
   },
@@ -100,8 +99,8 @@ watch(
   (newVal) => {
     if (initializing) return
     activityStore.updateForm({
-      activity_purpose_id: newVal.activity_purpose,
-      reason_qty_drop_id: newVal.reason_qty_drop_id,
+      activity_purpose_ids: newVal.activity_purposes,
+      reason_qty_drop_ids: newVal.reason_qty_drops,
       assignment_id: Number(props.assignmentId),
     })
   },
@@ -325,24 +324,40 @@ const handleViewOnMap = () => {
           >
             <VRow>
               <VCol cols="12" md="6">
-                 <AppSelect              
-                  v-model="activityPurposeReport.activity_purpose"                  
+                <AppAutocomplete
+                  chips
+                  closable-chips
+                  multiple
+                  v-model="activityPurposeReport.activity_purposes"
                   :items="activityStore.activityPuposesOptions"
-                  label="Activity Purpose"
-                  placeholder="Activity Purpose"
+                  label="Activity Purposes"
+                  placeholder="Activity Purposes"
                   clearable
                   clear-icon="tabler-x"
+                  item-title="title"
+                  item-value="value"
+                  autocorrect="off"
+                  spellcheck="false"
+                  autocomplete="off"
                   :rules="[requiredValidator]"
-                />
+                /> 
               </VCol>
               <VCol cols="12" md="6">
-                <AppSelect
-                  v-model="activityPurposeReport.reason_qty_drop_id"
+              <AppAutocomplete
+                  chips
+                  closable-chips
+                  multiple
+                  v-model="activityPurposeReport.reason_qty_drops"
                   :items="activityStore.reasonQtyDropOptions"
                   label="Reason Quantity Drop"
                   placeholder="Reason Quantity Drop"
                   clearable
                   clear-icon="tabler-x"
+                  item-title="title"
+                  item-value="value"
+                  autocorrect="off"
+                  spellcheck="false"
+                  autocomplete="off"
                   :rules="[]"
                 />
               </VCol>
@@ -413,8 +428,7 @@ const handleViewOnMap = () => {
               <VRow>
               <VCol cols="12">
                 <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
-                  <VBtn                    
-                    variant="tonal"
+                  <VBtn                  
                     @click="currentStep--"
                   >
                     <VIcon
@@ -465,7 +479,7 @@ const handleViewOnMap = () => {
               <VCol cols="12">
                 <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
                   <VBtn
-                    variant="tonal"
+                   
                     @click="currentStep--"
                   >
                     <VIcon
@@ -593,7 +607,7 @@ const handleViewOnMap = () => {
                 <VCol cols="12">
                   <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
                     <VBtn
-                      variant="tonal"
+                     
                       @click="currentStep--"
                     >
                       <VIcon
@@ -664,7 +678,6 @@ const handleViewOnMap = () => {
             <VCol cols="12">
               <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
                 <VBtn
-                  variant="tonal"
                   @click="currentStep--"
                 >
                   <VIcon
