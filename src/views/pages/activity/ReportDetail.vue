@@ -360,19 +360,23 @@ import { VSheet } from 'vuetify/components';
           <VCol cols="12" lg="4" sm="12">
             <VSheet class="border rounded pa-5">
               <VRow>
-                <VCol cols="12" lg="12">
-                  <div class="d-flex justify-space-between align-center">
-                    <span> Reason Qty Drop</span>
-                    <span class="text-sm">{{ details.reason_qty_drop?.reason }}</span>                  
-                  </div>                 
+                <VCol cols="12">
+                  <span class="font-weight-medium"> Visit Purpose</span>
+                  <ul class="pl-4 mt-2 text-sm text-left">
+                    <li v-for="data in details.activity_purposes" :key="data.id">
+                      {{ data.purpose }}
+                    </li>
+                  </ul>
                 </VCol>
               </VRow>
               <VRow>
-                <VCol cols="12" lg="12">
-                  <div class="d-flex justify-space-between align-center">
-                    <span> Visit Purpose</span>
-                    <span class="text-sm">{{ details.activity_purpose?.purpose }}</span>                  
-                  </div>                 
+                <VCol cols="12">
+                  <span class="font-weight-medium">Reason Qty Drop</span>
+                  <ul class="pl-4 mt-2 text-sm text-left">
+                    <li v-for="data in details.reason_qty_drops" :key="data.id">
+                      {{ data.reason }}
+                    </li>
+                  </ul>
                 </VCol>
               </VRow>
             </VSheet>
