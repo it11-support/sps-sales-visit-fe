@@ -141,125 +141,124 @@ import { VSheet } from 'vuetify/components';
       </VRow>
     </VCard>
     <VCard class="mb-6">
-      <VCardText class="pa-3">
-        <VRow no-gutters class="ga-3">
-          <VCol cols="12" lg="4" sm="12">
-            <VSheet class="border rounded pa-5">
-               <VRow>
-                <VCol>
-                  <div class="d-flex align-center justify-space-between">
-                    <div class="text">GROWTH</div>
-                  </div>
-                </VCol>
-              </VRow>
-              <template v-if="loading">
-                <VSkeletonLoader          
-                  type="article"
-                />
-              </template>
-              <VRow v-for="(data , name) in details.group_growth" :key="name">
-                <VCol class="mb-2">
-                <div class="d-flex align-center justify-space-between">
-                  <div class="text"> {{ name }}</div>
-                  <div
-                    :class="[
-                      'font-weight-medium d-flex align-center',
-                      Number(data.growth_percent) > 0 ? 'text-success' : 'text-error'
-                    ]"
-                  >
-                    <VIcon
-                      size="md"
-                      :color="Number(data.growth_percent) > 0 ? 'success' : 'error'" 
-                      :icon="Number(data.growth_percent) > 0 ? 'tabler-trending-up' : 'tabler-trending-down'"
+      <VCardItem class="pb-4">
+        <VCardTitle>GROWTH</VCardTitle>
+      </VCardItem>
+      <VCardText>
+        <VRow>
+          <VCol class="text-no-wrap" cols="12" lg="9" md="9" sm="12">
+            <template v-if="loading">
+              <VSkeletonLoader
+                v-for="i in 3"
+                :key="i"
+                type="list-item-two-line"
+              />
+            </template>
+
+            <VTable v-else class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6" density="compact">
+            <thead>
+              <tr class="text-center">
+                <th scope="col">                
+                </th>
+                <th scope="col" class="text-center">
+                  Month
+                </th>
+                <th scope="col" class="text-center">
+                  Revenue
+                </th>
+                <th scope="col" class="text-center">
+                  Items
+                </th>
+                <th scope="col" class="text-center">
+                  PERCENTAGE
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="(branchData, branchName) in monthly_sales" :key="branchName">
+                <tr
+                  v-for="([month, rawValue], index) in Object.entries(branchData).filter(([k]) => k !== 'growth' && k !== 'missing_items')"
+                  :key="month"
+                >
+                  <template v-if="typeof rawValue === 'object' && 'total_sales' in rawValue">
+                    <td v-if="index === 0" :rowspan="Object.keys(branchData).filter(k => k !== 'growth' && k !== 'missing_items').length" class="text-center m-2">
+                      {{ branchName }}
+                    </td>
+
+                    <td class="text-center">{{ formatDateToMonthShort(month, false, true) }}</td>
+                    <td class="text-center">{{ formatMoney(rawValue.total_sales) }}</td>
+                    <td class="text-center">{{ rawValue.items }}</td>
+
+                    <td v-if="index === 0" :rowspan="Object.keys(branchData).filter(k => k !== 'growth' && k !== 'missing_items').length" class="text-center">
+                      <VIcon
+                        size="md"
+                        :color="branchData.growth > 0 ? 'success' : 'error'" 
+                        :icon="branchData.growth > 0 ? 'tabler-trending-up' : 'tabler-trending-down'"
                       />
-                    <span class="ms-1">({{ (Number(data.growth_percent)).toFixed(2) }}%)</span>
-                  </div>
-                </div>
-                <div class="border-t border-gray-300 my-2"></div>
-                <VRow >
-                  <VCol
-                    cols="12"
-                    lg="12"
-                    v-for="([period, rawValue], index) in Object.entries(data).filter(([k]) => k !== 'growth_percent')"
-                    :key="period"
-                  >
-                    <template v-if="rawValue && typeof rawValue === 'object' && 'total_amount' in rawValue">
-                      <div class="d-flex justify-space-between align-center">
-                        <!-- tampilkan nama period, misal "October 2025" -->
-                        <span>{{ period }}</span>
-
-                        <!-- format total_amount -->
-                        <span>{{ formatMoney(Number(rawValue?.total_amount ?? 0)) }}</span>
-
-                        <!-- total_items -->
-                        <span class="text-center">{{ rawValue?.total_items ?? 0 }} items</span>
-                      </div>
-                    </template>
-                  </VCol>
-                </VRow>
-                </VCol>
-            </VRow>
-            </VSheet>
-          </VCol>
-          <VCol>
-            <VSheet class="border rounded pa-5">
-              <VRow>
-                <VCol>
-                  <div class="d-flex align-center justify-space-between">
-                    <div class="text">NON ACTIVE ITEMS</div>
-                  </div>
-                </VCol>
-              </VRow>
-              <template v-if="loading">
-                <VSkeletonLoader
-                  type="article"
-                />
+                      <span>{{ branchData.growth }}%</span>
+                    </td>
+                  </template>
+                </tr>
               </template>
-              <VRow v-else>                
-                <VCol>
-                  <VTable class="invoice-preview-table text-high-emphasis overflow-hidden mb-6" density="compact">
-                    <thead  class="text-xs">
-                      <tr>
-                        <th scope="col">                          
-                        </th>                      
-                        <th scope="col" class="text-center">
-                          ITEM NAME
-                        </th>
-                        <th scope="col" class="text-center">
-                          LAST PURCHASED
-                        </th>
-                        <th scope="col" class="text-center">
-                          VOLUME (Kg)
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody class="text-xs">
-                      <template v-for="(branchData, branchName) in monthly_sales" :key="branchName">
-                        <template v-for="(item, idx) in branchData.missing_items" :key="item.ItemCode">
-                          <tr>
-                            <!-- Branch name hanya di baris pertama -->
-                            <td v-if="idx === 0" :rowspan="branchData.missing_items.length" class="text-center pr-2">
-                              {{ branchName }}
-                            </td>
-                            <!-- Item details -->                            
-                            <td>{{ item.ItemName }}</td>
-                            <td class="text-center">{{ formatDate(item.last_purchased) }}</td>
-                            <td class="text-center">{{ item.volume_kg.toFixed(2) }}</td>
-                          </tr>
-                        </template>
-                        <tr v-if="!branchData.missing_items || !branchData.missing_items.length">
-                          <td>{{ branchName }}</td>
-                          <td colspan="3" class="text-center text-muted">No missing items</td>
-                        </tr>
-                      </template>
-                    </tbody>
-                  </VTable>
-                </VCol>
-              </VRow>
-            </VSheet>
-          </VCol> 
+            </tbody>
+            </VTable>
+          </VCol>
         </VRow>
-      </VCardText>    
+        <VRow>       
+          <VCol class="text-no-wrap" cols="12" lg="9" md="9" sm="12">
+            <h6 class="text-h6 mb-4">
+              NON-ACTIVE ITEMS
+            </h6>
+            <template v-if="loading">
+              <VSkeletonLoader
+                v-for="i in 3"
+                :key="i"
+                type="list-item-two-line"
+              />
+            </template>
+            <template v-else>
+              <VTable class="invoice-preview-table border text-high-emphasis overflow-hidden mb-6" density="compact">
+                <thead>
+                  <tr>
+                    <th scope="col">
+                      
+                    </th>              
+                    <th scope="col">
+                      ITEM NAME
+                    </th>
+                    <th scope="col" class="text-center">
+                      LAST PURCHASED
+                    </th>
+                    <th scope="col" class="text-center">
+                      VOLUME (Kg)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="text-base">
+                  <template v-for="(branchData, branchName) in monthly_sales" :key="branchName">
+                    <template v-for="(item, idx) in branchData.missing_items" :key="item.ItemCode">
+                      <tr>
+                        <!-- Branch name hanya di baris pertama -->
+                        <td v-if="idx === 0" :rowspan="branchData.missing_items.length" class="text-center pr-2">
+                          {{ branchName }}
+                        </td>
+                        <!-- Item details -->                   
+                        <td>{{ item.ItemName }}</td>
+                        <td class="text-center">{{ formatDate(item.last_purchased) }}</td>
+                        <td class="text-center">{{ item.volume_kg.toFixed(2) }}</td>
+                      </tr>
+                    </template>
+                    <tr v-if="!branchData.missing_items || !branchData.missing_items.length">
+                      <td>{{ branchName }}</td>
+                      <td colspan="3" class="text-center text-muted">No missing items</td>
+                    </tr>
+                  </template>
+                </tbody>
+              </VTable>
+            </template>
+          </VCol>
+        </VRow>
+      </VCardText>
     </VCard>
 
     <VCard class="mb-6">
@@ -469,3 +468,22 @@ import { VSheet } from 'vuetify/components';
 
   </section>
 </template>
+<style lang="scss">
+.app-autocomplete .v-field__input {
+  min-block-size: 135px !important;
+}
+
+.v-table > .v-table__wrapper > table > tbody > tr > td {
+  padding-inline: 12px !important;
+}
+
+.pe-5 {
+  max-inline-size: 100px !important;
+}
+
+@media (max-width: 768px) {
+  .app-autocomplete .v-field__input {
+    min-block-size: unset !important;
+  }
+}
+</style>
