@@ -22,8 +22,7 @@ const selectedSPSCustomer = ref<number | null>(null)
 const showLinkSalesPersonModal = ref(false)
 const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
-const isSticky = ref(false)
-const stickyRef = ref<HTMLElement | null>(null)
+const isSticky = ref(true)
 const activityStore = useActivityStore()
 const customerStore = useCustomerStore()
 const formData = ref<any>({
@@ -37,9 +36,6 @@ const formData = ref<any>({
   status: 'assigned',
 })
 
-let scrollTimeout: any
-const ENTER_THRESHOLD = 64 
-const EXIT_THRESHOLD = 80 
 
 const salesPersonName = data.value.sales_person ? data.value.sales_person.SlpName : '-'
 
@@ -142,27 +138,7 @@ const handleSubmit = async () => {
     showScheduleForm.value = false
   })
 }
-onMounted(() => {
-  window.addEventListener('scroll', checkSticky)
-})
 
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', checkSticky)
-})
-
-const checkSticky = () => {
-  clearTimeout(scrollTimeout)
-  scrollTimeout = setTimeout(() => {
-    if (!stickyRef.value) return
-    const top = stickyRef.value.getBoundingClientRect().top
-
-    if (!isSticky.value && top <= ENTER_THRESHOLD) {
-      isSticky.value = true
-    } else if (isSticky.value && top > EXIT_THRESHOLD) {
-      isSticky.value = false
-    }
-  }, 50)
-}
 
 </script>
 
@@ -177,7 +153,7 @@ const checkSticky = () => {
       </template>
     </VBreadcrumbs>
   </VCol>
-  <div class="sticky-card-actions v-col v-col-12" ref="stickyRef">
+  <div class="sticky-card-actions v-col v-col-12">
     <AppCardActions
       :title=title
       action-collapsed
@@ -522,6 +498,12 @@ const checkSticky = () => {
 .sticky-card-actions {
   position: sticky;
   z-index: 20;
-  inset-block-start: 58px;
+  padding-block-end: 5px;
 }
+
+/* stylelint-disable-next-line selector-pseudo-class-no-unknown */
+.sticky-card-actions :deep(.v-card-item) {
+  padding-block: 5px !important;
+}
+
 </style>
