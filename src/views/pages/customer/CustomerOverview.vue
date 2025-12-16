@@ -497,13 +497,13 @@ const handleSubmit = async () => {
 
 .sticky-card-actions {
   position: sticky;
-  z-index: 20;
+  z-index: 2;
   padding-block-end: 5px;
 }
 
 /* stylelint-disable-next-line selector-pseudo-class-no-unknown */
 .sticky-card-actions :deep(.v-card-item) {
-  padding-block: 5px !important;
+  padding-block: 10px !important;
 }
 
 </style>
