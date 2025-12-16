@@ -258,7 +258,7 @@ const monthly_sales = computed(() => statStore.monthly_sales ?? {})
 }
 
 .v-table > .v-table__wrapper > table > tbody > tr > td {
-  padding-inline: 0 !important;
+  padding-inline: 12px !important;
 }
 
 .pe-5 {
