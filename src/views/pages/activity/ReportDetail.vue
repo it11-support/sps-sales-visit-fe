@@ -238,7 +238,7 @@ import { VSheet } from 'vuetify/components';
                         <template v-for="(item, idx) in branchData.missing_items" :key="item.ItemCode">
                           <tr>
                             <!-- Branch name hanya di baris pertama -->
-                            <td v-if="idx === 0" :rowspan="branchData.missing_items.length" class="text-center">
+                            <td v-if="idx === 0" :rowspan="branchData.missing_items.length" class="text-center pr-2">
                               {{ branchName }}
                             </td>
                             <!-- Item details -->                            
