@@ -1,9 +1,6 @@
 <script lang="ts" setup>
-import AppSelect from '@/@core/components/app-form-elements/AppSelect.vue';
-import { useActivityStore, useConfigStore, useProductStore, useStatisticStore } from '@/@core/stores';
+import { useActivityStore, useProductStore, useStatisticStore } from '@/@core/stores';
 import { ICompetitor } from '@/@core/typedefs';
-import { nextTick } from 'vue';
-import { VForm } from 'vuetify/components';
 import CheckIn from './CheckIn.vue';
 import ReportForm from './ReportForm.vue';
 
@@ -213,11 +210,8 @@ const monthly_sales = computed(() => statStore.monthly_sales ?? {})
               <tr>
                  <th scope="col">
                   
-                </th>
-                <th scope="col" class="text-center">
-                  ITEM CODE
-                </th>
-                <th scope="col" class="text-center">
+                </th>              
+                <th scope="col">
                   ITEM NAME
                 </th>
                 <th scope="col" class="text-center">
@@ -231,16 +225,15 @@ const monthly_sales = computed(() => statStore.monthly_sales ?? {})
             <tbody class="text-base">
               <template v-for="(branchData, branchName) in monthly_sales" :key="branchName">
                 <template v-for="(item, idx) in branchData.missing_items" :key="item.ItemCode">
-                  <tr class="text-center">
+                  <tr>
                     <!-- Branch name hanya di baris pertama -->
-                    <td v-if="idx === 0" :rowspan="branchData.missing_items.length">
+                    <td v-if="idx === 0" :rowspan="branchData.missing_items.length" class="text-center">
                       {{ branchName }}
                     </td>
-                    <!-- Item details -->
-                    <td>{{ item.ItemCode }}</td>
-                    <td>{{ item.ItemName }}</td>
-                    <td>{{ formatDate(item.last_purchased) }}</td>
-                    <td>{{ item.volume_kg.toFixed(2) }}</td>
+                    <!-- Item details -->                   
+                    <td class="text-center">{{ item.ItemName }}</td>
+                    <td class="text-center">{{ formatDate(item.last_purchased) }}</td>
+                    <td class="text-center">{{ item.volume_kg.toFixed(2) }}</td>
                   </tr>
                 </template>
                 <tr v-if="!branchData.missing_items || !branchData.missing_items.length">

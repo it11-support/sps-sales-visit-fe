@@ -236,15 +236,15 @@ import { VSheet } from 'vuetify/components';
                     <tbody class="text-xs">
                       <template v-for="(branchData, branchName) in monthly_sales" :key="branchName">
                         <template v-for="(item, idx) in branchData.missing_items" :key="item.ItemCode">
-                          <tr class="text-center">
+                          <tr>
                             <!-- Branch name hanya di baris pertama -->
-                            <td v-if="idx === 0" :rowspan="branchData.missing_items.length">
+                            <td v-if="idx === 0" :rowspan="branchData.missing_items.length" class="text-center">
                               {{ branchName }}
                             </td>
                             <!-- Item details -->                            
                             <td>{{ item.ItemName }}</td>
-                            <td>{{ formatDate(item.last_purchased) }}</td>
-                            <td>{{ item.volume_kg.toFixed(2) }}</td>
+                            <td class="text-center">{{ formatDate(item.last_purchased) }}</td>
+                            <td class="text-center">{{ item.volume_kg.toFixed(2) }}</td>
                           </tr>
                         </template>
                         <tr v-if="!branchData.missing_items || !branchData.missing_items.length">
