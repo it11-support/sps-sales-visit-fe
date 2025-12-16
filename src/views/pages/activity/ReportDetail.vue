@@ -220,12 +220,8 @@ import { VSheet } from 'vuetify/components';
                   <VTable class="invoice-preview-table text-high-emphasis overflow-hidden mb-6" density="compact">
                     <thead  class="text-xs">
                       <tr>
-                        <th scope="col">
-                          
-                        </th>
-                        <th scope="col" class="text-center">
-                          ITEM CODE
-                        </th>
+                        <th scope="col">                          
+                        </th>                      
                         <th scope="col" class="text-center">
                           ITEM NAME
                         </th>
@@ -245,8 +241,7 @@ import { VSheet } from 'vuetify/components';
                             <td v-if="idx === 0" :rowspan="branchData.missing_items.length">
                               {{ branchName }}
                             </td>
-                            <!-- Item details -->
-                            <td>{{ item.ItemCode }}</td>
+                            <!-- Item details -->                            
                             <td>{{ item.ItemName }}</td>
                             <td>{{ formatDate(item.last_purchased) }}</td>
                             <td>{{ item.volume_kg.toFixed(2) }}</td>
