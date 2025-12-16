@@ -169,7 +169,6 @@ export const useActivityStore = defineStore('activity', {
       let reports = {} as IActivityReport
 
       if (report) {
-        console.log(report)
         this.activityReport = {
           assignment_id: report.assignment_id,
           assignment: this.activity,

@@ -77,7 +77,6 @@ watch(
   (newVal) => {
     if (!newVal || Object.keys(newVal).length === 0) return
 
-    console.log(activityStore.activityReport)
     initializing = true
     activityPurposeReport.value.activity_purposes = newVal.activity_purpose_ids ?? undefined
     activityPurposeReport.value.reason_qty_drops = newVal.reason_qty_drop_ids ?? undefined
