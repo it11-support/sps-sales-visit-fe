@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppAutocomplete from '@/@core/components/app-form-elements/AppAutocomplete.vue'
 import AppStepper from '@/@core/components/AppStepper.vue'
-import { useActivityStore, useConfigStore, useProductStore, useStatisticStore } from '@/@core/stores'
+import { MissingProduct, useActivityStore, useConfigStore, useProductStore, useStatisticStore } from '@/@core/stores'
 import { ICompetitor } from '@/@core/typedefs'
 import { VWindow } from 'vuetify/components'
 import { VForm } from 'vuetify/components/VForm'
@@ -88,8 +88,38 @@ watch(
     competitors.splice(0, competitors.length, ...(newVal.competitors ?? []))
 
     activityPurposeReport.value.activity_purposes
-    // tunggu tick agar tidak langsung trigger watcher berikutnya
+
     nextTick(() => (initializing = false))
+  },
+  { immediate: true, deep: true }
+)
+
+watch(
+  () => statStore.monthly_sales,
+  () => {
+    let missing: MissingProduct[] = []
+
+    if(!activityStore.activityReport.missing_items?.length) {
+      for (const [key, value] of Object.entries(statStore.monthly_sales)) {
+        if (Array.isArray(value.missing_items)) {
+          missing.push(...value.missing_items)
+        }
+      }
+    } else {
+      missing = activityStore.activityReport.missing_items.map((m: any) => {
+      return {
+          id: m.product_id,
+          ItemCode: m.product.ItemCode,
+          ItemGroup: m.product.ItemGroup,
+          ItemName: m.product.ItemName,
+          last_purchased: m.last_transaction_date,
+          volume_kg: Number(m.last_transaction_volume ?? 0),
+        }
+      })
+    }
+    activityStore.updateForm({
+      nonActive: missing
+    })  
   },
   { immediate: true, deep: true }
 )

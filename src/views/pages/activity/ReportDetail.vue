@@ -44,6 +44,32 @@ import { VSheet } from 'vuetify/components';
     window.open(viewMap.value, '_blank')
   }
 
+  const missingItems = computed(() => {
+  if(!activityStore.activityReport.missing_items?.length){
+    let items : Record<string, any[]> = {}
+    for (const [key, value] of Object.entries(statStore.monthly_sales)) {
+      items[key] = value.missing_items
+    }
+
+    return items
+  } else {
+    return activityStore.activityReport.missing_items.reduce((acc: Record<string, any[]>, item: any) => {
+      const companyId = item?.product?.CompanyId
+      if (!companyId) return acc
+      if (!acc[companyId]) acc[companyId] = []
+      acc[companyId].push(
+        {
+          ItemCode: item.product?.ItemCode,
+          ItemName: item.product?.ItemName,
+          last_purchased: item.last_transaction_date,
+          volume_kg: Number(item.last_transaction_volume ?? 0),
+        }
+      )
+      return acc
+    }, {} as Record<string, any[]>)
+  }
+})
+
 </script>
 <template>
   <section>
@@ -235,11 +261,11 @@ import { VSheet } from 'vuetify/components';
                   </tr>
                 </thead>
                 <tbody class="text-base">
-                  <template v-for="(branchData, branchName) in monthly_sales" :key="branchName">
-                    <template v-for="(item, idx) in branchData.missing_items" :key="item.ItemCode">
+                  <template v-for="(branchData, branchName) in missingItems" :key="branchName">
+                    <template v-for="(item, idx) in branchData" :key="item.ItemCode">
                       <tr>
                         <!-- Branch name hanya di baris pertama -->
-                        <td v-if="idx === 0" :rowspan="branchData.missing_items.length" class="text-center pr-2">
+                        <td v-if="idx === 0" :rowspan="branchData.length" class="text-center pr-2">
                           {{ branchName }}
                         </td>
                         <!-- Item details -->                   
@@ -248,7 +274,7 @@ import { VSheet } from 'vuetify/components';
                         <td class="text-center">{{ item.volume_kg.toFixed(2) }}</td>
                       </tr>
                     </template>
-                    <tr v-if="!branchData.missing_items || !branchData.missing_items.length">
+                    <tr v-if="!branchData || !branchData.length">
                       <td>{{ branchName }}</td>
                       <td colspan="3" class="text-center text-muted">No missing items</td>
                     </tr>

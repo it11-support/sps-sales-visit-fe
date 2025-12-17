@@ -1,3 +1,4 @@
+import { MissingProduct } from "@/@core/stores"
 import { ICompetitor } from "../competitor"
 import { ICustomerData } from "../customer"
 import { IProduct } from "../product"
@@ -69,9 +70,10 @@ export interface IActivityReport {
   activity_purpose_ids?: number[]
   assignment_details?: IActivityDetails
   reason_qty_drops?: IReasonQtyDrop[]
-  non_active_product?: string
   product_issue?: string
   group_growth?: GrowthResponse
+  missing_items?: MissingProduct[]
+  nonActive ?: MissingProduct[]
   next_action?: string
   additional_note?: string
   competitors: ICompetitor[]

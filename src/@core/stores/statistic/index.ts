@@ -1,3 +1,5 @@
+import { IProduct } from "@/@core/typedefs";
+
 export interface IYearOnYearStatistic {
     month: string;
     items_last_year: number;
@@ -49,11 +51,13 @@ export interface MonthlySalesItem {
 }
 
 export interface MissingProduct {
+  id?: BigInt;
   ItemCode: string;
   ItemName: string;
   ItemGroup: string;
   last_purchased: Date;
   volume_kg: number;
+  product?: IProduct
 }
 
 export interface CompanyMonthlySales {

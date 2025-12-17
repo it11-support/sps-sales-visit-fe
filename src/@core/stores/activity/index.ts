@@ -75,7 +75,7 @@ export const useActivityStore = defineStore('activity', {
           assignment: {} as IActivity,
           reason_qty_drop_ids: [],
           activity_purpose_ids: [],
-          non_active_product: '',
+          missing_items: [],
           product_issue: '',
           next_action: '',
           additional_note: '',
@@ -102,7 +102,7 @@ export const useActivityStore = defineStore('activity', {
         assignment: {} as any,
         reason_qty_drop_ids: [],
         activity_purpose_ids: [],
-        non_active_product: '',
+        missing_items: [],
         product_issue: '',
         next_action: '',
         additional_note: '',
@@ -117,7 +117,7 @@ export const useActivityStore = defineStore('activity', {
         assignment: {} as IActivity,
         reason_qty_drop_ids: [],
         activity_purpose_ids: [],
-        non_active_product: '',
+        missing_items: [],
         product_issue: '',
         next_action: '',
         additional_note: '',
@@ -177,8 +177,8 @@ export const useActivityStore = defineStore('activity', {
           reason_qty_drop_ids: report.reason_qty_drops?.map((drop: any) => drop.id),
           activity_purpose_ids: report.activity_purposes?.map((purpose: any) => purpose.id),
           reason_qty_drops: report.reason_qty_drops,
+          missing_items: JSON.parse(JSON.stringify(report.non_active_items ?? [])),
           activity_purposes: report.activity_purposes,
-          non_active_product: report.non_active_product,
           product_issue: report.product_issue,
           next_action: report.next_action,
           additional_note: report.additional_note,
@@ -217,9 +217,9 @@ export const useActivityStore = defineStore('activity', {
           products: report.products ?? [],
           reason_qty_drop_ids: report.reason_qty_drops?.map((drop: any) => drop.id),
           activity_purpose_ids: report.activity_purposes?.map((purpose: any) => purpose.id),
+          missing_items: JSON.parse(JSON.stringify(report.non_active_items ?? [])),
           reason_qty_drops: report.reason_qty_drops,
           activity_purposes: report.activity_purposes,
-          non_active_product: report.non_active_product,
           group_growth: report.grouped_growth,
           product_issue: report.product_issue,
           next_action: report.next_action,
@@ -485,7 +485,6 @@ export const useActivityStore = defineStore('activity', {
     
     updateForm(form: Partial<IActivityReport>) {
       const current = this.currentReport
-
       this.activityReport = {
         ...current,
         ...form,
