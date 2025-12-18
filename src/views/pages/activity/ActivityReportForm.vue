@@ -5,6 +5,9 @@ import CheckIn from './CheckIn.vue';
 import ReportForm from './ReportForm.vue';
 import { getAnchorAndPrevDays } from './functions';
 
+const COMPANY_PRIORITY = ['SPS']
+
+
 interface MonthlyValue {
   total_sales: number
   total_days: number
@@ -107,7 +110,21 @@ const sales = computed(() => {
       }
       result = salesData
     }
-    return result
+
+    const sortedResult: Record<string, CompanyGrowthData> = {}
+
+    Object.keys(result).sort((a, b) => {
+      const pa = COMPANY_PRIORITY.indexOf(a)
+      const pb = COMPANY_PRIORITY.indexOf(b)
+        if (pa === -1 && pb === -1) return a.localeCompare(b)
+        if (pa === -1) return 1
+        if (pb === -1) return -1
+        return pa - pb
+    }).forEach((key) => {
+      sortedResult[key] = result[key]
+    })
+       
+    return sortedResult
 })
 
 const missingItems = computed(() => {
