@@ -60,6 +60,23 @@ export interface GrowthResponse {
   [companyId: string]: CompanyGrowth;
 }
 
+export interface IAssignmentSales {
+  total_sales: number;
+  total_items: number;
+}
+export interface ISalesDetails {
+  [CompanyId: string]: IAssignmentSales[]
+}
+
+export interface IsalesDetailsResponse{
+  id?: BigInt
+  CompanyId: string
+  assignment_detail_id?: BigInt
+  total_items: number
+  total_sales: number
+  date: Date
+}
+
 export interface IActivityReport {
   products?: IProduct[]
   customer?: ICustomerData
@@ -67,6 +84,8 @@ export interface IActivityReport {
   assignment_id: number
   assignment: IActivity
   reason_qty_drop_ids?: number[]
+  sales_details?: ISalesDetails
+  sales_growth?: IsalesDetailsResponse[]
   activity_purpose_ids?: number[]
   assignment_details?: IActivityDetails
   reason_qty_drops?: IReasonQtyDrop[]

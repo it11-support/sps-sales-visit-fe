@@ -1,8 +1,16 @@
 
 <script lang="ts" setup>
   import { useActivityStore, useStatisticStore } from '@/@core/stores';
-import { IActivityReport } from '@/@core/typedefs';
-import { VSheet } from 'vuetify/components';
+  import { IActivityReport } from '@/@core/typedefs';
+  import { VSheet } from 'vuetify/components';
+  import { getAnchorAndPrevDays } from './functions';
+
+
+  interface MonthlyValue {
+    total_sales: number
+    total_days: number
+    items: number  
+  }
 
   type Props = {
     assignmentId: string
@@ -29,8 +37,6 @@ import { VSheet } from 'vuetify/components';
 
   const activity = computed(() => activityStore.activity)
   const activeCustomer = computed(() => activityStore.customers.find((c) => c.CompanyId === activityStore.activeTab))
-  const customers = computed(() => activityStore.customers)
-  const monthly_sales = computed(() => statStore.monthly_sales ?? {})
   const details = computed(() => activityStore.activityReport ?? {})
 
   const viewMap = computed(() => {
@@ -68,6 +74,72 @@ import { VSheet } from 'vuetify/components';
       return acc
     }, {} as Record<string, any[]>)
   }
+})
+
+const sales = computed(() => {
+  type CompanyGrowthData = {
+    growth?: number
+  } & Record<string, MonthlyValue>
+
+  let result: Record<string, CompanyGrowthData> = {}
+
+  if(!activityStore.activityReport.sales_growth?.length){
+    for (const [companyId, months] of Object.entries(statStore.monthly_sales as Record<string, any>)) {
+      result[companyId] = {}
+
+      for (const [key, raw] of Object.entries(months as Record<string, any>)) {
+        // ambil hanya month (YYYY-MM)
+       if (key === 'growth') {
+          result[companyId].growth = Number(raw) || 0
+        continue
+      }
+        if (!/^\d{4}-\d{2}$/.test(key)) continue
+        
+        const value = raw as Partial<MonthlyValue>
+        result[companyId][key] = {
+          total_sales: value.total_sales ?? 0,
+          total_days: value.total_days ?? 0,
+          items: value.items ?? 0,
+        }
+      }
+    }
+  } else {
+      const salesData = activityStore.activityReport.sales_growth?.reduce(
+        (acc: any, curr: any) => {
+          const companyId = curr.CompanyId
+          const month = curr.date.slice(0, 7)
+
+          if (!acc[companyId]) acc[companyId] = {}
+
+          acc[companyId][month] = {
+            items: Number(curr.total_items),
+            total_sales: Number(curr.total_sales),
+            date: curr.date, // ✅ simpan date
+          }
+
+          return acc
+        },
+        {} as any
+      )
+
+      for (const companyId of Object.keys(salesData)) {
+        const meta = getAnchorAndPrevDays(salesData[companyId])
+        if (!meta) continue
+
+        const { currentKey, prevKey, anchorDay, prevDays } = meta
+
+        const currentSales = salesData[companyId][currentKey].total_sales
+        const prevSales = salesData[companyId][prevKey].total_sales
+
+        const avgCurrent = currentSales / anchorDay
+        const avgPrev = prevSales / prevDays
+
+        salesData[companyId].growth =
+          prevSales === 0 ? 0 : Number((((avgCurrent - avgPrev) / avgPrev) * 100).toFixed(2))
+      }
+      result = salesData
+    }
+    return result
 })
 
 </script>
@@ -201,7 +273,7 @@ import { VSheet } from 'vuetify/components';
               </tr>
             </thead>
             <tbody>
-              <template v-for="(branchData, branchName) in monthly_sales" :key="branchName">
+              <template v-for="(branchData, branchName) in sales" :key="branchName">
                 <tr
                   v-for="([month, rawValue], index) in Object.entries(branchData).filter(([k]) => k !== 'growth' && k !== 'missing_items')"
                   :key="month"
@@ -218,8 +290,8 @@ import { VSheet } from 'vuetify/components';
                     <td v-if="index === 0" :rowspan="Object.keys(branchData).filter(k => k !== 'growth' && k !== 'missing_items').length" class="text-center">
                       <VIcon
                         size="md"
-                        :color="branchData.growth > 0 ? 'success' : 'error'" 
-                        :icon="branchData.growth > 0 ? 'tabler-trending-up' : 'tabler-trending-down'"
+                        :color="(branchData?.growth ?? 0) > 0 ? 'success' : 'error'" 
+                        :icon="(branchData?.growth ?? 0) > 0 ? 'tabler-trending-up' : 'tabler-trending-down'"
                       />
                       <span>{{ branchData.growth }}%</span>
                     </td>

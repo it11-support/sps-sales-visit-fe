@@ -98,6 +98,7 @@ watch(
   () => statStore.monthly_sales,
   () => {
     let missing: MissingProduct[] = []
+    let sales_details: any = {}
 
     if(!activityStore.activityReport.missing_items?.length) {
       for (const [key, value] of Object.entries(statStore.monthly_sales)) {
@@ -119,7 +120,39 @@ watch(
     }
     activityStore.updateForm({
       nonActive: missing
-    })  
+    })
+
+    if (!activityStore.activityReport.sales_growth?.length) {
+      for (const [companyKey, months] of Object.entries(statStore.monthly_sales)) {      
+        sales_details[companyKey] ??= {}
+        for (const [month, value] of Object.entries(months)) {
+          if (month === 'growth' || month === 'missing_items') continue
+          const details = value as {
+            items: number
+            total_sales: number
+          }
+          sales_details[companyKey][month] = {
+            total_items: details.items,
+            total_sales: details.total_sales,
+          }
+        }
+      }
+    } else {
+      sales_details = activityStore.activityReport.sales_growth?.reduce((acc: any, curr: any) => {
+        const companyId = curr.CompanyId
+        const month = curr.date
+        if (!acc[companyId]) acc[companyId] = []
+        acc[companyId][month] = {
+          total_items: Number(curr.total_items),
+          total_sales: Number(curr.total_sales),
+        }
+        return acc
+      }, {} as any)
+    }
+
+    activityStore.updateForm({
+      sales_details
+    })
   },
   { immediate: true, deep: true }
 )
