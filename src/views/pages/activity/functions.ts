@@ -1,3 +1,6 @@
+const COMPANY_PRIORITY = ['SPS']
+
+
 export const getAnchorAndPrevDays = (companyData: Record<string, any>) => {
   const months = Object.keys(companyData).sort()
 
@@ -25,3 +28,24 @@ export const getAnchorAndPrevDays = (companyData: Record<string, any>) => {
 const daysInMonth = (year: number, monthIndex: number) => {
   return new Date(year, monthIndex + 1, 0).getDate()
 }
+
+
+export const sortByCompanyPriority = <T>(data: Record<string, T>) => {
+  const sorted: Record<string, T> = {};
+
+  Object.keys(data)
+    .sort((a, b) => {
+      const pa = COMPANY_PRIORITY.indexOf(a);
+      const pb = COMPANY_PRIORITY.indexOf(b);
+
+      if (pa === -1 && pb === -1) return a.localeCompare(b);
+      if (pa === -1) return 1;
+      if (pb === -1) return -1;
+      return pa - pb;
+    })
+    .forEach(key => {
+      sorted[key] = data[key];
+    });
+
+  return sorted;
+};

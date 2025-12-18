@@ -3,7 +3,7 @@
   import { useActivityStore, useStatisticStore } from '@/@core/stores';
 import { IActivityReport } from '@/@core/typedefs';
 import { VSheet } from 'vuetify/components';
-import { getAnchorAndPrevDays } from './functions';
+import { getAnchorAndPrevDays, sortByCompanyPriority } from './functions';
 
   const COMPANY_PRIORITY = ['SPS']
 
@@ -52,15 +52,13 @@ import { getAnchorAndPrevDays } from './functions';
   }
 
   const missingItems = computed(() => {
-  if(!activityStore.activityReport.missing_items?.length){
     let items : Record<string, any[]> = {}
-    for (const [key, value] of Object.entries(statStore.monthly_sales)) {
-      items[key] = value.missing_items
-    }
-
-    return items
-  } else {
-    return activityStore.activityReport.missing_items.reduce((acc: Record<string, any[]>, item: any) => {
+    if(!activityStore.activityReport.missing_items?.length){    
+      for (const [key, value] of Object.entries(statStore.monthly_sales)) {
+        items[key] = value.missing_items
+      }
+    } else {
+      items = activityStore.activityReport.missing_items.reduce((acc: Record<string, any[]>, item: any) => {
       const companyId = item?.product?.CompanyId
       if (!companyId) return acc
       if (!acc[companyId]) acc[companyId] = []
@@ -75,6 +73,7 @@ import { getAnchorAndPrevDays } from './functions';
       return acc
     }, {} as Record<string, any[]>)
   }
+  return sortByCompanyPriority(items)
 })
 
 const sales = computed(() => {
@@ -140,21 +139,7 @@ const sales = computed(() => {
       }
       result = salesData
     }
-
-     const sortedResult: Record<string, CompanyGrowthData> = {}
-
-    Object.keys(result).sort((a, b) => {
-      const pa = COMPANY_PRIORITY.indexOf(a)
-      const pb = COMPANY_PRIORITY.indexOf(b)
-        if (pa === -1 && pb === -1) return a.localeCompare(b)
-        if (pa === -1) return 1
-        if (pb === -1) return -1
-        return pa - pb
-    }).forEach((key) => {
-      sortedResult[key] = result[key]
-    })
-       
-    return sortedResult
+    return sortByCompanyPriority(result)
 })
 
 </script>

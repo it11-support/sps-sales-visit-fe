@@ -3,7 +3,7 @@ import { useActivityStore, useProductStore, useStatisticStore } from '@/@core/st
 import { ICompetitor } from '@/@core/typedefs';
 import CheckIn from './CheckIn.vue';
 import ReportForm from './ReportForm.vue';
-import { getAnchorAndPrevDays } from './functions';
+import { getAnchorAndPrevDays, sortByCompanyPriority } from './functions';
 
 const COMPANY_PRIORITY = ['SPS']
 
@@ -111,32 +111,18 @@ const sales = computed(() => {
       result = salesData
     }
 
-    const sortedResult: Record<string, CompanyGrowthData> = {}
-
-    Object.keys(result).sort((a, b) => {
-      const pa = COMPANY_PRIORITY.indexOf(a)
-      const pb = COMPANY_PRIORITY.indexOf(b)
-        if (pa === -1 && pb === -1) return a.localeCompare(b)
-        if (pa === -1) return 1
-        if (pb === -1) return -1
-        return pa - pb
-    }).forEach((key) => {
-      sortedResult[key] = result[key]
-    })
-       
-    return sortedResult
+    return sortByCompanyPriority(result)
 })
 
 const missingItems = computed(() => {
+  let items : Record<string, any[]> = {}
   if(!activityStore.activityReport.missing_items?.length){
-    let items : Record<string, any[]> = {}
+    
     for (const [key, value] of Object.entries(statStore.monthly_sales)) {
       items[key] = value.missing_items
-    }
-
-    return items
+    }    
   } else {
-    return activityStore.activityReport.missing_items.reduce((acc: Record<string, any[]>, item: any) => {
+    items = activityStore.activityReport.missing_items.reduce((acc: Record<string, any[]>, item: any) => {
       const companyId = item?.product?.CompanyId
       if (!companyId) return acc
       if (!acc[companyId]) acc[companyId] = []
@@ -151,6 +137,7 @@ const missingItems = computed(() => {
       return acc
     }, {} as Record<string, any[]>)
   }
+  return sortByCompanyPriority(items)
 })
 
 </script>
