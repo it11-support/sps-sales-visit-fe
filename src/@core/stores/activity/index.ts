@@ -1,4 +1,5 @@
 import { IActivity, IActivityReport, ICompetitor, ICustomerData, IProduct, IReasonQtyDrop, SortItem } from "@/@core/types"
+import dayjs from "dayjs"
 import { useStatisticStore } from "../statistic"
 
 export interface Filters {
@@ -193,7 +194,25 @@ export const useActivityStore = defineStore('activity', {
       await nextTick()      
       this.loadingAssignment = false
     },
+    async exportReport(id: string, customerName?: string, date?: string) {
 
+      const reportDate = dayjs(date).format('YYYY-MM-DD')
+      this.loading = true
+
+      try {
+        const fileName =  `Sales Visit Report - ${customerName || 'Customer'} - ${reportDate}`
+        await downloadApi(
+          `activity/${id}/export`,
+          `${fileName}.xlsx`,
+        )
+      }
+      catch (error) {
+        console.error(error)
+      }
+      finally {
+        this.loading = false
+      }
+    },
     async fetchActivityReport(id: string) {
       this.loadingAssignment = true;
       const { data, error } = await useApi<any>(`activity/${id}/report`);

@@ -108,6 +108,11 @@ const handleCheckIn = async(id: number) => {
   await activityStore.updateActivityStatus(id, STATUS.ONGOING)
   router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
+
+const handleExportReport = async(id: string, customer: string, date?: string) => {
+  activityStore.exportReport(id, customer, date)
+}
+
 </script>
 
 <template>
@@ -264,7 +269,15 @@ const handleCheckIn = async(id: number) => {
             prepend-icon="tabler-notes"
             >
             View
-          </VBtn>         
+          </VBtn>  
+          <VBtn
+            color="success"
+            size="small"
+            :loading="activityStore.loading"
+            prepend-icon="tabler-file-export"
+            @click="handleExportReport(item.id.toString(), item.customers[0].CardName, item.check_in)">
+            Export
+          </VBtn>
         </div>
         <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.DRAFT || item.status === STATUS.ONGOING && !isAdmin">
           <VBtn

@@ -140,6 +140,11 @@ const missingItems = computed(() => {
   return sortByCompanyPriority(items)
 })
 
+const handleExportReport = async() => {
+  activityStore.exportReport(props.assignmentId, activeCustomer.value?.CardName, activity.value.check_in)
+}
+
+const isCompleted = computed(() => activityStore.currentReport.assignment?.status === 'completed')
 </script>
 
 <template>
@@ -197,7 +202,7 @@ const missingItems = computed(() => {
           <div class="d-flex flex-column gap-y-1">
               <div class="d-flex justify-space-between align-center">
                 <h6 class="text-h6">
-                  {{ formatFullDateWithSuffix(activity.scheduled_date) }}
+                  {{ formatFullDateWithSuffix(activity.check_in as string) }}
                 </h6> 
               </div>
              
@@ -234,6 +239,18 @@ const missingItems = computed(() => {
             </div>
         </template>
       </VCol>     
+    </VRow>
+    <VRow v-if="isCompleted && !activityStore.loadingAssignment">
+      <VCol class="text-no-wrap" cols="12" lg="4" md="4" sm="12">
+        <VBtn
+          color="success"
+          size="small"
+          :loading="activityStore.loading"
+          prepend-icon="tabler-file-export"
+          @click="handleExportReport">
+          Export Report
+        </VBtn>
+      </VCol>
     </VRow>
   </VCardText> 
 </VCard>

@@ -360,6 +360,12 @@ const handleViewOnMap = () => {
   window.open(viewMap.value, '_blank')
 }
 
+const customers = computed(() => activityStore.customers)
+const activity = computed(() => activityStore.activity)
+
+const handleExportReport = async() => {
+  activityStore.exportReport(props.assignmentId, customers.value[0].CardName, activity.value.check_in)
+}
 </script>
 
 <template>
@@ -718,10 +724,21 @@ const handleViewOnMap = () => {
                   <VIcon icon="tabler-map-2 mr-2" /> View Location
                 </VBtn>
               </VCol>
+              <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment.status === 'completed'">
+                <VBtn
+                  color="success"
+                  size="small"
+                  :loading="activityStore.loading"
+                  prepend-icon="tabler-file-export"
+                  @click="handleExportReport"
+                >
+                  Export Report
+                </VBtn>
+              </VCol>
             </VRow>
           </template> 
           <VRow>
-            <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start">
+            <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment.status !== 'completed'">
               <VBtn color="warning" type="button" @click="handleSaveAsDraft">
                 Save As Draft <VIcon end icon="tabler-pencil-check" />
               </VBtn>

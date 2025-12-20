@@ -40,6 +40,8 @@ import { getAnchorAndPrevDays, sortByCompanyPriority } from './functions';
   const activeCustomer = computed(() => activityStore.customers.find((c) => c.CompanyId === activityStore.activeTab))
   const details = computed(() => activityStore.activityReport ?? {})
 
+  const customer = computed(() => activityStore.customers)
+
   const viewMap = computed(() => {
     if(!details.value) return
 
@@ -141,6 +143,9 @@ const sales = computed(() => {
     }
     return sortByCompanyPriority(result)
 })
+const handleExportReport = async() => {
+  activityStore.exportReport(props.assignmentId, customer.value[0].CardName, details.value.check_in)
+}
 
 </script>
 <template>
@@ -170,28 +175,25 @@ const sales = computed(() => {
       </template>
     </VBreadcrumbs>
     <VCard class="pa-2 pa-sm-2 mb-6" >
-      <VRow>
-        <VCol cols="12">
-          <VCardItem class="pb-4">
-            <VCardTitle>ACTIVITY REPORT DETAIL</VCardTitle>
-          </VCardItem>
-        </VCol>
-      </VRow>
-      <VRow>
-        <VCol cols="12">
-          <VTabs v-model="activityStore.activeTab">
-            <VTab
-              v-for="name in activityStore.tabs"
-              :key="name"
-              :value="name"
-              @click="activityStore.setActiveTab(name)"
-            >
-              {{ name }}
-            </VTab>
-          </VTabs>
-        </VCol>
-      </VRow>
-      <VRow>
+      <VCardItem class="pb-4">
+        <VCardTitle>ACTIVITY REPORT DETAIL</VCardTitle>
+      </VCardItem>
+      <VCardText>
+        <VRow>
+          <VCol cols="12">
+            <VTabs v-model="activityStore.activeTab">
+              <VTab
+                v-for="name in activityStore.tabs"
+                :key="name"
+                :value="name"
+                @click="activityStore.setActiveTab(name)"
+              >
+                {{ name }}
+              </VTab>
+            </VTabs>
+          </VCol>
+        </VRow>
+        <VRow>
         <VCol class="text-no-wrap px-6" cols="12" lg="4" md="4" sm="12">
           <template v-if="loading">
             <VSkeletonLoader          
@@ -235,8 +237,21 @@ const sales = computed(() => {
               </div>
             </div>
           </template>
-        </VCol>
-      </VRow>
+          </VCol>
+        </VRow>
+        <VRow v-if="!activityStore.loadingAssignment">
+          <VCol class="text-no-wrap" cols="12" lg="4" md="4" sm="12">
+            <VBtn
+              color="success"
+              size="small"
+              :loading="activityStore.loading"
+              prepend-icon="tabler-file-export"
+              @click="handleExportReport">
+              Export Report
+            </VBtn>
+          </VCol>
+        </VRow>
+      </VCardText>          
     </VCard>
     <VCard class="mb-6">
       <VCardItem class="pb-4">
@@ -555,9 +570,20 @@ const sales = computed(() => {
               <span class="me-2" style="min-inline-size: 120px;">Check Out Date</span>
               <span>{{ formatDate(details.check_out, true ) }}</span>
             </VCol>
-            <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
+            <VCol class="text-no-wrap" cols="12" v-if="viewMap">
               <VBtn color="success" size="small" @click="handleViewOnMap">
                 <VIcon icon="tabler-map-2 mr-2" /> View Location
+              </VBtn>
+            </VCol>
+            <VCol class="text-no-wrap" cols="12" v-if="viewMap && !activityStore.loadingAssignment">
+              <VBtn
+                color="success"
+                size="small"
+                :loading="activityStore.loading"
+                prepend-icon="tabler-file-export"
+                @click="handleExportReport"
+              >
+                Export Report
               </VBtn>
             </VCol>
         </VRow>
