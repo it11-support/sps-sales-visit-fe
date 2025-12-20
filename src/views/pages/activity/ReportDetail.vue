@@ -244,7 +244,7 @@ const handleExportReport = async() => {
             <VBtn
               color="success"
               size="small"
-              :loading="activityStore.loading"
+              :loading="activityStore.loadingReport === `loading${props.assignmentId}`"
               prepend-icon="tabler-file-export"
               @click="handleExportReport">
               Export Report
@@ -579,7 +579,7 @@ const handleExportReport = async() => {
               <VBtn
                 color="success"
                 size="small"
-                :loading="activityStore.loading"
+                :loading="activityStore.loadingReport === `loading${props.assignmentId}`"
                 prepend-icon="tabler-file-export"
                 @click="handleExportReport"
               >

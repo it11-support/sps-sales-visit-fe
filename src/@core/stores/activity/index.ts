@@ -29,6 +29,7 @@ export const useActivityStore = defineStore('activity', {
     loadingList: false,
     loadingAssignment: false,
     loading: false,
+    loadingReport:'',
     loadingDetail: false,
     selectedRows: [] as IActivity[],
     salesPersonsOptions: [] as { title: string; value: number }[],
@@ -197,7 +198,7 @@ export const useActivityStore = defineStore('activity', {
     async exportReport(id: string, customerName?: string, date?: string) {
 
       const reportDate = dayjs(date).format('YYYY-MM-DD')
-      this.loading = true
+      this.loadingReport = `loading${id}`
 
       try {
         const fileName =  `Sales Visit Report - ${customerName || 'Customer'} - ${reportDate}`
@@ -210,7 +211,7 @@ export const useActivityStore = defineStore('activity', {
         console.error(error)
       }
       finally {
-        this.loading = false
+        this.loadingReport = ''
       }
     },
     async fetchActivityReport(id: string) {

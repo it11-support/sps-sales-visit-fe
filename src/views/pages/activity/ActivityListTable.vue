@@ -273,7 +273,7 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
           <VBtn
             color="success"
             size="small"
-            :loading="activityStore.loading"
+            :loading="activityStore.loadingReport === `loading${item.id}`"
             prepend-icon="tabler-file-export"
             @click="handleExportReport(item.id.toString(), item.customers[0].CardName, item.check_in)">
             Export

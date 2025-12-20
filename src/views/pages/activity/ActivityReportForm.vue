@@ -245,7 +245,7 @@ const isCompleted = computed(() => activityStore.currentReport.assignment?.statu
         <VBtn
           color="success"
           size="small"
-          :loading="activityStore.loading"
+          :loading="activityStore.loadingReport === `loading${props.assignmentId}`"
           prepend-icon="tabler-file-export"
           @click="handleExportReport">
           Export Report
