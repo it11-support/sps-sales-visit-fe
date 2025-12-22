@@ -63,7 +63,7 @@ salesStore.$reset()
 onMounted(async() => {
   const ids = !isAdmin.value ? user.value.sales_person
       .filter((sp: ISalesPerson) => selectedCompanies.value.includes(sp.CompanyId))
-      .map((sp: ISalesPerson) => sp.SlpCode) : []
+      .map((sp: ISalesPerson) => sp.id) : []
 
   if(isAdmin.value) {
     await customerStore.initialize()
@@ -168,7 +168,7 @@ watch(
           .filter((sp: ISalesPerson) =>
             selectedCompanies.value.includes(sp.CompanyId)
           )
-          .map((sp: ISalesPerson) => Number(sp.SlpCode))
+          .map((sp: ISalesPerson) => Number(sp.id))
       : Array.isArray(newVal.sales_person_id)
         ? newVal.sales_person_id.map(Number)
         : newVal.sales_person_id
