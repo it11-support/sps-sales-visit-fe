@@ -61,15 +61,15 @@ customerStore.$reset()
 salesStore.$reset()
 
 onMounted(async() => {
+  const ids = !isAdmin.value ? user.value.sales_person
+      .filter((sp: ISalesPerson) => selectedCompanies.value.includes(sp.CompanyId))
+      .map((sp: ISalesPerson) => sp.SlpCode) : []
+
   if(isAdmin.value) {
     await customerStore.initialize()
-  } else if(isSpv.value) {
-    await customerStore.initialize(undefined, user.value.team_id)
-  } else {
-    const ids = user.value.sales_person
-      .filter((sp: ISalesPerson) => selectedCompanies.value.includes(sp.CompanyId))
-      .map((sp: ISalesPerson) => sp.SlpCode)
-
+  } else if(isSpv.value) {   
+    await customerStore.initialize(ids, user.value.team_id)
+  } else {    
     await customerStore.initialize(ids)
   }
   salesStore.updateQuery({ per_page: -1, page: 1 })
@@ -94,6 +94,19 @@ const status = [
   { title: 'Active', value: 'N' },
   { title: 'Inactive', value: 'Y' },
 ]
+
+const filteredSalesPersonOptions = computed(() => {
+  const seen = new Set<number>();
+  return salesStore.salesPersonOptions
+    .filter(item => item.user.length > 0)
+    .filter(item => selectedCompanies.value.includes(item.type))
+    .filter(item => {
+      if (seen.has(Number(item.value))) return false;
+      seen.add(Number(item.value));
+      return true;
+    });
+});
+
 
 
 // Last transaction
@@ -231,9 +244,10 @@ watch(selectedCompanies,
           <!-- 👉 Select Role -->
           <VCol cols="12" sm="4" v-if="isAdmin || isSpv">
             <AppCombobox 
+              multiple
               v-model="filters.sales_person_id"          
               placeholder="Filter by sales person" 
-              :items="salesStore.salesPersonOptions.filter(item => item.user !== null).filter(item => selectedCompanies.includes(item.type))"
+              :items="filteredSalesPersonOptions"
               clearable
               clear-icon="tabler-x" 
               :loading="loadingSalesPerson"
