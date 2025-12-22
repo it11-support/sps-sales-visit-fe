@@ -317,6 +317,10 @@ const onSelect = (val: ICompetitor, index: number) => {
   })
 }
 
+const showButton = computed(() => {
+  return activityPurposeReport?.value.activity_purposes && activityPurposeReport?.value.activity_purposes.length > 0
+})
+
 const handleRemoveCompetitor = (index: number) => {
   competitors.splice(index, 1)
 }
@@ -430,8 +434,20 @@ const handleExportReport = async() => {
                   :rules="[]"
                 />
               </VCol>
-              </VRow>
-              <VRow>
+            </VRow>
+            <VRow>
+              <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="showButton">
+                <VBtn color="warning" type="button" @click="handleSaveAsDraft">
+                  Save As Draft <VIcon end icon="tabler-pencil-check" />
+                </VBtn>
+              </VCol>
+              <VCol cols="12" md="6" v-if=" showButton && activityStore.activity.image_path === null">
+                <VBtn color="warning" type="button" @click="showCheckIn = true">
+                  Take Photo <VIcon end icon="tabler-camera" />
+                </VBtn>              
+              </VCol>
+            </VRow>
+            <VRow>
               <VCol cols="12">
                 <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
                   <VBtn
@@ -495,6 +511,18 @@ const handleExportReport = async() => {
               </VCol>
               </VRow>
               <VRow>
+                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment.status !== 'completed'">
+                  <VBtn color="warning" type="button" @click="handleSaveAsDraft">
+                    Save As Draft <VIcon end icon="tabler-pencil-check" />
+                  </VBtn>
+                </VCol>
+                <VCol cols="12" md="6" v-if=" activityStore.activity.image_path === null">
+                  <VBtn color="warning" type="button" @click="showCheckIn = true">
+                    Take Photo <VIcon end icon="tabler-camera" />
+                  </VBtn>
+                </VCol>
+              </VRow>
+              <VRow>
               <VCol cols="12">
                 <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
                   <VBtn                  
@@ -544,7 +572,20 @@ const handleExportReport = async() => {
                   clear-icon="tabler-x"
                 />
               </VCol>
-
+              </VRow>
+              <VRow>
+                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment.status !== 'completed'">
+                  <VBtn color="warning" type="button" @click="handleSaveAsDraft">
+                    Save As Draft <VIcon end icon="tabler-pencil-check" />
+                  </VBtn>
+                </VCol>
+                <VCol cols="12" md="6" v-if=" activityStore.activity.image_path === null">
+                  <VBtn color="warning" type="button" @click="showCheckIn = true">
+                    Take Photo <VIcon end icon="tabler-camera" />
+                  </VBtn>
+                </VCol>
+              </VRow>
+              <VRow>
               <VCol cols="12">
                 <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
                   <VBtn
@@ -671,6 +712,18 @@ const handleExportReport = async() => {
                   </VCol>
                 </VRow>
               </VCol>
+              </VRow>
+              <VRow>
+                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment.status !== 'completed'">
+                  <VBtn color="warning" type="button" @click="handleSaveAsDraft">
+                    Save As Draft <VIcon end icon="tabler-pencil-check" />
+                  </VBtn>
+                </VCol>
+                <VCol cols="12" md="6" v-if=" activityStore.activity.image_path === null">
+                  <VBtn color="warning" type="button" @click="showCheckIn = true">
+                    Take Photo <VIcon end icon="tabler-camera" />
+                  </VBtn>
+                </VCol>
               </VRow>
               <VRow>
                 <VCol cols="12">
