@@ -22,7 +22,7 @@ const selectedSPSCustomer = ref<number | null>(null)
 const showLinkSalesPersonModal = ref(false)
 const salesPersonId = data.value.sales_person?.SlpCode
 const isLoading = ref(false)
-const isSticky = ref(true)
+const appCardOpen = ref(false)
 const activityStore = useActivityStore()
 const customerStore = useCustomerStore()
 const formData = ref<any>({
@@ -139,6 +139,10 @@ const handleSubmit = async () => {
   })
 }
 
+const onCollapsed = (collapsed: boolean) => {
+  appCardOpen.value = !collapsed
+}
+
 
 </script>
 
@@ -157,7 +161,8 @@ const handleSubmit = async () => {
     <AppCardActions
       :title=title
       action-collapsed
-      :collapsed="isSticky"
+      :collapsed="!appCardOpen"
+      @collapsed="onCollapsed"
     >
       <VCardText>       
         <VRow class="d-flex justify-start">
@@ -175,19 +180,28 @@ const handleSubmit = async () => {
         <VRow class="d-flex justify-start">
           <VCol cols="12">
             <VDivider class="my-4" />
-              <VRow class="d-flex justify-end">
-                <VCol cols="12" lg="3" md="6" sm="12" class="d-flex justify-end">
+              <VRow class="d-flex justify-start">
+                <VCol cols="12" lg="3" md="6" sm="12" class="d-flex justify-start">
                   <VBtn color="warning" @click="handleShowScheduleForm">
                     Create Activity <VIcon end icon="tabler-calendar-check" />
                   </VBtn>
                 </VCol>
               </VRow>
             </VCol>
-          </VRow>        
+          </VRow>
       </VCardText>
     </AppCardActions>
   </div>
-   <VDialog
+  <VCol cols="12" v-if="!appCardOpen">
+    <VRow class="d-flex justify-start">
+      <VCol cols="12" lg="3" md="6" sm="12">
+        <VBtn color="warning" @click="handleShowScheduleForm">
+          Create Activity <VIcon end icon="tabler-calendar-check" />
+        </VBtn>
+      </VCol>
+    </VRow>
+  </VCol>
+  <VDialog
     v-model="showScheduleForm"
     width="500"
   >
