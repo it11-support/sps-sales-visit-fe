@@ -25,6 +25,9 @@ const isLoading = ref(false)
 const appCardOpen = ref(false)
 const activityStore = useActivityStore()
 const customerStore = useCustomerStore()
+const showAddSlpCode = ref(false)
+const linkSalesPersonLoading = ref(false)
+
 const formData = ref<any>({
   assigned_by: userData.value.id,
   assigned_to: data.value.sales_person?.id ?? 0,
@@ -66,6 +69,8 @@ watch(showScheduleForm, (val) => {
 
 const title = computed(() => `${data.value.CardName.toUpperCase()} (${data.value.CompanyId})`)
 
+const slps = computed(() => data.value.sales_person?.user?.[0].sales_person  ?? [])
+
 const handleShowScheduleForm = () => {
   if(data.value.sales_person?.user == null) {
     showLinkSalesPersonModal.value = true
@@ -98,14 +103,21 @@ const updateSelectedType = (val: number) => {
 
 
 const updateSelectedCustomer = (val: number, companyId: string) => {
-  if(companyId === COMPANIES.SPS) {
+  const selected = customerStore.customerOptions.find(x => x.value === val)
+
+  if (!selected) return
+
+  showAddSlpCode.value = selected.SlpCode === -1
+
+  if (companyId === COMPANIES.SPS) {
     selectedSPSCustomer.value = val
     formData.value.sps_customer_id = val
-  } else if(companyId === COMPANIES.BBS) {
+  } else if (companyId === COMPANIES.BBS) {
     selectedBBSCustomer.value = val
     formData.value.bbs_customer_id = val
   }
 }
+
 
 watch(() => addBbsCustomer.value, (val) => {
   if (!val) {
@@ -143,6 +155,36 @@ const onCollapsed = (collapsed: boolean) => {
   appCardOpen.value = !collapsed
 }
 
+const handleLinkSalesPersonToCustomer = async () => {
+
+  try {
+    linkSalesPersonLoading.value = true
+    const customerId = addBbsCustomer.value
+      ? selectedBBSCustomer.value
+      : selectedSPSCustomer.value
+
+    const slpId = addBbsCustomer.value
+      ? slps.value.find(sp => sp.CompanyId === COMPANIES.BBS)?.id
+      : slps.value.find(sp => sp.CompanyId === COMPANIES.SPS)?.id
+
+    const payload = {
+      sales_person_id: slpId,
+      customer_id: Number(customerId),
+    }
+
+    await $api('customer/link-sales-person', {
+      method: 'POST',
+      body: payload,
+    }).then(() => {
+      linkSalesPersonLoading.value = false
+    })
+
+    showAddSlpCode.value = false
+  } catch (error) {
+    showAddSlpCode.value = false
+    console.error(error)
+  }
+}
 
 </script>
 
@@ -479,6 +521,43 @@ const onCollapsed = (collapsed: boolean) => {
       </VCardText>
     </VCard>
   </VDialog>
+  <VDialog v-model="showAddSlpCode" width="400">
+    <VCard>
+      <VCardTitle>Link Sales Person</VCardTitle>
+      <VCardText>
+      This Customer has no Sales Person. Do you want to link to this sales person [{{ salesPersonName }}] ?
+      </VCardText>
+
+      <VCardActions class="justify-end">
+        <VRow no-gutters>
+          <VCol
+            cols="12"
+            md="9"
+          >
+            <VBtn
+              :loading="linkSalesPersonLoading"
+              :disabled="linkSalesPersonLoading"
+              type="button"
+              class="me-4"
+              color="success"
+              @click="handleLinkSalesPersonToCustomer"
+            >
+              Yes
+            </VBtn>
+            <VBtn              
+              type="button"
+              class="me-4"
+              color="danger"
+              @click="showAddSlpCode = false"
+            >
+              Cancel      
+            </VBtn>
+          </VCol>
+        </VRow>
+      </VCardActions>
+    </VCard>
+  </VDialog>
+
   <LinkSalesPersonModal 
     :show="showLinkSalesPersonModal"
     :sales-person-id="salesPersonId"
