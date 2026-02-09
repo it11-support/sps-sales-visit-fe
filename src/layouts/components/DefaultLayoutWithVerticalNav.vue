@@ -10,10 +10,9 @@ import NavBarI18n from '@core/components/I18n.vue'
 
 // @layouts plugin
 import { VerticalNavLayout } from '@layouts'
-import { IUser } from '@/@core/typedefs'
 
-const user = useCookie<IUser>('userData')
-const isAdmin = computed(() => user.value.role?.role === 'admin' || user.value.role?.role === 'spv')
+const user = useCookie<any>('userData')
+const isAdmin = computed(() => user.value.role.role === 'admin' || user.value.role.role === 'spv')
 const navItems = getNavItems(isAdmin.value)
 
 </script>

@@ -25,9 +25,9 @@ let debouncedQueryTimeout: ReturnType<typeof setTimeout> | null = null
 // Data table options
 const isConfirmDialogVisible = ref(false)
 const configStore = useConfigStore()
-const user = useCookie<IUser>('userData')
-const isAdmin = computed(() => user.value.role?.role === 'admin')
-const isSpv = computed(() => user.value.role?.role === 'spv')
+const user = useCookie<any>('userData')
+const isAdmin = computed(() => user.value.role.role === 'admin')
+const isSpv = computed(() => user.value.role.role === 'spv')
 const showFilter = ref(false)
 const userStore = useUserStore()
 const roleStore = useRoleStore()
@@ -109,11 +109,11 @@ const localSalesPersons = computed(() => {
 
 onMounted(async() => {
   salesPersonStore.updateSalesPersonOptions()
-  if(user.value.team_id) await userStore.initialize(user.value.team_id)
+  await userStore.initialize(user.value.team_id)
 })
 
 watch(() => user.value, async(newVal) => {
-  if(newVal.team_id){
+  if(newVal){
     await userStore.initialize(newVal.team_id)
   }
 },{immediate: true})
@@ -223,9 +223,8 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
   return (
     !isLinked ||
     isAdmin.value ||
-    !item.sales_person?.some(itemSp => 
-      user.value.sales_person?.some(userSp => userSp.SlpCode === itemSp.SlpCode)) ||
-    (isSpv.value && item.role?.role === 'sales')
+    !item.sales_person?.some(sp => sp.SlpCode === user.value.sales_person?.SlpCode) ||
+    (isSpv && item.role?.role === 'sales')
   )
 }
 
