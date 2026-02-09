@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Filters, useCustomerStore } from '@/@core/stores/customer'
 import { useSalesPersonStore } from '@/@core/stores/sales-person'
-import { ISalesPerson } from '@/@core/typedefs'
+import { ISalesPerson, IUser } from '@/@core/typedefs'
 
 const customerStore = useCustomerStore()
 const salesStore = useSalesPersonStore()
@@ -17,9 +17,10 @@ const debouncedQuery = useDebounce(searchQuery, 400)
 const selectedRows = customerStore.selectedRows
 const filterDormantCustomer = ref(false)
 // Delayed search
-const user = useCookie<any>('userData')
-const isAdmin = computed(() => user.value.role.role === 'admin')
-const isSpv = computed(() => user.value.role.role === 'spv')
+const user = useCookie<IUser>('userData')
+
+const isAdmin = computed(() => user.value.role?.role === 'admin')
+const isSpv = computed(() => user.value.role?.role === 'spv')
 const showFilter = ref(false)
 const loadingSalesPerson = ref(true)
 const loadingGroupName = ref(true)
@@ -61,9 +62,9 @@ customerStore.$reset()
 salesStore.$reset()
 
 onMounted(async() => {
-  const ids = !isAdmin.value ? user.value.sales_person
+  const ids = !isAdmin.value && user.value.sales_person ? user.value.sales_person
       .filter((sp: ISalesPerson) => selectedCompanies.value.includes(sp.CompanyId))
-      .map((sp: ISalesPerson) => sp.id) : []
+      .map((sp: ISalesPerson) => Number(sp.id)) : []
 
   if(isAdmin.value) {
     await customerStore.initialize()
@@ -163,7 +164,7 @@ watch(
   filters,
   (newVal) => {
     const isNotAdmin = !isAdmin.value && !isSpv.value
-    const finalSalesPersonIds = isNotAdmin
+    const finalSalesPersonIds = isNotAdmin && user.value.sales_person?.length
       ? user.value.sales_person
           .filter((sp: ISalesPerson) =>
             selectedCompanies.value.includes(sp.CompanyId)

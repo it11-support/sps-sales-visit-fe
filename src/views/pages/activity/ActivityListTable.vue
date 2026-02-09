@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 import { Filters, useActivityStore, useAuthStore } from '@/@core/stores';
+import { IUser } from '@/@core/typedefs';
 
 const activityStore = useActivityStore()
 const authStore = useAuthStore()
-const user = useCookie<any>('userData')
-const isAdmin = computed(() => user.value.role.role === 'admin')
-const isSpv = computed(() => user.value.role.role === 'spv')
+const user = useCookie<IUser>('userData')
+const isAdmin = computed(() => user.value.role?.role === 'admin')
+const isSpv = computed(() => user.value.role?.role === 'spv')
 
 const searchQuery = ref('')
-const salesPersonId = computed(() => user.value.sales_person.filter((sp: any) => sp.CompanyId ==='SPS'))
+const salesPersonId = computed(() => user.value.sales_person?.filter((sp: any) => sp.CompanyId ==='SPS')[0].id)
 const debouncedQuery = useDebounce(searchQuery, 400)
 const router = useRouter()
 const showFilters = ref(false)
@@ -51,7 +52,7 @@ onMounted(async () => {
   } else if(isSpv.value) {
     await activityStore.initialize(undefined, user.value.team_id)
   } else {
-    await activityStore.initialize(salesPersonId.value.id)
+    if(salesPersonId.value) await activityStore.initialize(Number(salesPersonId.value))
   } 
 })
 
