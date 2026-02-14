@@ -33,7 +33,7 @@ const formData = ref<any>({
   assigned_to: data.value.sales_person?.id ?? 0,
   bbs_customer_id: data.value.CompanyId === COMPANIES.SPS ? null : data.value.id,
   sps_customer_id: data.value.CompanyId === COMPANIES.BBS ? null : data.value.id,
-  scheduled_date: '',
+  scheduled_date: dayjs().format('YYYY-MM-DD HH:mm:ss'),
   activity_type_id: 0,
   notes: '',
   status: 'assigned',
@@ -425,7 +425,7 @@ const handleLinkSalesPersonToCustomer = async () => {
                     v-model="date"
                     placeholder="Select Date"
                     :config="{ 
-                      dateFormat: 'Y-m-d',                      
+                      dateFormat: 'Y-m-d',
                       minDate: 'today',
                       disableMobile: true
                     }"
