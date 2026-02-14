@@ -426,8 +426,7 @@ const handleLinkSalesPersonToCustomer = async () => {
                     placeholder="Select Date"
                     :config="{ 
                       dateFormat: 'Y-m-d',
-                      minDate: 'today',
-                      disableMobile: true
+                      minDate: 'today',                     
                     }"
                   />
                 </VCol>
