@@ -35,6 +35,25 @@ onMounted(async () => {
   salesInvoiceStore.fetchSalesInvoices()
 })
 
+watch(
+  [page, itemsPerPage, sortOptions, startDate, endDate, searchQuery, groupBy],
+  () => {
+    salesInvoiceStore.updateQuery({
+      id: router.params.customerId,
+      itemId: router.params.itemId,
+      per_page: itemsPerPage.value,
+      page: page.value,
+      sort_options: sortOptions.value,
+      start_date: startDate.value,
+      end_date: endDate.value,
+      group_by: groupBy.value,
+      search: searchQuery.value,
+    })
+
+    salesInvoiceStore.fetchSalesInvoices()
+  },
+  { deep: true }
+)
 
 const { data: customerData, execute: fetchCustomer } = await useApi<any>(createUrl(`customer/${router.params.customerId}`))
 const { data: momSummaryData, execute: fetchMoMSummary} = await useApi<any>(createUrl(`customer/sales-summary-monthly/${router.params.customerId}`))
