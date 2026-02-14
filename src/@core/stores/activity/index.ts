@@ -481,8 +481,15 @@ export const useActivityStore = defineStore('activity', {
         return
       }
 
-      this.salesPersonsOptions = salesPersonsData.value.data.salesPersons.map((sales: any) => ({
-        title: `${sales.SlpName} (${sales.CompanyId})`,
+      const distinctSalesPersons = Object.values(
+        salesPersonsData.value.data.salesPersons.reduce((acc: any, item: any) => {
+          acc[item.SlpName] = item;
+          return acc;
+        }, {})
+      )
+
+      this.salesPersonsOptions = distinctSalesPersons.map((sales: any) => ({
+        title: `${sales.SlpName}`,
         value: sales.id
       }))
       this.loading = false
