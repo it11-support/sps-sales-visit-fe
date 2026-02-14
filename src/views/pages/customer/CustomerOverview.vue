@@ -425,8 +425,9 @@ const handleLinkSalesPersonToCustomer = async () => {
                     v-model="date"
                     placeholder="Select Date"
                     :config="{ 
-                      dateFormat: 'F j, Y', 
-                      minDate: new Date(),
+                      dateFormat: 'Y-m-d',                      
+                      minDate: 'today',
+                      disableMobile: true
                     }"
                   />
                 </VCol>
