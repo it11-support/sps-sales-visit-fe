@@ -8,7 +8,7 @@ const isAdmin = computed(() => user.value.role.role === 'admin')
 const isSpv = computed(() => user.value.role.role === 'spv')
 
 const searchQuery = ref('')
-const salesPersonId = computed(() => user.value.sales_person.filter((sp: any) => sp.CompanyId ==='SPS'))
+const salesPersonId = computed(() => user.value.sales_person.filter((sp: any) => sp.CompanyId ==='SPS')[0])
 const debouncedQuery = useDebounce(searchQuery, 400)
 const router = useRouter()
 const showFilters = ref(false)
@@ -45,15 +45,20 @@ const headers = computed(() => {
 
 activityStore.$reset()
 
-onMounted(async () => {
+const loadActivity = async () => {
+   activityStore.fetchSalesPersonOptions()
+  // Admin: selalu all
   if (isAdmin.value) {
     await activityStore.initialize()
-  } else if(isSpv.value) {
-    await activityStore.initialize(undefined, user.value.team_id)
-  } else {
-    await activityStore.initialize(salesPersonId.value.id)
-  } 
-})
+    return
+  }
+
+  // DEFAULT → ALL
+  await activityStore.initialize()
+}
+
+onMounted(loadActivity)
+
 
 watch(showFilters, (val) => {
   if (val) {
@@ -127,28 +132,24 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
   <VCard class="mb-6">
     <VCardItem class="pb-4">
       <VCheckbox v-model="showFilters" label="Show Filters"></VCheckbox>
+      <VCol  cols="12" sm="4" md="4" lg="4" v-if="!isAdmin">
+        <AppCombobox 
+          v-model="filters.sales_person_id"
+          :disabled="loadingSalesPersonsOptions"
+          :loading="loadingSalesPersonsOptions"          
+          placeholder="Filter by sales person" 
+          :items="activityStore.salesPersonsOptions" 
+          clearable 
+          clear-icon="tabler-x"
+          :return-object="false"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+      </VCol>
     </VCardItem>
     <VCardText v-if="showFilters">
       <VRow>
-        <VCol 
-          v-if="isAdmin"
-          cols="12"
-          sm="4"
-        >
-          <AppCombobox 
-            v-model="filters.sales_person_id"
-            :disabled="loadingSalesPersonsOptions"
-            :loading="loadingSalesPersonsOptions"          
-            placeholder="Filter by sales person" 
-            :items="activityStore.salesPersonsOptions" 
-            clearable 
-            clear-icon="tabler-x"
-            :return-object="false"
-            autocomplete="off"
-            autocorrect="off"
-            spellcheck="false"
-          />
-        </VCol>
         <VCol 
           v-if="isAdmin"
           cols="12"
