@@ -96,16 +96,29 @@ const getStatus = (status: string) => {
 const form = ref({
   id: null as number | null,
 
-  scheduled_date: new Date(),
+  scheduled_date: null as Date | null,
+
 
   notes: '',
 })
 
 
- const setFormValue = (data: IActivity) => {
+const setFormValue = (data: IActivity) => {
+  let date: Date | null = null
+
+  if (data.scheduled_date) {
+    const d = new Date(data.scheduled_date)
+
+    if (!isNaN(d.getTime())) {
+      date = d
+    }
+  }
+
+
   form.value = {
     id: data.id,
-    scheduled_date: data.scheduled_date,
+
+    scheduled_date: date,
 
     notes: data.notes ?? '',
   }
