@@ -1,7 +1,9 @@
 <script lang="ts" setup>
-import { Filters, useActivityStore, useAuthStore } from '@/@core/stores';
+import { Filters, useActivityStore, useAuthStore, useCustomerStore } from '@/@core/stores';
+import { IActivity } from '@/@core/typedefs';
 
 const activityStore = useActivityStore()
+const customerStore = useCustomerStore()
 const authStore = useAuthStore()
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => user.value.role.role === 'admin')
@@ -13,6 +15,7 @@ const debouncedQuery = useDebounce(searchQuery, 400)
 const router = useRouter()
 const showFilters = ref(false)
 const loadingSalesPersonsOptions = ref(true)
+const showScheduleForm = ref(false)
 
 const filters = ref<Partial<Filters>>({
   sales_person_id: null,
@@ -46,41 +49,31 @@ const headers = computed(() => {
 activityStore.$reset()
 
 const loadActivity = async () => {
-   activityStore.fetchSalesPersonOptions()
-  // Admin: selalu all
-  if (isAdmin.value) {
-    await activityStore.initialize()
-    return
-  }
-
-  // DEFAULT → ALL
+  activityStore.fetchSalesPersonOptions()
   await activityStore.initialize()
 }
 
 onMounted(loadActivity)
 
-
-watch(showFilters, (val) => {
-  if (val) {
-    activityStore.fetchSalesPersonOptions()
-  }
+/* ================= WATCH ================= */
+watch(activityStore, val => {
+  if (val.salesPersonsOptions.length > 0)
+    loadingSalesPersonsOptions.value = false
 })
 
-watch(activityStore, (val) => {
-  if(val.salesPersonsOptions.length > 0) loadingSalesPersonsOptions.value = false
-})
-
-watch(debouncedQuery, (val) => {
+watch(debouncedQuery, val => {
   activityStore.updateFilters({ search: val })
 })
 
 watch(
   filters,
-  (newVal) => {
-    activityStore.updateFilters({ ...newVal})
+  newVal => {
+    activityStore.updateFilters({ ...newVal })
   },
   { deep: true }
 )
+
+/* ================= STATUS BADGE ================= */
 const getStatus = (status: string) => {
     switch (status) {
       case STATUS.ASSIGNED:
@@ -100,6 +93,24 @@ const getStatus = (status: string) => {
     }
 }
 
+const form = ref({
+  id: null as number | null,
+
+  scheduled_date: new Date(),
+
+  notes: '',
+})
+
+
+ const setFormValue = (data: IActivity) => {
+  form.value = {
+    id: data.id,
+    scheduled_date: data.scheduled_date,
+
+    notes: data.notes ?? '',
+  }
+}
+
 
 const handleClickViewReport = (id: number) => {
   router.push({ path: createUrl(`/activity/${id}/view-report`).value })
@@ -114,12 +125,24 @@ const handleCheckIn = async(id: number) => {
   router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
 
+const handelUpdateActivity = async () => {
+  await activityStore.updateActivity(form.value)
+  await nextTick()
+  showScheduleForm.value = false
+} 
+const handleEdit = async (item: IActivity) => {
+  setFormValue(item)
+
+  await nextTick()
+
+  showScheduleForm.value = true
+}
+
 const handleExportReport = async(id: string, customer: string, date?: string) => {
   activityStore.exportReport(id, customer, date)
 }
 
 </script>
-
 <template>
   <VBreadcrumbs
     class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
@@ -258,6 +281,17 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
           >
             Start
           </VBtn>
+           <VBtn 
+            v-if="item.assigned_to.id === user.id && item.status !== STATUS.ONGOING"
+            :key="item.id" 
+            @click="handleEdit(item)" 
+            size="small"
+            variant="tonal"
+            color="warning"
+            prepend-icon="tabler-edit"
+          >
+            Edit
+          </VBtn>
         </div>
          <div class="d-flex justify-between gap-x-4" v-else-if="item.status === STATUS.COMPLETED">
           <VBtn 
@@ -291,7 +325,7 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
             color="primary"
             prepend-icon="tabler-edit"
             >
-            Edit
+            Continue
           </VBtn>
         </div>
       </template>
@@ -345,5 +379,50 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
         </div>
       </template>      
     </VDataTableServer>
-  </VCard>  
+  </VCard>
+ <VDialog v-model="showScheduleForm" width="450">
+
+  <DialogCloseBtn @click="showScheduleForm = false" />
+
+  <VCard class="pa-4">
+
+    <VCardTitle>Edit Schedule</VCardTitle>
+
+    <VCardText>
+
+      <VForm @submit.prevent="handelUpdateActivity">
+
+        <VRow>
+          <!-- DATE -->
+          <VCol cols="12">
+            <AppDateTimePicker
+              v-model="form.scheduled_date"
+              label="Visit Date"
+              clearable
+            />
+          </VCol>
+          <!-- NOTES -->
+          <VCol cols="12">
+            <AppTextarea
+              v-model="form.notes"
+              label="Notes"
+              rows="3"
+            />
+          </VCol>
+          <!-- BUTTON -->
+          <VCol cols="12" class="text-right">
+            <VBtn
+              color="primary"
+              type="submit"
+              :loading="activityStore.loadingId === form.id"
+            >
+              Save
+            </VBtn>
+          </VCol>
+        </VRow>
+      </VForm>
+    </VCardText>
+  </VCard>
+</VDialog>
+
 </template>

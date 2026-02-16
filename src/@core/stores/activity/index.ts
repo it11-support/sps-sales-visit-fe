@@ -275,6 +275,19 @@ export const useActivityStore = defineStore('activity', {
       this.fetchActivityById(id.toString())
       this.loadingId = null
     },
+    async updateActivity(data: any) {
+      this.loadingId = data.id
+      const payloads = {
+        scheduled_date: data.scheduled_date,
+        notes: data.notes
+      }
+      await $api(`/activity/${data.id}`, {
+        method: 'PUT',
+        body: JSON.parse(JSON.stringify(payloads)),
+      })
+      this.fetchActivities()
+      this.loadingId = null
+    },
     async checkOut(id: number) {
       this.loadingId = id
       await $api(`/activity/check-out/${id}`, {
