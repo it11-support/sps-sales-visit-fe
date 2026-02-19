@@ -30,13 +30,33 @@ export const defaultNavItems =  [
         title: 'Activity List',
         to: { name: 'activity-list' },
         icon: { icon: 'tabler-calendar' },
+      },
+       {
+        title: 'Deleted Activities',
+        to: { name: 'activity-deleted' },
+        icon: { icon: 'tabler-trash' },
       }
     ]
   }
 ]
 
 export const getNavItems = (isAdmin: boolean) => {
-  return isAdmin ? [userMenu, ...defaultNavItems] : [...defaultNavItems];
+  const items = defaultNavItems.map(item => {
+    if (item.title === 'Activity') {
+      return {
+        ...item,
+        children: isAdmin
+          ? item.children
+          : item.children?.filter(
+              child => child.to.name !== 'activity-deleted'
+            ),
+      }
+    }
+
+    return item
+  })
+
+  return isAdmin ? [userMenu, ...items] : items
 }
 
 export default getNavItems

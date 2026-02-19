@@ -23,6 +23,7 @@ declare module 'vue-router/auto-routes' {
     'activity-id-report': RouteRecordInfo<'activity-id-report', '/activity/:id/report', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'activity-id-report-edit': RouteRecordInfo<'activity-id-report-edit', '/activity/:id/report/edit', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'activity-id-view-report': RouteRecordInfo<'activity-id-view-report', '/activity/:id/view-report', { id: ParamValue<true> }, { id: ParamValue<false> }>,
+    'activity-deleted': RouteRecordInfo<'activity-deleted', '/activity/deleted', Record<never, never>, Record<never, never>>,
     'activity-list': RouteRecordInfo<'activity-list', '/activity/list', Record<never, never>, Record<never, never>>,
     'customers-list': RouteRecordInfo<'customers-list', '/customers/list', Record<never, never>, Record<never, never>>,
     'customers-view-customer-id': RouteRecordInfo<'customers-view-customer-id', '/customers/view/:customerId', { customerId: ParamValue<true> }, { customerId: ParamValue<false> }>,

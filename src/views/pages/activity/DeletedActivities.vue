@@ -16,13 +16,15 @@ const router = useRouter()
 const showFilters = ref(false)
 const loadingSalesPersonsOptions = ref(true)
 const showScheduleForm = ref(false)
+const showRestoreModal = ref(false)
 const showDeleteModal = ref(false)
-const activityToDelete = ref({} as IActivity | null)
+const selectedActivity = ref({} as IActivity | null)
 
 const filters = ref<Partial<Filters>>({
   sales_person_id: null,
   customer_id: null,
-  status: null
+  status: null,
+  deleted: true
 })
 
 const STATUS = {
@@ -51,6 +53,7 @@ const headers = computed(() => {
 activityStore.$reset()
 
 const loadActivity = async () => {
+  activityStore.filters.deleted = true
   activityStore.fetchSalesPersonOptions()
   await activityStore.initialize()
 }
@@ -140,8 +143,14 @@ const handleCheckIn = async(id: number) => {
   router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
 
+const handleRestore = async(id: number) => {
+  await activityStore.restoreActivity(id).then(() => {
+    showRestoreModal.value = false
+  })
+}
+
 const handleDelete = async(id: number) => {
-  await activityStore.deleteActivity(id).then(() => {
+  await activityStore.deleteActivity(id, true).then(() => {
     showDeleteModal.value = false
   })
 }
@@ -194,6 +203,25 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
     </VCardItem>
     <VCardText v-if="showFilters">
       <VRow>
+        <VCol 
+          v-if="isAdmin"
+          cols="12"
+          sm="4"
+        >
+         <AppCombobox 
+          v-model="filters.sales_person_id"
+          :disabled="loadingSalesPersonsOptions"
+          :loading="loadingSalesPersonsOptions"          
+          placeholder="Filter by sales person" 
+          :items="activityStore.salesPersonsOptions" 
+          clearable 
+          clear-icon="tabler-x"
+          :return-object="false"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+        </VCol>
         <VCol 
           v-if="isAdmin"
           cols="12"
@@ -291,18 +319,31 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
       <template #item.actions="{ item }">
       <div class="d-flex justify-center gap-x-2">
 
+         <VBtn
+          v-if="isAdmin"
+          :key="`restore-${item.id}`"
+          :loading="activityStore.loadingId === item.id"
+          @click="() => { showDeleteModal = true; selectedActivity = item }"
+          size="small"
+          variant="tonal"
+          color="error"
+          prepend-icon="tabler-trash"
+        >
+          Delete Permanently
+        </VBtn>
+
         <!-- ✅ DELETE: selalu tampil jika admin -->
         <VBtn
           v-if="isAdmin"
-          :key="`delete-${item.id}`"
+          :key="`restore-${item.id}`"
           :loading="activityStore.loadingId === item.id"
-          @click="() => { showDeleteModal = true; activityToDelete = item }"
+          @click="() => { showRestoreModal = true; selectedActivity = item }"
           size="small"
           variant="tonal"
-          color="warning"
-          prepend-icon="tabler-trash"
+          color="success"
+          prepend-icon="tabler-restore"
         >
-          Delete
+          Restore
         </VBtn>
 
         <!-- ASSIGNED -->
@@ -476,21 +517,41 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
   </VCard>
 </VDialog>
 
- <VDialog v-model="showDeleteModal" width="450">
+ <VDialog v-model="showRestoreModal" width="450">
 
-  <DialogCloseBtn @click="() => {showDeleteModal = false; activityToDelete = null}" />
+  <DialogCloseBtn @click="() => {showRestoreModal = false; selectedActivity = null}" />
 
   <VCard class="pa-4">
 
-    <VCardTitle>Delete Activity</VCardTitle>
+    <VCardTitle>Restore Activity</VCardTitle>
+
+    <VCardText>
+      <p>Are you sure you want to restore this activity?</p>
+    </VCardText>
+
+   <VCardActions>
+    <VBtn color="error" @click="showRestoreModal = false"><VIcon icon="tabler-x" class="mr-2"/>Cancel</VBtn>
+    <VBtn color="success" v-if="selectedActivity != null" @click="handleRestore(selectedActivity?.id)" ><VIcon icon="tabler-restore" class="mr-2"/> Restore</VBtn>
+    <VSpacer />
+  </VCardActions>
+  </VCard>
+</VDialog>
+
+<VDialog v-model="showDeleteModal" width="450">
+
+  <DialogCloseBtn @click="() => {showDeleteModal = false; selectedActivity = null}" />
+
+  <VCard class="pa-4">
+
+    <VCardTitle>Permanently Delete</VCardTitle>
 
     <VCardText>
       <p>Are you sure you want to delete this activity?</p>
     </VCardText>
 
    <VCardActions>
-    <VBtn @click="showDeleteModal = false">Cancel</VBtn>
-    <VBtn color="error" v-if="activityToDelete != null" @click="handleDelete(activityToDelete?.id)">Delete</VBtn>
+    <VBtn color="error" @click="showDeleteModal = false"><VIcon icon="tabler-x" class="mr-2"/>Cancel</VBtn>
+    <VBtn color="warning" v-if="selectedActivity != null" @click="handleDelete(selectedActivity?.id)" ><VIcon icon="tabler-trash" class="mr-2"/> Delete</VBtn>
     <VSpacer />
   </VCardActions>
   </VCard>

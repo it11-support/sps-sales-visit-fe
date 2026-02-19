@@ -14,6 +14,7 @@ export interface Filters {
   end_date?: Date | string
   activity_type_id?: number,
   team_id?: number
+  deleted?: boolean
 }
 
 
@@ -152,6 +153,34 @@ export const useActivityStore = defineStore('activity', {
       this.activities = data.value.data.data
       this.pagination = { ...this.pagination, ...data.value.data }
       this.loadingList = false
+    },
+    async deleteActivity(id: number, force: boolean = false) {
+      this.loadingList = true
+      const { data, error } = await useApi<any>(`activity/${id}`, {
+        method: 'POST',
+        body: JSON.stringify({ force: force ? 1 : 0 }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (error.value) {
+        console.error('Error deleting activity:', error.value)
+        this.loadingList = false
+        return
+      }
+      this.fetchActivities()
+    },
+    async restoreActivity(id: number) {
+      this.loadingList = true
+      const { data, error } = await useApi<any>(`activity/${id}/restore`, {
+        method: 'POST',
+      })
+      if (error.value) {
+        console.error('Error restoring activity:', error.value)
+        this.loadingList = false
+        return
+      }
+      this.fetchActivities()
     },
     async fetchActivityById(id: string) {
       this.loadingAssignment = true
