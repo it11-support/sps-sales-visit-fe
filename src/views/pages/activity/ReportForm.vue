@@ -306,9 +306,9 @@ const onSelect = (val: ICompetitor, index: number) => {
     }
 
     activityStore.competitorOptions.push(newItem)
-    competitors[index] = { ...newItem }
+    competitors[index] = { ...newItem, product: '', qty: undefined, price: undefined }
   } else {
-    competitors[index] = { ...val, name: newName }
+    competitors[index] = { ...val, name: newName,  product: '', qty: undefined, price: undefined }
   }
 
   nextTick(() => {

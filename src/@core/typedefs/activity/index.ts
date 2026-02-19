@@ -103,6 +103,7 @@ export interface IActivityReport {
   check_out?: string
   lat?: string
   lng?: string
+  status?: string
 }
 
 export interface ISupplierProduct {

@@ -163,6 +163,7 @@ export const useActivityStore = defineStore('activity', {
       }
       this.activity = data.value.data
       this.customers = this.activity.customers
+      this.currentReport.assignment = this.activity
       this.tabs = this.activity.customers.map((customer: any) => (
         customer.CompanyId
       ))
