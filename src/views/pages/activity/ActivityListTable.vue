@@ -289,7 +289,7 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
       multi-sort
     >
       <template #item.actions="{ item }">
-      <div class="d-flex justify-center gap-x-2">
+      <div class="d-flex justify-start gap-x-2">
 
         <!-- ✅ DELETE: selalu tampil jika admin -->
         <VBtn

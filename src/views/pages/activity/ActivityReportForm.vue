@@ -105,8 +105,15 @@ const sales = computed(() => {
         const avgCurrent = currentSales / anchorDay
         const avgPrev = prevSales / prevDays
 
-        salesData[companyId].growth =
-          prevSales === 0 ? 0 : Number((((avgCurrent - avgPrev) / avgPrev) * 100).toFixed(2))
+       if(avgPrev === 0 && avgCurrent === 0){
+          salesData[companyId].growth = 0
+        } else if(avgPrev === 0 && avgCurrent > 0){
+          salesData[companyId].growth = 100
+        } else if(avgPrev > 0 && avgCurrent === 0){
+          salesData[companyId].growth = -100
+        } else {
+         salesData[companyId].growth = Number((((avgCurrent - avgPrev) / avgPrev) * 100).toFixed(2))
+        }
       }
       result = salesData
     }
