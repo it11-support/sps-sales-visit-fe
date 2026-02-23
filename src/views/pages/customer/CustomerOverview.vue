@@ -52,6 +52,7 @@ const items = [
   { title: 'Join Date', value: `${data.value.JoinDate ? formatDate(data.value.JoinDate) : '-'}`, icon: 'tabler-calendar' },
   { title: 'Contact Person', value: `${data.value.CntctPrsn ?? '-'}`, icon: 'tabler-message-user' },
   { title: 'Sales Person', value: `${salesPersonName}`, icon: 'tabler-user' },
+  { title: 'Payment Term', value: `${data.value.PaymentTerm ?? '-'}`, icon: 'tabler-currency-dollar' },
 ]
 
 onMounted(async () => {

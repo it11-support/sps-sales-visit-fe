@@ -309,7 +309,8 @@ export const useActivityStore = defineStore('activity', {
       this.loadingId = data.id
       const payloads = {
         scheduled_date: data.scheduled_date,
-        notes: data.notes
+        notes: data.notes,
+        customers: data.customers
       }
       await $api(`/activity/${data.id}`, {
         method: 'PUT',
@@ -552,7 +553,7 @@ export const useActivityStore = defineStore('activity', {
       this.customerOptions = this.customers.map((customer: any) => ({
         title: customer.CardName,
         value: customer.id,
-        sales_person_id: customer.id
+        sales_person_id: customer.sales_person.id
       }))
 
       this.loading = false

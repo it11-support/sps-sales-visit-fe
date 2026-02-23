@@ -18,6 +18,54 @@ const loadingSalesPersonsOptions = ref(true)
 const showScheduleForm = ref(false)
 const showDeleteModal = ref(false)
 const activityToDelete = ref({} as IActivity | null)
+const useSPS = ref(false)
+const useBBS = ref(false)
+
+const selectedSPS = computed<number | null>({
+  get() {
+    return form.value.customers.find(id =>
+      customerStore.customerOptions.some(
+        o => o.companyId === 'SPS' && o.value === id
+      )
+    ) ?? null
+  },
+
+  set(val) {
+    // hapus SPS lama
+    form.value.customers = form.value.customers.filter(id =>
+      !customerStore.customerOptions.some(
+        o => o.companyId === 'SPS' && o.value === id
+      )
+    )
+
+    // tambah baru
+    if (val !== null) {
+      form.value.customers.push(val)
+    }
+  },
+})
+
+const selectedBBS = computed<number | null>({
+  get() {
+    return form.value.customers.find(id =>
+      customerStore.customerOptions.some(
+        o => o.companyId === 'BBS' && o.value === id
+      )
+    ) ?? null
+  },
+
+  set(val) {
+    form.value.customers = form.value.customers.filter(id =>
+      !customerStore.customerOptions.some(
+        o => o.companyId === 'BBS' && o.value === id
+      )
+    )
+
+    if (val !== null) {
+      form.value.customers.push(val)
+    }
+  },
+})
 
 const filters = ref<Partial<Filters>>({
   sales_person_id: null,
@@ -56,6 +104,23 @@ const loadActivity = async () => {
 }
 
 onMounted(loadActivity)
+
+watch(filters.value, val => {
+  if (val)
+   customerStore.fetchCustomerOptions(null, val.sales_person_id?.toString())
+})
+
+watch(useSPS, (val) => {
+  if (!val) {
+    selectedSPS.value = null
+  }
+})
+
+watch(useBBS, (val) => {
+  if (!val) {
+    selectedBBS.value = null
+  }
+})
 
 /* ================= WATCH ================= */
 watch(activityStore, val => {
@@ -97,11 +162,17 @@ const getStatus = (status: string) => {
 
 const form = ref({
   id: null as number | null,
-
   scheduled_date: null as Date | null,
-
-
+  customers: [] as number[],
   notes: '',
+})
+
+const disableSPS = computed(() => {
+  return useSPS.value && !useBBS.value
+})
+
+const disableBBS = computed(() => {
+  return useBBS.value && !useSPS.value
 })
 
 
@@ -116,15 +187,42 @@ const setFormValue = (data: IActivity) => {
     }
   }
 
+  // Cari customer aman
+  const sps = data.customers?.find(
+    (c: any) => c.CompanyId === 'SPS'
+  )
 
+  const bbs = data.customers?.find(
+    (c: any) => c.CompanyId === 'BBS'
+  )
+
+  const customerSps = sps ? sps.id : null
+  const customerBbs = bbs ? bbs.id : null
+
+  const customers = data.customers?.map((c: any) => c.id) ?? []
+
+  console.log(customers)
+  // Set form
   form.value = {
     id: data.id,
-
+    customers,
     scheduled_date: date,
-
     notes: data.notes ?? '',
   }
+
+  useSPS.value = !!customerSps
+  useBBS.value = !!customerBbs
 }
+
+
+watch([selectedSPS, selectedBBS], ([sps, bbs]) => {
+  const result: number[] = []
+
+  if (sps) result.push(sps)
+  if (bbs) result.push(bbs)
+
+  form.value.customers = result
+})
 
 
 const handleClickViewReport = (id: number) => {
@@ -176,7 +274,7 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
   <VCard class="mb-6">
     <VCardItem class="pb-4">
       <VCheckbox v-model="showFilters" label="Show Filters"></VCheckbox>
-      <VCol  cols="12" sm="4" md="4" lg="4" v-if="!isAdmin">
+      <VCol cols="12" sm="4" md="4" lg="4" class="pl-0">
         <AppCombobox 
           v-model="filters.sales_person_id"
           :disabled="loadingSalesPersonsOptions"
@@ -460,6 +558,41 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
               rows="3"
             />
           </VCol>
+        <VCol cols="12">
+          <VCheckbox
+            v-model="useSPS"
+            label="SPS Customer"
+            :disabled="disableSPS"
+          /> 
+        </VCol>
+        <VCol cols="12" v-if="useSPS">
+          <AppAutocomplete
+            autocomplete="off"
+            v-model="selectedSPS"
+            :items="customerStore.customerOptions.filter(cs => cs.companyId === COMPANIES.SPS)"
+            placeholder="Select SPS Customer"
+            clearable
+            clear-icon="tabler-x"
+          />
+        </VCol>
+         <VCol cols="12">
+          <VCheckbox
+            v-model="useBBS"
+            label="BBS Customer"
+            :disabled="disableBBS"
+          /> 
+        </VCol>
+
+        <VCol cols="12" v-if="useBBS">
+          <AppAutocomplete
+            autocomplete="off"
+            v-model="selectedBBS"
+            :items="customerStore.customerOptions.filter(cs => cs.companyId === COMPANIES.BBS)"
+            placeholder="Select BBS Customer"
+            clearable
+            clear-icon="tabler-x"
+          />
+        </VCol>
           <!-- BUTTON -->
           <VCol cols="12" class="text-right">
             <VBtn
