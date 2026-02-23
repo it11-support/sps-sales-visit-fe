@@ -421,7 +421,7 @@ watch(selectedCompanies,
           <div class="d-flex align-center gap-x-4">
             <div class="d-flex flex-column">
               <div class="text-sm">
-                {{ item.sales_person?.SlpName }}
+                {{ item.SlpName }}
               </div>
             </div>
           </div>
