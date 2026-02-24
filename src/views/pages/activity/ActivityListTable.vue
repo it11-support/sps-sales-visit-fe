@@ -101,6 +101,7 @@ activityStore.$reset()
 const loadActivity = async () => {
   activityStore.fetchSalesPersonOptions()
   await activityStore.initialize()
+  await activityStore.fetchActivityTypes()
 }
 
 onMounted(loadActivity)
@@ -164,6 +165,7 @@ const form = ref({
   id: null as number | null,
   scheduled_date: null as Date | null,
   customers: [] as number[],
+  activity_type_id: null as number | null,
   notes: '',
 })
 
@@ -177,6 +179,7 @@ const disableBBS = computed(() => {
 
 
 const setFormValue = (data: IActivity) => {
+  console.log(data)
   let date: Date | null = null
 
   if (data.scheduled_date) {
@@ -201,12 +204,12 @@ const setFormValue = (data: IActivity) => {
 
   const customers = data.customers?.map((c: any) => c.id) ?? []
 
-  console.log(customers)
   // Set form
   form.value = {
     id: data.id,
     customers,
     scheduled_date: date,
+    activity_type_id: data.activity_type_id,
     notes: data.notes ?? '',
   }
 
@@ -224,6 +227,9 @@ watch([selectedSPS, selectedBBS], ([sps, bbs]) => {
   form.value.customers = result
 })
 
+watch(form, (val) => {
+  console.log(val)
+})
 
 const handleClickViewReport = (id: number) => {
   router.push({ path: createUrl(`/activity/${id}/view-report`).value })
@@ -260,6 +266,12 @@ const handleEdit = async (item: IActivity) => {
 const handleExportReport = async(id: string, customer: string, date?: string) => {
   activityStore.exportReport(id, customer, date)
 }
+
+const updateSelectedType = (val: number) => {
+ form.value.activity_type_id = val
+}
+
+console.log(activityStore.activityTypes)
 
 </script>
 <template>
@@ -556,6 +568,16 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
               v-model="form.notes"
               label="Notes"
               rows="3"
+            />
+          </VCol>
+          <VCol cols="12">
+            <AppSelect
+              v-model="form.activity_type_id"           
+              placeholder="Select Activity Type"
+              :items="activityStore.activityTypes"
+              clearable
+              clear-icon="tabler-x"
+              @update:model-value="updateSelectedType"
             />
           </VCol>
         <VCol cols="12">

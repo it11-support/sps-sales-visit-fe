@@ -52,73 +52,28 @@ const sales = computed(() => {
     growth?: number
   } & Record<string, MonthlyValue>
 
-  let result: Record<string, CompanyGrowthData> = {}
+  const result: Record<string, CompanyGrowthData> = {}
 
-  if(!activityStore.activityReport.sales_growth?.length){
-    for (const [companyId, months] of Object.entries(statStore.monthly_sales as Record<string, any>)) {
-      result[companyId] = {}
+  for (const [companyId, months] of Object.entries(statStore.monthly_sales as Record<string, any>)) {
+    result[companyId] = {}
 
-      for (const [key, raw] of Object.entries(months as Record<string, any>)) {
-        // ambil hanya month (YYYY-MM)
-       if (key === 'growth') {
-          result[companyId].growth = Number(raw) || 0
+    for (const [key, raw] of Object.entries(months as Record<string, any>)) {
+      if (key === 'growth') {
+        result[companyId].growth = Number(raw) || 0
         continue
       }
-        if (!/^\d{4}-\d{2}$/.test(key)) continue
-        
-        const value = raw as Partial<MonthlyValue>
-        result[companyId][key] = {
-          total_sales: value.total_sales ?? 0,
-          total_days: value.total_days ?? 0,
-          items: value.items ?? 0,
-        }
+      if (!/^\d{4}-\d{2}$/.test(key)) continue
+
+      const value = raw as Partial<MonthlyValue>
+      result[companyId][key] = {
+        total_sales: value.total_sales ?? 0,
+        total_days: value.total_days ?? 0,
+        items: value.items ?? 0
       }
     }
-  } else {
-      const salesData = activityStore.activityReport.sales_growth?.reduce(
-        (acc: any, curr: any) => {
-          const companyId = curr.CompanyId
-          const month = curr.date.slice(0, 7)
+  }
 
-          if (!acc[companyId]) acc[companyId] = {}
-
-          acc[companyId][month] = {
-            items: Number(curr.total_items),
-            total_sales: Number(curr.total_sales),
-            date: curr.date, // ✅ simpan date
-          }
-
-          return acc
-        },
-        {} as any
-      )
-
-      for (const companyId of Object.keys(salesData)) {
-        const meta = getAnchorAndPrevDays(salesData[companyId])
-        if (!meta) continue
-
-        const { currentKey, prevKey, anchorDay, prevDays } = meta
-
-        const currentSales = salesData[companyId][currentKey].total_sales
-        const prevSales = salesData[companyId][prevKey].total_sales
-
-        const avgCurrent = currentSales / anchorDay
-        const avgPrev = prevSales / prevDays
-
-       if(avgPrev === 0 && avgCurrent === 0){
-          salesData[companyId].growth = 0
-        } else if(avgPrev === 0 && avgCurrent > 0){
-          salesData[companyId].growth = 100
-        } else if(avgPrev > 0 && avgCurrent === 0){
-          salesData[companyId].growth = -100
-        } else {
-         salesData[companyId].growth = Number((((avgCurrent - avgPrev) / avgPrev) * 100).toFixed(2))
-        }
-      }
-      result = salesData
-    }
-
-    return sortByCompanyPriority(result)
+  return sortByCompanyPriority(result)
 })
 
 const missingItems = computed(() => {

@@ -310,7 +310,8 @@ export const useActivityStore = defineStore('activity', {
       const payloads = {
         scheduled_date: data.scheduled_date,
         notes: data.notes,
-        customers: data.customers
+        customers: data.customers,
+        activity_type_id: data.activity_type_id
       }
       await $api(`/activity/${data.id}`, {
         method: 'PUT',
