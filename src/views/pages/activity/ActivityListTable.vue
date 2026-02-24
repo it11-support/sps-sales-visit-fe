@@ -227,9 +227,6 @@ watch([selectedSPS, selectedBBS], ([sps, bbs]) => {
   form.value.customers = result
 })
 
-watch(form, (val) => {
-  console.log(val)
-})
 
 const handleClickViewReport = (id: number) => {
   router.push({ path: createUrl(`/activity/${id}/view-report`).value })
