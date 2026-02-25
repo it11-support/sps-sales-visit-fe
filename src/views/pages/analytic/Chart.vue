@@ -39,19 +39,24 @@ const getCompanyField = (
         const baseField = fieldName.replace(/^mom_/, '').replace(/^yoy_/, '');
 
         const current = (item[baseField as keyof ISalesSummary] ?? 0) as number;
-        const prev =
-          index > 0
-            ? ((arr[index - 1]?.[baseField as keyof ISalesSummary] ?? 0) as number)
-            : 0;
 
-        if (prev === 0) {
-          return current > 0 ? 100 : 0;
+        if (index === 0) {
+          return 0; 
         }
 
-        return ((current - prev) / prev) * 100;
+        const prev =
+          index > 0
+            ? Number((arr[index - 1]?.[baseField as keyof ISalesSummary] ?? 0))
+            : 0;
+
+        if (index === 0 || prev === 0) {
+          return 0;
+        }
+
+        return ((current - prev) / Math.abs(prev)) * 100;
       }
 
-      return (item[field] ?? 0) as number;
+      return Number(item[field] ?? 0);
     })
   );
 
