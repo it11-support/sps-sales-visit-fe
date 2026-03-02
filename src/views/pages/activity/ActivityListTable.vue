@@ -268,7 +268,6 @@ const updateSelectedType = (val: number) => {
  form.value.activity_type_id = val
 }
 
-console.log(activityStore.activityTypes)
 
 </script>
 <template>

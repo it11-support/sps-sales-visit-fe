@@ -105,3 +105,6 @@
 - Will be redirected to edit report page `/activity/[id]/report/edit`
 - Continue as in the previous step [1.1 Input Sales Visit Report](#11-input-sales-visit-report)
 
+
+#### Feature Updates
+🚀 Sync assignment data before store

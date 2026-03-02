@@ -72,23 +72,85 @@ const notesReport = ref({
 })
 
 
+// console.log(notesReport, productReport, activityPurposeReport)
+
+watch(activityPurposeReport, () => {
+  setLocalItem(props.assignmentId, 'activity_purposes', activityPurposeReport.value.activity_purposes)
+  setLocalItem(props.assignmentId, 'reason_qty_drops', activityPurposeReport.value.reason_qty_drops)
+}, { deep: true })
+
+watch(productReport, () => {
+  setLocalItem(props.assignmentId, 'products', productReport.value.products)
+  setLocalItem(props.assignmentId, 'product_issue', productReport.value.product_issue)
+}, {deep: true})
+
+watch(competitors, () => {
+  setLocalItem(props.assignmentId, 'competitors', competitors)
+}, {deep: true})
+
+watch(notesReport, () => {
+  setLocalItem(props.assignmentId, 'next_action', notesReport.value.next_action)
+  setLocalItem(props.assignmentId, 'additional_note', notesReport.value.additional_note)
+}, {deep: true})
 watch(
   () => activityStore.activityReport,
   (newVal) => {
     if (!newVal || Object.keys(newVal).length === 0) return
 
     initializing = true
-    activityPurposeReport.value.activity_purposes = newVal.activity_purpose_ids ?? undefined
-    activityPurposeReport.value.reason_qty_drops = newVal.reason_qty_drop_ids ?? undefined
 
-    productReport.value.products = newVal.products ?? undefined
-    productReport.value.product_issue = newVal.product_issue ?? ''
-    notesReport.value.next_action = newVal.next_action ?? ''
-    notesReport.value.additional_note = newVal.additional_note ?? ''
-    competitors.splice(0, competitors.length, ...(newVal.competitors ?? []))
+    const cachedActivityPurposes = getParsedItem(props.assignmentId, 'activity_purposes')
+    const cachedReasonQtyDrops = getParsedItem(props.assignmentId,'reason_qty_drops')
+    const cachedProducts = getParsedItem(props.assignmentId,'products')
+    const cachedProductIssue = getParsedItem(props.assignmentId,'product_issue')
+    const cachedNextAction = getParsedItem(props.assignmentId,'next_action')
+    const cachedAdditionalNote = getParsedItem(props.assignmentId,'additional_note')
+    const cachedCompetitors = getParsedItem(props.assignmentId,'competitors')
+    
+    if (cachedActivityPurposes) {
+      activityPurposeReport.value.activity_purposes = cachedActivityPurposes
+    } else {
+      activityPurposeReport.value.activity_purposes = newVal.activity_purpose_ids ?? undefined
+    }
 
-    activityPurposeReport.value.activity_purposes
+    if(cachedReasonQtyDrops) {
+      activityPurposeReport.value.reason_qty_drops = cachedReasonQtyDrops
+    } else {
+      activityPurposeReport.value.reason_qty_drops = newVal.reason_qty_drop_ids ?? undefined
+    }
 
+    if(cachedProducts) {
+      productReport.value.products = cachedProducts
+    } else {
+      productReport.value.products = newVal.products ?? undefined
+    }
+
+    if(cachedProductIssue) {
+      productReport.value.product_issue = cachedProductIssue
+    } else {
+      productReport.value.product_issue = newVal.product_issue ?? ''
+    }
+
+    if(cachedNextAction) {
+      notesReport.value.next_action = cachedNextAction
+    } else {
+      notesReport.value.next_action = newVal.next_action ?? ''
+    }
+
+    if(cachedAdditionalNote) {
+      notesReport.value.additional_note = cachedAdditionalNote
+    } else {
+      notesReport.value.additional_note = newVal.additional_note ?? ''
+    }
+
+    if (cachedCompetitors && cachedCompetitors.length > 0) {
+      competitors.length = 0; 
+      competitors.push(...cachedCompetitors);
+    } else {
+      competitors.length = 0;
+      competitors.push(...(newVal.competitors ?? []));
+    }
+    
     nextTick(() => (initializing = false))
   },
   { immediate: true, deep: true }
@@ -389,6 +451,7 @@ const handleExportReport = async() => {
       <VWindow
         v-model="currentStep"
         class="disable-tab-transition"
+        :touch="false"
       >
         <VWindowItem>
           <VForm 

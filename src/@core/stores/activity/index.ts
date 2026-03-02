@@ -399,6 +399,9 @@ export const useActivityStore = defineStore('activity', {
         }
         
       })
+      if(!isDraft && data.value.status === 'success') {
+        removeLocalItem(this.activityReport.assignment_id)
+      }
       if (error.value) {
         console.error('Error fetching activity detail:', error.value)
         this.loading = false
