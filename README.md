@@ -108,3 +108,5 @@
 
 #### Feature Updates
 🚀 Sync assignment data before store
+✨ Upload image if camera inaccessible
+🚀 Edit Completed report
