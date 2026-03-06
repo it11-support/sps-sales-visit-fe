@@ -432,6 +432,27 @@ const activity = computed(() => activityStore.activity)
 const handleExportReport = async() => {
   activityStore.exportReport(props.assignmentId, customers.value[0].CardName, activity.value.check_in)
 }
+const handleRemoveImage = () => {
+  activityStore.activity.image_path = null as any
+  activityStore.activity.check_in = null as any
+  activityStore.activity.lat = null as any
+  activityStore.activity.lng = null as any
+  activityStore.activity.accuracy = null as any
+
+  activityStore.activityReport.image_path = null as any
+  activityStore.activityReport.check_in = null as any
+  activityStore.activityReport.lat = null as any
+  activityStore.activityReport.lng = null as any
+  activityStore.activityReport.accuracy = null as any
+
+  if (activityStore.currentReport?.assignment) {
+    activityStore.currentReport.assignment.image_path = null as any
+    activityStore.currentReport.assignment.check_in = null as any
+    activityStore.currentReport.assignment.lat = null as any
+    activityStore.currentReport.assignment.lng = null as any
+    activityStore.currentReport.assignment.accuracy = null as any
+  }
+}
 </script>
 
 <template>
@@ -826,6 +847,11 @@ const handleExportReport = async() => {
                   cover
                   :src="`${baseDomain}/storage/${activityStore.activity.image_path}`"
                 />
+              </VCol>
+              <VCol cols="12" v-if="activityStore.activity.image_path !== null">
+                <VBtn color="error" variant="tonal" type="button" @click="handleRemoveImage">
+                  Remove Image <VIcon end icon="tabler-trash" />
+                </VBtn>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.check_in !== undefined">
                 <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>

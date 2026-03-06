@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { Filters, useActivityStore, useAuthStore, useCustomerStore } from '@/@core/stores';
 import { IActivity } from '@/@core/typedefs';
+import dayjs from 'dayjs';
 
 const activityStore = useActivityStore()
 const customerStore = useCustomerStore()
@@ -20,6 +21,7 @@ const showDeleteModal = ref(false)
 const activityToDelete = ref({} as IActivity | null)
 const useSPS = ref(false)
 const useBBS = ref(false)
+const loadingEditableUntilId = ref<number | null>(null)
 
 const selectedSPS = computed<number | null>({
   get() {
@@ -85,6 +87,7 @@ const STATUS = {
 
 const headers = computed(() => {
   const headers = [
+    { title: 'Editable', key: 'editable', sortable: false },
     { title: 'Actions', key: 'actions', sortable: false },
     { title: 'Schedule', key: 'scheduled_date', sortable: true },
     { title: 'Assignee', key: 'assigned_to', sortable: true },
@@ -95,6 +98,12 @@ const headers = computed(() => {
   ]
   return headers
 })
+
+const tableHeaders = computed(() => {
+  if (isAdmin.value) return headers.value
+  return headers.value.filter(item => item.key !== 'editable')
+})
+
 
 activityStore.$reset()
 
@@ -236,6 +245,10 @@ const handleClickEdit = (id: number) => {
   router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
 
+const handleClickEditReport = async(id: number) => {
+  await activityStore.updateActivityStatus(id, STATUS.DRAFT)
+  router.push({ path: createUrl(`/activity/${id}/report`).value })
+}
 const handleCheckIn = async(id: number) => {
   await activityStore.updateActivityStatus(id, STATUS.ONGOING)
   router.push({ path: createUrl(`/activity/${id}/report`).value })
@@ -262,6 +275,20 @@ const handleEdit = async (item: IActivity) => {
 
 const handleExportReport = async(id: string, customer: string, date?: string) => {
   activityStore.exportReport(id, customer, date)
+}
+
+const handleUpdateEditable = async (item: IActivity, value: boolean) => {
+  loadingEditableUntilId.value = item.id
+  const editableUntil = value
+    ? dayjs().add(24, 'hour').format('YYYY-MM-DD HH:mm:ss')
+    : null
+
+  const isUpdated = await activityStore.updateEditableUntil(item.id, editableUntil)
+  if (isUpdated) {
+    item.editable = value
+    item.editable_until = editableUntil ?? undefined
+  }
+  loadingEditableUntilId.value = null
 }
 
 const updateSelectedType = (val: number) => {
@@ -387,13 +414,24 @@ const updateSelectedType = (val: number) => {
       v-model:page="activityStore.filters.page"
       :items="activityStore.activities"
       :items-length="activityStore.pagination.total"
-      :headers="headers" class="text-no-wrap" 
+      :headers="tableHeaders" class="text-no-wrap" 
       return-object
       :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
       @update:options="activityStore.updateSortOptions" 
       @update:model-value="activityStore.setSelectedRows"
       multi-sort
     >
+    <template #item.editable="{ item }">
+      <div class="d-flex justify-center align-center gap-x-2">
+        <VCheckbox
+          :loading="loadingEditableUntilId === item.id"
+          :model-value="item.editable"
+          label=""
+          :disabled="item.status !== 'completed' || loadingEditableUntilId === item.id"
+          @update:model-value="val => handleUpdateEditable(item, !!val)"
+        />
+      </div>
+    </template>
       <template #item.actions="{ item }">
       <div class="d-flex justify-start gap-x-2">
 
@@ -435,15 +473,26 @@ const updateSelectedType = (val: number) => {
             color="warning"
             prepend-icon="tabler-edit"
           >
-            Edit
+            Edit Scedule
           </VBtn>
         </template>
 
         <!-- COMPLETED -->
         <template v-else-if="item.status === STATUS.COMPLETED">
           <VBtn
+            v-if="item.assigned_to.id === user.id && item.editable"
+            :key="`re-edit-${item.id}`"          
+            @click="handleClickEditReport(item.id)"
+            size="small"
+            variant="tonal"
+            color="warning"
+            prepend-icon="tabler-edit"
+          >
+            Edit
+          </VBtn>
+          <VBtn
             :key="`view-${item.id}`"
-            :loading="activityStore.loadingId === item.id"
+            :loading="activityStore.loadingId === item.id && !item.editable"
             @click="handleClickViewReport(item.id)"
             size="small"
             variant="tonal"
@@ -465,7 +514,7 @@ const updateSelectedType = (val: number) => {
             )"
           >
             Export
-          </VBtn>
+          </VBtn>          
         </template>
 
         <!-- DRAFT / ONGOING -->

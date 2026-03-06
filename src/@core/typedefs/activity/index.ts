@@ -37,6 +37,8 @@ export interface IActivity extends FormData {
   check_out?: string
   image_path?: string
   file?: File
+  editable_until?: string
+  editable?: boolean
   activity_details?: IActivityReport[]
 }
 
@@ -104,6 +106,8 @@ export interface IActivityReport {
   lat?: string
   lng?: string
   status?: string
+  editable_until?: string,
+  editable?: boolean
 }
 
 export interface ISupplierProduct {

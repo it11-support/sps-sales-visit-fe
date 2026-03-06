@@ -26,6 +26,7 @@ export const useActivityStore = defineStore('activity', {
     activity: {} as IActivity,
     report: {} as IActivityReport, 
     loadingId: null as number | null,
+    loadingEditableUntilId: null as number | null,
     activities: [] as IActivity[],
     loadingList: false,
     loadingAssignment: false,
@@ -284,6 +285,8 @@ export const useActivityStore = defineStore('activity', {
           accuracy: data.value.data.accuracy,
           check_in: data.value.data.check_in,
           check_out: data.value.data.check_out,
+          editable_until: data.value.data.editable_until,
+          editable: data.value.data.editable,
           lat: data.value.data.lat, 
           lng: data.value.data.lng
         }
@@ -327,6 +330,36 @@ export const useActivityStore = defineStore('activity', {
       })
       this.loadingId = null
       this.fetchActivityById(id.toString())
+    },
+    async updateEditableUntil(id: number, editableUntil: string | null): Promise<boolean> {
+      this.loadingEditableUntilId = id
+      const payload = JSON.stringify({        
+        editable_until: editableUntil,
+      })
+
+      try {
+        const { error } = await useApi<any>(`activity/${id}/editable-until`, {
+          method: 'PUT',
+          body: payload,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (error.value) {
+          console.error('Error updating editable_until:', error.value)
+          this.loadingEditableUntilId = null
+          return false
+        }
+
+        await this.fetchActivities()
+        this.loadingEditableUntilId = null
+        return true
+      } catch (error) {
+        console.error('Unexpected error updating editable_until:', error)
+        this.loadingEditableUntilId = null
+        return false
+      }
     },
     async fetchAllOptions() {
       this.loading = true
