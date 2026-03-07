@@ -473,7 +473,7 @@ const updateSelectedType = (val: number) => {
             color="warning"
             prepend-icon="tabler-edit"
           >
-            Edit Scedule
+            Edit Schedule
           </VBtn>
         </template>
 

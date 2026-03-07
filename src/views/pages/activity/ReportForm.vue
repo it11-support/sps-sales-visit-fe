@@ -53,6 +53,7 @@ const showCheckIn = ref(false)
 const router = useRouter()
 const props = defineProps<Props>()
 const configStore = useConfigStore()
+const searchProduct = ref('')
 
 let initializing = true
 
@@ -292,6 +293,15 @@ const computedItems = computed<ICompetitor[]>(() => {
   return baseItems
 })
 
+const onProductSearch = (val: string) => {
+  searchProduct.value = val
+}
+
+const onProductSelect = (val: any) => {
+  nextTick(() => {
+    searchProduct.value = ''
+  })
+}
 
 const validateForm = (ref: VForm | undefined) => {
   ref?.validate().then(valid => {
@@ -582,6 +592,9 @@ const handleRemoveImage = () => {
                   autocorrect="off"
                   spellcheck="false"
                   autocomplete="off"
+                  v-model:search="searchProduct"
+                  @update:model-value="onProductSelect"
+                  @update:search="onProductSearch"
                 />
               </VCol>
               <VCol cols="12" md="6">
