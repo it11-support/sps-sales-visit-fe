@@ -53,6 +53,9 @@ const headers = computed(() => {
 activityStore.$reset()
 
 const loadActivity = async () => {
+  if(user.value && !isAdmin.value) {
+    activityStore.filters.assigned_to = user.value.id
+  }
   activityStore.filters.deleted = true
   activityStore.fetchSalesPersonOptions()
   await activityStore.initialize()
@@ -176,7 +179,7 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
 <template>
   <VBreadcrumbs
     class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
-    :items="[{title: 'Home', to: '/', class: 'text-primary' },{ title: 'Activities'}]"
+    :items="[{title: 'Home', to: '/', class: 'text-primary' },{ title: 'Deleted Activities'}]"
     >
     <template v-slot:prepend>
       <v-icon icon='tabler-home' size="small"></v-icon>
@@ -185,21 +188,6 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
   <VCard class="mb-6">
     <VCardItem class="pb-4">
       <VCheckbox v-model="showFilters" label="Show Filters"></VCheckbox>
-      <VCol  cols="12" sm="4" md="4" lg="4" v-if="!isAdmin">
-        <AppCombobox 
-          v-model="filters.sales_person_id"
-          :disabled="loadingSalesPersonsOptions"
-          :loading="loadingSalesPersonsOptions"          
-          placeholder="Filter by sales person" 
-          :items="activityStore.salesPersonsOptions" 
-          clearable 
-          clear-icon="tabler-x"
-          :return-object="false"
-          autocomplete="off"
-          autocorrect="off"
-          spellcheck="false"
-        />
-      </VCol>
     </VCardItem>
     <VCardText v-if="showFilters">
       <VRow>
@@ -320,7 +308,7 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
       <div class="d-flex justify-center gap-x-2">
 
          <VBtn
-          v-if="isAdmin"
+          v-if="isAdmin || item.assigned_to.id === user.id"
           :key="`restore-${item.id}`"
           :loading="activityStore.loadingId === item.id"
           @click="() => { showDeleteModal = true; selectedActivity = item }"
@@ -334,7 +322,7 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
 
         <!-- ✅ DELETE: selalu tampil jika admin -->
         <VBtn
-          v-if="isAdmin"
+          v-if="isAdmin || item.assigned_to.id === user.id"
           :key="`restore-${item.id}`"
           :loading="activityStore.loadingId === item.id"
           @click="() => { showRestoreModal = true; selectedActivity = item }"
@@ -345,79 +333,6 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
         >
           Restore
         </VBtn>
-
-        <!-- ASSIGNED -->
-        <template v-if="item.status === STATUS.ASSIGNED && !isAdmin">
-          <VBtn
-            v-if="item.assigned_to.id === user.id"
-            :key="item.id"
-            :loading="activityStore.loadingId === item.id"
-            @click="handleCheckIn(item.id)"
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-play"
-          >
-            Start
-          </VBtn>
-
-          <VBtn
-            v-if="item.assigned_to.id === user.id && item.status !== STATUS.ONGOING"
-            :key="`edit-${item.id}`"
-            @click="handleEdit(item)"
-            size="small"
-            variant="tonal"
-            color="warning"
-            prepend-icon="tabler-edit"
-          >
-            Edit
-          </VBtn>
-        </template>
-
-        <!-- COMPLETED -->
-        <template v-else-if="item.status === STATUS.COMPLETED">
-          <VBtn
-            :key="`view-${item.id}`"
-            :loading="activityStore.loadingId === item.id"
-            @click="handleClickViewReport(item.id)"
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-notes"
-          >
-            View
-          </VBtn>
-
-          <VBtn
-            color="success"
-            size="small"
-            :loading="activityStore.loadingReport === `loading${item.id}`"
-            prepend-icon="tabler-file-export"
-            @click="handleExportReport(
-              item.id.toString(),
-              item.customers[0].CardName,
-              item.check_in
-            )"
-          >
-            Export
-          </VBtn>
-        </template>
-
-        <!-- DRAFT / ONGOING -->
-        <template v-else-if="(item.status === STATUS.DRAFT || item.status === STATUS.ONGOING) && !isAdmin">
-          <VBtn
-            v-if="item.assigned_to.id === user.id"
-            :key="`continue-${item.id}`"
-            :loading="activityStore.loadingId === item.id"
-            @click="handleClickEdit(item.id)"
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-edit"
-          >
-            Continue
-          </VBtn>
-        </template>
 
       </div>
       </template>

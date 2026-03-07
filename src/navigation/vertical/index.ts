@@ -41,18 +41,7 @@ export const defaultNavItems =  [
 ]
 
 export const getNavItems = (isAdmin: boolean) => {
-  const items = defaultNavItems.map(item => {
-    if (item.title === 'Activity') {
-      return {
-        ...item,
-        children: isAdmin
-          ? item.children
-          : item.children?.filter(
-              child => child.to.name !== 'activity-deleted'
-            ),
-      }
-    }
-
+  const items = defaultNavItems.map(item => {  
     return item
   })
 

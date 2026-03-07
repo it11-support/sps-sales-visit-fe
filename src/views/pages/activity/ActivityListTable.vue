@@ -437,7 +437,7 @@ const updateSelectedType = (val: number) => {
 
         <!-- ✅ DELETE: selalu tampil jika admin -->
         <VBtn
-          v-if="isAdmin"
+          v-if="isAdmin || item.assigned_to.id === user.id"
           :key="`delete-${item.id}`"
           :loading="activityStore.loadingId === item.id"
           @click="() => { showDeleteModal = true; activityToDelete = item }"

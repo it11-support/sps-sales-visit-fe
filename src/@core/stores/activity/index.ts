@@ -15,6 +15,7 @@ export interface Filters {
   activity_type_id?: number,
   team_id?: number
   deleted?: boolean
+  assigned_to?: number
 }
 
 
@@ -62,6 +63,7 @@ export const useActivityStore = defineStore('activity', {
       end_date: '',
       team_id: undefined,
       activity_type_id: undefined,
+      assigned_to: undefined,
     } as Filters,
     activityReport: {} as IActivityReport,
     activeTab: 'SPS' as string,
@@ -143,6 +145,8 @@ export const useActivityStore = defineStore('activity', {
       }))
     },
     async fetchActivities() {
+
+      console.log(this.filters)
       this.loadingList = true
       const url = createUrl('activity', { query: this.filters })
       const { data, error } = await useApi<any>(url)
