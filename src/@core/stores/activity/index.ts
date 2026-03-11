@@ -146,7 +146,6 @@ export const useActivityStore = defineStore('activity', {
     },
     async fetchActivities() {
 
-      console.log(this.filters)
       this.loadingList = true
       const url = createUrl('activity', { query: this.filters })
       const { data, error } = await useApi<any>(url)
@@ -506,7 +505,7 @@ export const useActivityStore = defineStore('activity', {
           .map((customer: any) => ({
             value: customer.id,
             title: customer.CardName,
-            sales_person_id: Number(customer.id)
+            sales_person_id: Number(customer.sales_person_id)
           }));
 
         this.customerOptions = filterCustomerOptions;

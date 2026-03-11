@@ -188,7 +188,6 @@ const disableBBS = computed(() => {
 
 
 const setFormValue = (data: IActivity) => {
-  console.log(data)
   let date: Date | null = null
 
   if (data.scheduled_date) {
@@ -267,7 +266,7 @@ const handelUpdateActivity = async () => {
 } 
 const handleEdit = async (item: IActivity) => {
   setFormValue(item)
-
+  await customerStore.fetchCustomerOptions(null, salesPersonId.value.id)
   await nextTick()
 
   showScheduleForm.value = true
