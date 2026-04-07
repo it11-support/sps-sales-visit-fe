@@ -35,6 +35,10 @@ const activityToDelete = ref({} as IActivity | null)
 const useSPS = ref(false)
 const useBBS = ref(false)
 const loadingEditableUntilId = ref<number | null>(null)
+const viewMenuItems = [
+  { title: 'Open', value: 'open', link: true, prependIcon: 'tabler-eye' },
+  { title: 'Open in New Tab', value: 'open_new_tab', link: true, prependIcon: 'tabler-external-link' }
+]
 const selectedSPS = computed<number | null>({
   get() {
     return form.value.customers.find(id =>
@@ -280,9 +284,16 @@ watch([selectedSPS, selectedBBS], ([sps, bbs]) => {
   form.value.customers = result
 })
 
+const handleMenu = (item: any, { value }: any) => {
 
-const handleClickViewReport = (id: number) => {
-  router.push({ path: createUrl(`/activity/${id}/view-report`).value })
+  const url = createUrl(`/activity/${item.id}/view-report`).value
+
+  const actions: Record<string, Function> = {
+    open: () => router.push({ path: url }),
+    open_new_tab: () => window.open(url, '_blank')
+  }
+
+  actions[value]?.()
 }
 
 const handleClickEdit = (id: number) => {
@@ -539,18 +550,33 @@ const customFilter = (item: any, queryText: string, itemText: string) => {
           >
             Edit
           </VBtn>
-          <VBtn
-            :key="`view-${item.id}`"
-            :loading="activityStore.loadingId === item.id && !item.editable"
-            @click="handleClickViewReport(item.id)"
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-notes"
+          <VMenu
+            :key="`menu-view-${item.id}`"
           >
-            View
-          </VBtn>
-
+            <template #activator="{ props }">
+              <VBtn         
+                v-bind="props"
+                size="small"
+                variant="tonal"
+                color="primary"
+              >
+              View
+              </VBtn>
+            </template>
+            <VList>
+            <VListItem
+              class="text-sm"
+              v-for="menu in viewMenuItems"
+              :key="menu.value"
+              @click="handleMenu(item, menu)"
+            >
+              <template #prepend>
+                <VIcon :icon="menu.prependIcon" />
+              </template>
+              <VListItemTitle>{{ menu.title }}</VListItemTitle>
+            </VListItem>
+          </VList>
+          </VMenu>
           <VBtn
             color="success"
             size="small"
@@ -746,3 +772,13 @@ const customFilter = (item: any, queryText: string, itemText: string) => {
 </VDialog>
 
 </template>
+
+<style lang="scss">
+.v-list-item-title {
+  font-size: small;
+}
+
+.v-list-item .v-list-item__prepend .v-icon {
+  font-size: 1.25rem !important;
+}
+</style>
