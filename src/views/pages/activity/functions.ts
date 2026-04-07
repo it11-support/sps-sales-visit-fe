@@ -49,3 +49,21 @@ export const sortByCompanyPriority = <T>(data: Record<string, T>) => {
 
   return sorted;
 };
+
+export const getLocalStoreKey = (userId: number | string) => {
+  return `activityFilters_${userId}`
+}
+
+
+
+export const updateFilter = (key: string, value: object) => {
+  const existing = localStorage.getItem(key)
+  const oldData = existing ? JSON.parse(existing) : {}
+
+  const merged = {
+    ...oldData,
+    ...value
+  }
+
+  localStorage.setItem(key, JSON.stringify(merged))
+}

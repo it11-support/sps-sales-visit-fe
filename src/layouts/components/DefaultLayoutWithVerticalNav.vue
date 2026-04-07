@@ -13,13 +13,21 @@ import { VerticalNavLayout } from '@layouts'
 
 const user = useCookie<any>('userData')
 
-const isAdmin = computed(() =>
-  user.value.role.role === 'admin'
-)
+  const isAdmin = computed(() => {
+  if(user.value.role){
+    return user.value.role.role === 'admin'
+  } else {
+    return false
+  }
+})
 
-const isSpv = computed(() =>
-  user.value.role.role === 'spv'
-)
+const isSpv = computed(() => {
+  if(user.value.role){
+    return user.value.role.role === 'spv'
+  } else {
+    return false
+  }
+})
 
 const navItems = getNavItems(isAdmin.value)
 

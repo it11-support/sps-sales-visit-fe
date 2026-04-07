@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getLocalStoreKey } from '@/views/pages/activity/functions'
 import { useConfigStore } from '@core/stores/config'
 import avatar1 from '@images/avatars/user-default.png'
 const userData = useCookie<any>('userData')
@@ -8,6 +9,7 @@ const configStore = useConfigStore()
 const logout = async () => {  
   try {
     toggleOverlay()
+    await removeLocalFilters()
     await $api('/user/logout', {
       method: 'POST',
       body: {},
@@ -19,6 +21,15 @@ const logout = async () => {
     userData.value = null
     toggleOverlay()
     await router.push('/login')
+  }
+}
+
+const removeLocalFilters = async() => {
+  try {
+    const localKey = getLocalStoreKey(userData.value.id)
+    localStorage.removeItem(localKey)
+  } catch (error) {
+    console.log(error)
   }
 }
 

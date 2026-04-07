@@ -26,8 +26,20 @@ let debouncedQueryTimeout: ReturnType<typeof setTimeout> | null = null
 const isConfirmDialogVisible = ref(false)
 const configStore = useConfigStore()
 const user = useCookie<any>('userData')
-const isAdmin = computed(() => user.value.role.role === 'admin')
-const isSpv = computed(() => user.value.role.role === 'spv')
+const isAdmin = computed(() => {
+  if(user.value.role){
+    return user.value.role.role === 'admin'
+  } else {
+    return false
+  }
+})
+const isSpv = computed(() => {
+  if(user.value.role){
+    return user.value.role.role === 'spv'
+  } else {
+    return false
+  }
+})
 const showFilter = ref(false)
 const userStore = useUserStore()
 const roleStore = useRoleStore()

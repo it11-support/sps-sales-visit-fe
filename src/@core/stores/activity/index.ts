@@ -497,25 +497,25 @@ export const useActivityStore = defineStore('activity', {
         ...newFilters
       }
 
-      if (newFilters.sales_person_id) {
-        const filterCustomerOptions = this.customers
-          .filter((customer: any) =>
-            Number(customer.id) === Number(newFilters.sales_person_id)
-          )
-          .map((customer: any) => ({
-            value: customer.id,
-            title: customer.CardName,
-            sales_person_id: Number(customer.sales_person_id)
-          }));
+      // if (newFilters.sales_person_id) {
+      //   const filterCustomerOptions = this.customers
+      //     .filter((customer: any) =>
+      //       Number(customer.sales_person_id) === Number(newFilters.sales_person_id)
+      //     )
+      //     .map((customer: any) => ({
+      //       value: customer.id,
+      //       title: customer.CardName,
+      //       sales_person_id: Number(customer.sales_person_id)
+      //     }));
 
-        this.customerOptions = filterCustomerOptions;
-      } else {
-        this.customerOptions = this.customers.map((customer: any) => ({
-          value: customer.id,
-          title: customer.CardName,
-          sales_person_id: Number(customer.sales_person_id)
-        }));
-      }
+      //   this.customerOptions = filterCustomerOptions;
+      // } else {
+      //   this.customerOptions = this.customers.map((customer: any) => ({
+      //     value: customer.id,
+      //     title: customer.CardName,
+      //     sales_person_id: Number(customer.sales_person_id)
+      //   }));
+      // }
 
       if (shouldFetch) {
         await this.fetchActivities();

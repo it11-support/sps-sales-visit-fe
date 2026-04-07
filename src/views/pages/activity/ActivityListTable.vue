@@ -2,13 +2,26 @@
 import { Filters, useActivityStore, useAuthStore, useCustomerStore } from '@/@core/stores';
 import { IActivity } from '@/@core/typedefs';
 import dayjs from 'dayjs';
+import { getLocalStoreKey, updateFilter } from './functions';
 
 const activityStore = useActivityStore()
 const customerStore = useCustomerStore()
 const authStore = useAuthStore()
 const user = useCookie<any>('userData')
-const isAdmin = computed(() => user.value.role.role === 'admin')
-const isSpv = computed(() => user.value.role.role === 'spv')
+const isAdmin = computed(() => {
+  if(user.value.role){
+    return user.value.role.role === 'admin'
+  } else {
+    return false
+  }
+})
+const isSpv = computed(() => {
+  if(user.value.role){
+    return user.value.role.role === 'spv'
+  } else {
+    return false
+  }
+})
 
 const searchQuery = ref('')
 const salesPersonId = computed(() => user.value.sales_person.filter((sp: any) => sp.CompanyId ==='SPS')[0])
@@ -22,7 +35,6 @@ const activityToDelete = ref({} as IActivity | null)
 const useSPS = ref(false)
 const useBBS = ref(false)
 const loadingEditableUntilId = ref<number | null>(null)
-
 const selectedSPS = computed<number | null>({
   get() {
     return form.value.customers.find(id =>
@@ -104,10 +116,28 @@ const tableHeaders = computed(() => {
   return headers.value.filter(item => item.key !== 'editable')
 })
 
+const localKey = getLocalStoreKey(user.value.id)
 
 activityStore.$reset()
 
 const loadActivity = async () => {
+
+  const savedFilters = localStorage.getItem(localKey)
+  if (savedFilters) {
+    const parsedFilters = JSON.parse(savedFilters)
+    activityStore.filters = {
+      ...activityStore.filters,
+      ...parsedFilters
+    }
+    showFilters.value = parsedFilters.showFilters
+    filters.value = {
+      ...filters.value,
+      sales_person_id: parsedFilters.sales_person_id,
+      customer_id: parsedFilters.customer_id,
+      status: parsedFilters.status
+    }
+
+  }
   activityStore.fetchSalesPersonOptions()
   await activityStore.initialize()
   await activityStore.fetchActivityTypes()
@@ -117,8 +147,23 @@ onMounted(loadActivity)
 
 watch(filters.value, val => {
   if (val)
-   customerStore.fetchCustomerOptions(null, val.sales_person_id?.toString())
+    customerStore.fetchCustomerOptions(null, val.sales_person_id?.toString())
 })
+
+watch(
+  () => activityStore.filters, 
+  (val) => {
+    updateFilter(localKey, val)
+  }, {deep: true}
+)
+
+
+watch(
+  () => showFilters.value, 
+  (val) => {
+    updateFilter(localKey, {showFilters: val})
+  }, {deep: true}
+)
 
 watch(useSPS, (val) => {
   if (!val) {
@@ -294,7 +339,11 @@ const updateSelectedType = (val: number) => {
  form.value.activity_type_id = val
 }
 
-
+const customFilter = (item: any, queryText: string, itemText: string) => {
+  const text = itemText?.toLowerCase() || ''
+  const search = queryText?.toLowerCase() || ''
+  return text.includes(search)
+}
 </script>
 <template>
   <VBreadcrumbs
@@ -340,6 +389,7 @@ const updateSelectedType = (val: number) => {
             :return-object="false"
             autocomplete="off"
             autocorrect="off"
+            :filter="customFilter"
             spellcheck="false"
           />
         </VCol>
