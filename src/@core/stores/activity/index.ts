@@ -300,12 +300,13 @@ export const useActivityStore = defineStore('activity', {
 
       this.loadingAssignment = false;
     },
-    async updateActivityStatus(id: number, status: string) {
+    async updateActivityStatus(id: number, status: string, isEdit: boolean = false) {
       this.loadingId = id
       await $api(`/activity/status/update/${id}`, {
         method: 'PUT',
         body: JSON.parse(JSON.stringify({
-          status
+          status,
+          isEdit: isEdit
         })),
       })
       this.fetchActivityById(id.toString())

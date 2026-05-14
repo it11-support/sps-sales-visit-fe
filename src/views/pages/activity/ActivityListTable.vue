@@ -301,7 +301,7 @@ const handleClickEdit = (id: number) => {
 }
 
 const handleClickEditReport = async(id: number) => {
-  await activityStore.updateActivityStatus(id, STATUS.DRAFT)
+  await activityStore.updateActivityStatus(id, STATUS.DRAFT, true)
   router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
 const handleCheckIn = async(id: number) => {

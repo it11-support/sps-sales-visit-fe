@@ -65,7 +65,7 @@ export const regexValidator = (value: unknown, regex: RegExp | string): string |
   if (Array.isArray(value))
     return value.every(val => regexValidator(val, regeX))
 
-  return regeX.test(String(value)) || 'The Regex field format is invalid'
+  return regeX.test(String(value)) || 'The field format is invalid'
 }
 
 // 👉 Alpha Validator
