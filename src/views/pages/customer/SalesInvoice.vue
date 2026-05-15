@@ -1,97 +1,89 @@
 <script setup lang="ts">
 import { useConfigStore } from '@/@core/stores/config'
+import { useSalesInvoiceStore } from '@/@core/stores/salesinvoice'
 import { ISalesInvoice } from '@/@core/typedefs/salesinvoice'
 import { SortItem } from '@/@core/types'
+import { computed, ref, watch } from 'vue'
 import SalesInvoiceTable from './SalesInvoiceTable.vue'
-import { useSalesInvoiceStore } from '@/@core/stores/salesinvoice'
 
+interface Props { id: string }
+const props = defineProps<Props>()
+
+const salesInvoiceStore = useSalesInvoiceStore()
+const configStore = useConfigStore()
+
+// Query params
+const page = ref(1)
+const itemsPerPage = ref(DEFAULT_PER_PAGE)
+const sortOptions = ref<SortItem[]>([{ key: 'DocDate', order: 'desc' }])
 const startDate = ref('')
 const endDate = ref('')
 const searchQuery = ref('')
 const debouncedQuery = ref('')
-const itemsPerPage = ref(DEFAULT_PER_PAGE)
-const page = ref(1)
-const sortOptions = ref<SortItem[]>([{key: 'DocDate', order: 'desc'}])
 const groupBy = ref('DocNum')
+const selectedRows = ref<ISalesInvoice[]>([])
 
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null
-const configStore = useConfigStore()
-const selectedRows = ref<ISalesInvoice[]>([])
-const salesInvoiceStore = useSalesInvoiceStore()
-interface Props {
-  id: string
-}
-const props = defineProps<Props>()
 
-const headers = [
-  { title: 'Invoice', value: 'DocNum', sortable: true },
-  { title: 'Inv Date', value: 'DocDate', sortable: true },
-  { title: 'Description', value: 'Dscription', sortable: true },
-  { title: 'Item Code', value: 'ItemCode', sortable: true },
-  { title: 'Volume (Kg)', value:'total_weight', sortable: true },
-  { title: 'Price', value: 'PriceBefDisc', sortable: true },
-  { title: 'Total', value: 'TotalSales', sortable: true },
-]
+// Debounce search
+watch(searchQuery, (val) => {
+  if (debounceTimeout) clearTimeout(debounceTimeout)
+  debounceTimeout = setTimeout(() => {
+    debouncedQuery.value = val
+  }, 400)
+})
 
-onMounted(() => {
+// Single source of truth for fetch
+const fetchSalesInvoices = async() => {
   salesInvoiceStore.updateQuery({
     id: props.id,
-    search: debouncedQuery,
-    per_page: itemsPerPage,
-    page,
-    sort_options: sortOptions,
-    start_date: startDate,
-    end_date: endDate,
-    group_by: groupBy
+    page: page.value,
+    per_page: itemsPerPage.value,
+    sort_options: sortOptions.value,
+    start_date: startDate.value,
+    end_date: endDate.value,
+    search: debouncedQuery.value,
+    group_by: groupBy.value
   })
   salesInvoiceStore.fetchSalesInvoices()
-})
+}
 
-// Delayed search
-watch(searchQuery, (newVal) => {
-  if (debounceTimeout && searchQuery) clearTimeout(debounceTimeout)
+// Watch all params that affect the API
+watch(
+  [sortOptions, startDate, endDate, debouncedQuery],
+  fetchSalesInvoices,
+  { deep: true, immediate: true } // immediate = fetch on mount
+)
 
-  debounceTimeout = setTimeout(() => {
-    debouncedQuery.value = newVal
-  }, 400) // delay 400ms
-})
-
+// Computed
 const salesInvoicesData = computed(() => salesInvoiceStore.salesInvoices)
-
-const updateOptions = (options: any) => {
-  if(options.sortBy.length < 1) {
-     sortOptions.value = [{ "key": "DocDate", "order": "desc" }]
-  
-  } else {
-    sortOptions.value = [options.sortBy]
-  }
-}
-
-const handleRefresh = (stopLoading: () => void) => {
-  salesInvoiceStore.fetchSalesInvoices().finally(() => {
-    stopLoading();
-  });
-}
-
-const updateSelectedRows = (rows: ISalesInvoice[]) => {
-  selectedRows.value = rows.map((row: ISalesInvoice) => ({ ...row }));
-}
-
-const calculateTotalSales = (items: any): string => {
-  const totalSales = items.reduce((sum: number, item: any) => sum + parseFloat(item.value.TotalSales), 0);
-  return formatMoney(totalSales)
-}
-
 const totalSales = computed(() => salesInvoiceStore.salesInvoices.total)
+const headers = [
+  { title: 'Invoice', value: 'DocNum' },
+  { title: 'Inv Date', value: 'DocDate' },
+  { title: 'Description', value: 'Dscription' },
+  { title: 'Item Code', value: 'ItemCode' },
+  { title: 'Volume (Kg)', value: 'total_weight' },
+  { title: 'Price', value: 'PriceBefDisc' },
+  { title: 'Discount Line', value: 'DiscLine' },
+  { title: 'Discount Total', value: 'DiscTotal' },
+  { title: 'Total', value: 'TotalSales' },
+]
+const computedHeaders = computed(() =>
+  groupBy.value === 'ItemCode' ? headers.filter(h => h.value !== 'ItemCode') : headers.filter(h => h.value !== 'DocNum')
+)
 
-const computedHeaders = computed(() => {
-  if (groupBy.value === 'ItemCode') {
-    return headers.filter(header => header.value !== 'ItemCode')
-  }
-  // return headers.filter(header => header.value !== 'DocNum')
-  return headers.filter(header => header.value !== 'DocNum')
-})
-
+// Handlers
+const updateOptions = (options: any) => {
+  sortOptions.value = options.sortBy.length > 0 ? [options.sortBy] : [{ key: 'DocDate', order: 'desc' }]
+}
+const updateSelectedRows = (rows: ISalesInvoice[]) => {
+  selectedRows.value = rows.map(r => ({ ...r }))
+}
+const handleRefresh = (stopLoading: () => void) => {
+  fetchSalesInvoices()
+  .finally(() => stopLoading())
+}
 </script>
 
 <template>
@@ -102,8 +94,19 @@ const computedHeaders = computed(() => {
       action-collapsed
       @refresh="handleRefresh"
       title="SALES INVOICES"
-    >     
-    <VCardText class="d-flex flex-wrap gap-4">
+    >
+      <VCardText class="d-flex flex-wrap gap-4">
+        <div class="me-4 d-flex gap-3">
+          <AppSelect
+            :model-value="itemsPerPage"
+            :items="PAGINATION_ITEMS"
+            style="inline-size: 6.25rem;"
+            @update:model-value="itemsPerPage = parseInt($event, 10)"
+          />
+          
+        </div>
+        <VSpacer />
+
         <VRow>
           <VCol cols="12" lg="12" md="12">
             <v-radio-group inline v-model="groupBy">
@@ -133,28 +136,28 @@ const computedHeaders = computed(() => {
             <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
           </div>
 
-          <!-- 👉 Export button -->
-          <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
-            Export
-          </VBtn> -->
-        </div>
-      </VCardText>
-      <SalesInvoiceTable 
-        :sales-invoices-data="salesInvoicesData" 
-        :customer-id="id"
+            <!-- 👉 Export button -->
+            <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+              Export
+            </VBtn> -->
+          </div>
+        </VCardText>
+
+      <SalesInvoiceTable
+        :sales-invoices-data="salesInvoicesData"
+        :customer-id="props.id"
         :loading="configStore.loading"
         :headers="computedHeaders"
-        :items-length="totalSales" 
-        :group-by="groupBy" 
-        :item-value="groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum'" 
+        :items-length="totalSales"
+        :group-by="groupBy"
+        :item-value="groupBy === 'DocNum' ? 'DocNum_ItemCode' : 'ItemCode_DocNum'"
         v-model:page="page"
-        v-model:items-per-page="itemsPerPage" 
-        v-model:selected-rows="selectedRows" 
-        :on-update-options="updateOptions"
-        :on-update-selected-rows="updateSelectedRows" 
-        :grouped="true" 
+        v-model:items-per-page="itemsPerPage"
+        v-model:selected-rows="selectedRows"
+        :onUpdateOptions="updateOptions"
+        :on-update-selected-rows="updateSelectedRows"
+        :grouped="true"
       />
     </AppCardActions>
-   
   </VCol>
 </template>

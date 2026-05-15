@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useActivityStore, useConfigStore } from '@/@core/stores';
-import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 const modalProps = defineProps<{
   show: boolean
@@ -21,6 +21,9 @@ const isPhotoTaken = ref(false)
 const isShotPhoto = ref(false)
 const isLoading = ref(false)
 const hasMultipleCameras = ref(false)
+const isCameraAvailable = ref(false)
+const isCheckingCamera = ref(false)
+const cameraErrorMessage = ref('')
 
 const camera = ref<HTMLVideoElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
@@ -34,6 +37,11 @@ let stream: MediaStream | null = null
 const isCameraSupported = computed(() =>
   !!navigator.mediaDevices?.getUserMedia
 )
+const isMobileDevice = computed(() => {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent || ''
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || navigator.maxTouchPoints > 1
+})
 
 const stopCameraStream = () => {
   if (camera.value?.srcObject) {
@@ -50,31 +58,30 @@ const createCameraElement = async () => {
       audio: false
     })
     stream = mediaStream
-    if (camera.value) camera.value.srcObject = stream
+    isCameraAvailable.value = true
+    if (!camera.value) await nextTick()
+    if (camera.value) {
+      camera.value.srcObject = stream
+      camera.value.muted = true
+      camera.value.setAttribute('playsinline', 'true')
+      await camera.value.play().catch(() => {})
+    }
   } catch (error) {
     console.warn('Failed to open camera:', error)
-    triggerFileInput()
+    isCameraAvailable.value = false
+    cameraErrorMessage.value = 'Camera not accessible, please try to upload an image'
   } finally {
     configStore.overlay = false
   }
 }
 
-const checkCameraSupport = async (): Promise<boolean> => {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    return false
-  }
-
+const detectMultipleCameras = async () => {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-    stream.getTracks().forEach(track => track.stop())
-
     const devices = await navigator.mediaDevices.enumerateDevices()
     const videoInputs = devices.filter(device => device.kind === 'videoinput')
     hasMultipleCameras.value = videoInputs.length > 1
-
-    return true
-  } catch (e) {
-    return false
+  } catch {
+    hasMultipleCameras.value = false
   }
 }
 
@@ -91,9 +98,19 @@ const getLocation = async (): Promise<GeolocationPosition> => {
   })
 }
 
-const takePhoto = async () => {
-  drawToCanvasWithResize(camera.value!, canvas.value!)
+const finalizeCapturedPhoto = (source: HTMLImageElement | HTMLVideoElement) => {
+  if (!canvas.value) return
+  drawToCanvasWithResize(source, canvas.value)
+  isShotPhoto.value = true
   isPhotoTaken.value = true
+  setTimeout(() => {
+    isShotPhoto.value = false
+  }, 180)
+}
+
+const takePhoto = async () => {
+  if (!camera.value) return
+  finalizeCapturedPhoto(camera.value)
 }
 
 const toggleCameraFacing = async () => {
@@ -104,21 +121,24 @@ const toggleCameraFacing = async () => {
 
 const handlePhoto = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
-  if (!file || !canvas.value) return
+  if (!file) return
 
   const reader = new FileReader()
-  reader.onload = async e => {
+  reader.onload = e => {
     const img = new Image()
     img.onload = () => {
-      if (canvas.value) {
-        drawToCanvasWithResize(img, canvas.value)
-      }
+      finalizeCapturedPhoto(img)
+    }
+    img.onerror = () => {
+      cameraErrorMessage.value = 'File gambar tidak bisa dibaca. Coba gunakan format JPG atau PNG.'
     }
     img.src = e.target?.result as string
   }
+  reader.onerror = () => {
+    cameraErrorMessage.value = 'Gagal membaca file gambar.'
+  }
 
   reader.readAsDataURL(file)
-  isPhotoTaken.value = true
 }
 
 const dataUrlToBlob = (dataUrl: string) => {
@@ -157,7 +177,7 @@ const handleSubmit = async () => {
       toggleModal()
       await activityStore.fetchActivityReport(modalProps.assignmentId.toString())
       await activityStore.fetchActivityById(modalProps.assignmentId.toString())
-      await router.push(`/activity/${modalProps.assignmentId}/report/edit`)
+      await router.push(`/activity/${modalProps.assignmentId}/report`)
     }
   } catch (err) {
     console.error(err)
@@ -214,17 +234,9 @@ const drawToCanvasWithResize = (
 }
 
 const triggerFileInput = () => {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    alert('Your browser does not support camera access.')
-    return
-  }
-
+  if (fileInput.value) fileInput.value.value = ''
   fileInput.value?.click()
 }
-
-onMounted(async () => {
-  if (isCameraSupported.value) await checkCameraSupport()
-})
 
 onBeforeUnmount(stopCameraStream)
 
@@ -232,25 +244,35 @@ watch(
   () => modalProps.show,
   async (newVal) => {
     if (newVal === true) {
+      isLoading.value = true
       isCameraOpen.value = true
-      await getLocation()
+      isCheckingCamera.value = true
+      cameraErrorMessage.value = ''
+      await nextTick()
+      void getLocation().catch(() => {})
 
-      const cameraSupported = await checkCameraSupport()
-
-      if (!cameraSupported) {
-        alert('Your browser does not support camera access.')
-        isCameraOpen.value = false
-        toggleModal()
-        return
+      try {
+        if (isCameraSupported.value) {
+          await createCameraElement()
+          if (isCameraAvailable.value) {
+            void detectMultipleCameras()
+          }
+        } else {
+          isCameraAvailable.value = false
+          cameraErrorMessage.value = 'Camera not accessible'
+        }
+      } finally {
+        isCheckingCamera.value = false
+        isLoading.value = false
       }
-
-      configStore.overlay = true
-      await createCameraElement()
-      configStore.overlay = false
     } else {
+      isLoading.value = false
       isCameraOpen.value = false
       isPhotoTaken.value = false
       isShotPhoto.value = false
+      isCameraAvailable.value = false
+      isCheckingCamera.value = false
+      cameraErrorMessage.value = ''
       stopCameraStream()
     }
   }
@@ -265,28 +287,39 @@ watch(
     ref="fileInput"
     type="file"
     accept="image/*"
-    capture="environment"
     @change="handlePhoto"
     hidden
   />
 
-  <VDialog :model-value="modalProps.show" @click:outside="toggleModal" max-width="680">
+  <VDialog :model-value="modalProps.show" @click:outside="toggleModal" max-width="500">
     <VCard>
       <VCardText>
-        <VSkeletonLoader type="button" v-if="isLoading" />
-        <div class="web-camera-container">
+        <VSkeletonLoader type="image, actions" v-if="isLoading" />
+        <div class="web-camera-container" v-show="!isLoading">
           <div v-if="isCameraOpen" class="camera-box" :class="{ flash: isShotPhoto }">
             <div class="camera-shutter" :class="{ flash: isShotPhoto }" />
-            <video v-show="!isPhotoTaken" ref="camera" autoplay playsinline></video>
+            <video v-show="!isPhotoTaken && isCameraAvailable" ref="camera" autoplay playsinline muted></video>
             <canvas v-show="isPhotoTaken" ref="canvas" />
           </div>
+          <VAlert
+            v-if="isCameraOpen && !isCheckingCamera && !isCameraAvailable && !isPhotoTaken"
+            type="warning"
+            variant="tonal"
+            class="mb-4"
+          >
+            {{ cameraErrorMessage || 'Camera is not available, please try to upload an image' }}
+          </VAlert>
 
           <div v-if="isCameraOpen" class="camera-shoot d-flex gap-2">
-            <VBtn @click="triggerFileInput" v-if="!checkCameraSupport() && !isPhotoTaken">
-              <VIcon icon="tabler-camera" />
+            <VBtn
+              @click="triggerFileInput"
+              v-if="!isPhotoTaken && (isMobileDevice || (!isCheckingCamera && !isCameraAvailable))"
+              title="Upload Image"
+            >
+              <VIcon icon="tabler-photo-up" />
             </VBtn>
             <VBtn
-              v-if="hasMultipleCameras && !isPhotoTaken"
+              v-if="isCameraAvailable && hasMultipleCameras && !isPhotoTaken"
               icon
               @click="toggleCameraFacing"
               title="Switch Camera"
@@ -294,11 +327,11 @@ watch(
               <VIcon icon="tabler-refresh" />
             </VBtn>
 
-            <VBtn v-if="!isPhotoTaken" icon :loading="isLoading" @click="takePhoto">
+            <VBtn v-if="isCameraAvailable && !isPhotoTaken" icon :loading="isLoading" @click="takePhoto">
               <VIcon icon="tabler-camera" />
             </VBtn>
 
-            <template v-else>
+            <template v-if="isPhotoTaken">
               <VBtn @click="handleSubmit" color="success">
                 <VIcon icon="tabler-device-floppy" /> Save
               </VBtn>

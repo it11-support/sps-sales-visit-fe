@@ -40,7 +40,13 @@ const formData = ref<any>({
 })
 const localTeams = computed(() => [...salesPersonStore.teamOptions]);
 const user = useCookie<any>('userData')
-const isAdmin = computed(() => user.value.role.role === 'admin')
+const isAdmin = computed(() => {
+  if(user.value.role){
+    return user.value.role.role === 'admin'
+  } else {
+    return false
+  }
+})
 const isPasswordVisible = ref(false)
 
 const localSalesPersons = computed(() => {

@@ -27,7 +27,7 @@ export const useSalesPersonStore = defineStore('salesPersonStore', {
       const { data } = await useApi<any>(createUrl('sales',{ query: this.query }))
       this.salesPersons = data.value.data.data
       const allOptions = this.salesPersons.map((sales: ISalesPerson) => ({
-        title: sales.SlpName,
+        title: `${sales.SlpName} (${sales.CompanyId})`,
         value: sales.id,
         user: sales.user ?? [],
         type: sales.CompanyId // SPS / BBS

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import ActivityReportDetail from '@/views/pages/activity/ActivityReportDetail.vue';
+import ReportDetail from '@/views/pages/activity/ReportDetail.vue';
 
 const router = useRoute('activity-id-view-report' as any)
 const assignmentId = router.params.id
@@ -8,5 +8,5 @@ const assignmentId = router.params.id
 
 
 <template>
- <ActivityReportDetail :assignment-id="assignmentId" />
+ <ReportDetail :assignment-id="assignmentId" />
 </template>

@@ -162,19 +162,20 @@ const onSubmit = () => {
                   label="Email / Username"
                   placeholder="johndoe@email.com or johndoe"                  
                   autofocus
+                  autocomplete="off"
                   :rules="[requiredValidator]"
                   :error-messages="errors.username"
                 />
               </VCol>
               <!-- password -->
               <VCol cols="12">
-                <AppTextField
+               <AppTextField
                   v-model="credentials.password"
                   label="Password"
                   placeholder="············"
                   :rules="[requiredValidator]"
                   :type="isPasswordVisible ? 'text' : 'password'"
-                  autocomplete="password"
+                  autocomplete="new-password" 
                   :error-messages="errors.password"
                   :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"

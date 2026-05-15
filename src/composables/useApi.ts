@@ -57,3 +57,32 @@ export const useApi = createFetch({
     },
   },
 })
+
+export const downloadApi = async(url: string, filename: string) => {
+  const accessToken = useCookie('accessToken').value
+
+  const response = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL || '/api'}${url}`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'application/octet-stream',
+        ...(accessToken && {
+          Authorization: `Bearer ${accessToken}`,
+        }),
+      },
+    },
+  )
+
+  if (!response.ok)
+    throw new Error('Download failed')
+
+  const blob = await response.blob()
+
+  const link = document.createElement('a')
+  link.href = window.URL.createObjectURL(blob)
+  link.download = filename
+  link.click()
+
+  window.URL.revokeObjectURL(link.href)
+}

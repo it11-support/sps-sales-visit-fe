@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useCustomerStore } from '@/@core/stores/customer'
+import { Filters, useCustomerStore } from '@/@core/stores/customer'
 import { useSalesPersonStore } from '@/@core/stores/sales-person'
+import { ISalesPerson } from '@/@core/typedefs'
 
 const customerStore = useCustomerStore()
 const salesStore = useSalesPersonStore()
@@ -17,14 +18,33 @@ const selectedRows = customerStore.selectedRows
 const filterDormantCustomer = ref(false)
 // Delayed search
 const user = useCookie<any>('userData')
-const isAdmin = computed(() => user.value.role.role === 'admin')
-const isSpv = computed(() => user.value.role.role === 'spv')
+const isAdmin = computed(() => {
+  if(user.value.role){
+    return user.value.role.role === 'admin'
+  } else {
+    return false
+  }
+})
+const isSpv = computed(() => {
+  if(user.value.role){
+    return user.value.role.role === 'spv'
+  } else {
+    return false
+  }
+})
 const showFilter = ref(false)
 const loadingSalesPerson = ref(true)
 const loadingGroupName = ref(true)
 const loadingPaymentOptions = ref(true)
 const loadingPriceListOptions = ref(true)
 const loadingCityOptions = ref(true)
+
+const filters = ref<Partial<Filters>>({
+  sales_person_id: [],
+  group_name: null,
+  payment_term: null,
+  city: null
+})
 
 watch(debouncedQuery, (val) => {
   customerStore.updateFilters({ search: val })
@@ -33,7 +53,7 @@ watch(debouncedQuery, (val) => {
 // Headers
 const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
-  { title: 'Compnay', key: 'CompanyId' },
+  { title: 'Company', key: 'CompanyId' },
   { title: 'Customer', key: 'CardName' },
   { title: 'Sales Person', key: 'SlpName' },
   { title: 'Group Name', key: 'GroupName' },
@@ -53,12 +73,16 @@ customerStore.$reset()
 salesStore.$reset()
 
 onMounted(async() => {
+  const ids = !isAdmin.value ? user.value.sales_person
+      .filter((sp: ISalesPerson) => selectedCompanies.value.includes(sp.CompanyId))
+      .map((sp: ISalesPerson) => sp.id) : []
+
   if(isAdmin.value) {
     await customerStore.initialize()
-  } else if(isSpv.value) {
-    await customerStore.initialize(undefined, user.value.team_id)
-  } else {
-    await customerStore.initialize(user.value.sales_person_id)
+  } else if(isSpv.value) {   
+    await customerStore.initialize(ids, user.value.team_id)
+  } else {    
+    await customerStore.initialize(ids)
   }
   salesStore.updateQuery({ per_page: -1, page: 1 })
 })
@@ -82,6 +106,19 @@ const status = [
   { title: 'Active', value: 'N' },
   { title: 'Inactive', value: 'Y' },
 ]
+
+const filteredSalesPersonOptions = computed(() => {
+  const seen = new Set<number>();
+  return salesStore.salesPersonOptions
+    .filter(item => item.user.length > 0)
+    .filter(item => selectedCompanies.value.includes(item.type))
+    .filter(item => {
+      if (seen.has(Number(item.value))) return false;
+      seen.add(Number(item.value));
+      return true;
+    });
+});
+
 
 
 // Last transaction
@@ -123,8 +160,6 @@ const updateSelected = (val: string) => {
   customerStore.updateFilters({ companyIds: newValue })
 }
 
-
-
 const selectedCompanies = computed<string[]>({
   get() {
     return customerStore.filters.companyIds ?? []
@@ -136,6 +171,43 @@ const selectedCompanies = computed<string[]>({
   }
 })
 
+watch(
+  filters,
+  (newVal) => {
+    const isNotAdmin = !isAdmin.value && !isSpv.value
+    const finalSalesPersonIds = isNotAdmin
+      ? user.value.sales_person
+          .filter((sp: ISalesPerson) =>
+            selectedCompanies.value.includes(sp.CompanyId)
+          )
+          .map((sp: ISalesPerson) => Number(sp.id))
+      : Array.isArray(newVal.sales_person_id)
+        ? newVal.sales_person_id.map(Number)
+        : newVal.sales_person_id
+          ? [Number(newVal.sales_person_id)]
+          : []
+    
+    customerStore.updateFilters({
+      ...newVal,
+      sales_person_id: finalSalesPersonIds,
+    })
+  },
+  { deep: true, immediate: true }
+)
+watch(selectedCompanies, 
+  (val, val1) => {
+    if(val.length !== val1.length) {
+      filters.value = {
+        ...filters.value,
+        sales_person_id: [],
+        group_name: null,
+        payment_term: null,
+        city: null
+      }
+    }
+  },
+  { deep: true }
+)
 </script>
 
 <template>
@@ -167,15 +239,13 @@ const selectedCompanies = computed<string[]>({
                 :label="COMPANIES.SPS"
                 :value="COMPANIES.SPS"
                 hide-details          
-                class="mr-4"
-                
+                class="mr-4"                
               />
               <VCheckbox
                 v-model="selectedCompanies"
                 :label="COMPANIES.BBS"
                 :value="COMPANIES.BBS"
-                hide-details
-               
+                hide-details               
               />
             </div>
           </VCol>
@@ -185,25 +255,32 @@ const selectedCompanies = computed<string[]>({
         <VRow>
           <!-- 👉 Select Role -->
           <VCol cols="12" sm="4" v-if="isAdmin || isSpv">
-            <AppSelect 
-              v-model="customerStore.filters.sales_person_id"
-              @update:model-value="customerStore.updateFilters({ sales_person_id: $event })"
+            <AppCombobox 
+              multiple
+              v-model="filters.sales_person_id"          
               placeholder="Filter by sales person" 
-              :items="salesStore.salesPersonOptions.filter(item => item.user !== null)"
+              :items="filteredSalesPersonOptions"
               clearable
               clear-icon="tabler-x" 
               :loading="loadingSalesPerson"
+              :return-object="false"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
             />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect 
-              v-model="customerStore.filters.group_name"
-              @update:model-value="customerStore.updateFilters({ group_name: $event })"
-              placeholder="Filter by group name"
+            <AppCombobox 
+              v-model="filters.group_name"
+              placeholder="Filter by group name" 
               :items="customerStore.groupNameOptions"
               clearable
               clear-icon="tabler-x" 
               :loading="loadingGroupName"
+              :return-object="false"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
             />
           </VCol>
 
@@ -218,14 +295,17 @@ const selectedCompanies = computed<string[]>({
             />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect
-              v-model="customerStore.filters.payment_term"
-              @update:model-value="customerStore.updateFilters({ payment_term: $event })"
+            <AppCombobox
+              v-model="filters.payment_term"
               placeholder="Filter by Payment Term"
               :items="customerStore.paymentTermOptions"
               clearable
               clear-icon="tabler-x" 
               :loading="loadingPaymentOptions"
+              :return-object="false"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
             />
           </VCol>
           <VCol cols="12" md="4" sm="4">
@@ -240,14 +320,17 @@ const selectedCompanies = computed<string[]>({
             />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect
-              v-model="customerStore.filters.city"
-              @update:model-value="customerStore.updateFilters({ city: $event })"
+            <AppCombobox
+              v-model="filters.city"
               placeholder="Filter by City / Area"
               :items="customerStore.cityOptions" 
               clearable 
               clear-icon="tabler-x" 
               :loading="loadingCityOptions"
+              :return-object="false"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
             />
           </VCol>
         </VRow>
@@ -308,8 +391,7 @@ const selectedCompanies = computed<string[]>({
       <VDataTableServer
         :loading="customerStore.loadingList"
         v-model:items-per-page="customerStore.filters.per_page"
-        v-model:model-value="customerStore.selectedRows"
-        v-model:page="customerStore.filters.page"
+        v-model:model-value="customerStore.selectedRows"        
         :items="customerStore.customers"
         item-value="CardCode"
         :items-length="customerStore.pagination.total"
@@ -317,6 +399,7 @@ const selectedCompanies = computed<string[]>({
         class="text-no-wrap"
         show-select
         :select-strategy="'all'"
+        :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
         return-object
         @update:options="customerStore.updateSortOptions"
         @update:model-value="customerStore.setSelectedRows"
@@ -350,7 +433,7 @@ const selectedCompanies = computed<string[]>({
           <div class="d-flex align-center gap-x-4">
             <div class="d-flex flex-column">
               <div class="text-sm">
-                {{ item.sales_person?.SlpName }}
+                {{ item.SlpName }}
               </div>
             </div>
           </div>

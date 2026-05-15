@@ -1,3 +1,5 @@
+import { IProduct } from "@/@core/typedefs";
+
 export interface IYearOnYearStatistic {
     month: string;
     items_last_year: number;
@@ -36,14 +38,40 @@ export interface IFilter {
   range: number | undefined
 }
 
-export type IYoYSummary = Record<
-  string,
-  {
-    monthly_summary: IMonthlySummary[];
-    top_items: IMonthlySummaryItem[];
-    total_sales_all_items: number;
-  }
->
+export type IYoYSummary = {
+  monthly_summary: IMonthlySummary[];
+  top_items: IMonthlySummaryItem[];
+  total_sales_all_items: number;
+}
+
+export interface MonthlySalesItem {
+  total_sales: number;
+  items: number;
+  total_days: number;
+}
+
+export interface MissingProduct {
+  id?: BigInt;
+  ItemCode: string;
+  ItemName: string;
+  ItemGroup: string;
+  last_purchased: Date;
+  volume_kg: number;
+  product?: IProduct
+}
+
+export interface CompanyMonthlySales {
+  [yearMonth: string]: MonthlySalesItem | number | MissingProduct[];
+
+  // helper for known keys
+  growth: number;
+  missing_items: MissingProduct[];
+}
+
+export interface MonthlySales {
+  [companyCode: string]: CompanyMonthlySales;
+}
+
 export const useStatisticStore = defineStore('statistic', {
     state: () => ({
         yoy_summary: [] as IYearOnYearStatistic[],
@@ -51,6 +79,7 @@ export const useStatisticStore = defineStore('statistic', {
         maxSales: 0,
         avgItems: 0,
         avgSales: 0,
+        monthly_sales: {} as MonthlySales,
         monthly_summary: [] as IMonthlySummary[],
         top_items: [] as IMonthlySummaryItem[],
         total_sales_all_items: 0,
@@ -90,6 +119,19 @@ export const useStatisticStore = defineStore('statistic', {
         } catch (error) {
           if (error) {
             console.error('Error fetching yoy summary:', error)
+          }
+        }
+         this.loadingState = false
+      },
+
+      async fetchMonthlySales(id: string){
+        this.loadingState =true
+        try {
+          const response = await useApi<any>(createUrl(`customer/monthly-sales/${id}`))
+          this.monthly_sales = response.data.value.data
+        } catch (error) {
+          if (error) {
+            console.error('Error fetching mtd summary:', error)
           }
         }
          this.loadingState = false
