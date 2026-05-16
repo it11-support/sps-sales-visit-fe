@@ -144,20 +144,20 @@ export const useActivityStore = defineStore('activity', {
         title: type.name
       }))
     },
-    async fetchActivities() {
+    // async fetchActivities() {
 
-      this.loadingList = true
-      const url = createUrl('activity', { query: this.filters })
-      const { data, error } = await useApi<any>(url)
-      if (error.value) {
-        console.error('Error fetching activities:', error.value)
-        this.loadingList = false
-        return
-      }
-      this.activities = data.value.data.data
-      this.pagination = { ...this.pagination, ...data.value.data }
-      this.loadingList = false
-    },
+    //   this.loadingList = true
+    //   const url = createUrl('activity', { query: this.filters })
+    //   const { data, error } = await useApi<any>(url)
+    //   if (error.value) {
+    //     console.error('Error fetching activities:', error.value)
+    //     this.loadingList = false
+    //     return
+    //   }
+    //   this.activities = data.value.data.data
+    //   this.pagination = { ...this.pagination, ...data.value.data }
+    //   this.loadingList = false
+    // },
     async deleteActivity(id: number, force: boolean = false) {
       this.loadingList = true
       const { data, error } = await useApi<any>(`activity/${id}`, {
@@ -171,8 +171,7 @@ export const useActivityStore = defineStore('activity', {
         console.error('Error deleting activity:', error.value)
         this.loadingList = false
         return
-      }
-      this.fetchActivities()
+      }      
     },
     async restoreActivity(id: number) {
       this.loadingList = true
@@ -184,7 +183,7 @@ export const useActivityStore = defineStore('activity', {
         this.loadingList = false
         return
       }
-      this.fetchActivities()
+      // this.fetchActivities()
     },
     async fetchActivityById(id: string) {
       this.loadingAssignment = true
@@ -324,7 +323,7 @@ export const useActivityStore = defineStore('activity', {
         method: 'PUT',
         body: JSON.parse(JSON.stringify(payloads)),
       })
-      this.fetchActivities()
+      // this.fetchActivities()
       this.loadingId = null
     },
     async checkOut(id: number) {
@@ -356,7 +355,7 @@ export const useActivityStore = defineStore('activity', {
           return false
         }
 
-        await this.fetchActivities()
+        // await this.fetchActivities()
         this.loadingEditableUntilId = null
         return true
       } catch (error) {
@@ -497,30 +496,6 @@ export const useActivityStore = defineStore('activity', {
         ...this.filters,
         ...newFilters
       }
-
-      // if (newFilters.sales_person_id) {
-      //   const filterCustomerOptions = this.customers
-      //     .filter((customer: any) =>
-      //       Number(customer.sales_person_id) === Number(newFilters.sales_person_id)
-      //     )
-      //     .map((customer: any) => ({
-      //       value: customer.id,
-      //       title: customer.CardName,
-      //       sales_person_id: Number(customer.sales_person_id)
-      //     }));
-
-      //   this.customerOptions = filterCustomerOptions;
-      // } else {
-      //   this.customerOptions = this.customers.map((customer: any) => ({
-      //     value: customer.id,
-      //     title: customer.CardName,
-      //     sales_person_id: Number(customer.sales_person_id)
-      //   }));
-      // }
-
-      if (shouldFetch) {
-        await this.fetchActivities();
-      }
     },
     async initialize(salesPersonId?: number, teamId?: number) {
       if(salesPersonId) {
@@ -529,8 +504,7 @@ export const useActivityStore = defineStore('activity', {
       if(teamId) {
         await this.updateFilters({ team_id: teamId }, false)
       }
-      await this.fetchActivities()
-      await this.fetchCustomer()
+      // await this.fetchCustomer()
       this.isReady = true
     },
     setActiveTab(tab: string) {

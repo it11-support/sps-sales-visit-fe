@@ -1,33 +1,26 @@
 <script lang="ts" setup>
-import { Filters, useActivityStore, useAuthStore, useCustomerStore } from '@/@core/stores';
+import { Filters, useActivityStore, useCustomerStore } from '@/@core/stores';
 import { IActivity } from '@/@core/typedefs';
 import dayjs from 'dayjs';
-import { getLocalStoreKey, updateFilter } from './functions';
+import { getLocalStoreKey } from './functions';
 
 const activityStore = useActivityStore()
 const customerStore = useCustomerStore()
-const authStore = useAuthStore()
+
 const user = useCookie<any>('userData')
-const isAdmin = computed(() => {
-  if(user.value.role){
+
+  const isAdmin = computed(() => {
+  if (user.value.role) {
     return user.value.role.role === 'admin'
-  } else {
-    return false
-  }
-})
-const isSpv = computed(() => {
-  if(user.value.role){
-    return user.value.role.role === 'spv'
   } else {
     return false
   }
 })
 
 const searchQuery = ref('')
-const salesPersonId = computed(() => user.value.sales_person.filter((sp: any) => sp.CompanyId ==='SPS')[0])
+const salesPersonId = computed(() => user.value.sales_person.filter((sp: any) => sp.CompanyId === 'SPS')[0])
 const debouncedQuery = useDebounce(searchQuery, 400)
 const router = useRouter()
-const showFilters = ref(false)
 const loadingSalesPersonsOptions = ref(true)
 const showScheduleForm = ref(false)
 const showDeleteModal = ref(false)
@@ -84,12 +77,33 @@ const selectedBBS = computed<number | null>({
     }
   },
 })
+const localKey = getLocalStoreKey(user.value.id)
+const savedFilters = localStorage.getItem(localKey)
 
-const filters = ref<Partial<Filters>>({
-  sales_person_id: null,
-  customer_id: null,
-  status: null
-})
+const parsedFilters = savedFilters
+  ? JSON.parse(savedFilters)
+  : {}
+
+delete parsedFilters.deleted
+
+
+const showFilters = ref(savedFilters ? JSON.parse(savedFilters).showFilters : false)
+const { 
+  filters,
+  activities,
+  updateFilters,
+  pagination,
+  mutate,
+  loadingList,
+  customerOptions,
+  salesPersonOptions,
+  isSalesPersonLoading,
+  activityTypes
+} = useActivities(
+  localKey,
+  parsedFilters as Partial<Filters>, 
+  {deleted: false}
+)
 
 const STATUS = {
   ASSIGNED: 'assigned',
@@ -115,36 +129,14 @@ const headers = computed(() => {
   return headers
 })
 
+
 const tableHeaders = computed(() => {
   if (isAdmin.value) return headers.value
   return headers.value.filter(item => item.key !== 'editable')
 })
 
-const localKey = getLocalStoreKey(user.value.id)
-
-activityStore.$reset()
-
 const loadActivity = async () => {
-
-  const savedFilters = localStorage.getItem(localKey)
-  if (savedFilters) {
-    const parsedFilters = JSON.parse(savedFilters)
-    activityStore.filters = {
-      ...activityStore.filters,
-      ...parsedFilters
-    }
-    showFilters.value = parsedFilters.showFilters
-    filters.value = {
-      ...filters.value,
-      sales_person_id: parsedFilters.sales_person_id,
-      customer_id: parsedFilters.customer_id,
-      status: parsedFilters.status
-    }
-
-  }
-  activityStore.fetchSalesPersonOptions()
   await activityStore.initialize()
-  await activityStore.fetchActivityTypes()
 }
 
 onMounted(loadActivity)
@@ -154,20 +146,30 @@ watch(filters.value, val => {
     customerStore.fetchCustomerOptions(null, val.sales_person_id?.toString())
 })
 
-watch(
-  () => activityStore.filters, 
-  (val) => {
-    updateFilter(localKey, val)
-  }, {deep: true}
-)
 
+watch(showFilters, (val) => {
+  const parsed = JSON.parse(
+    localStorage.getItem(localKey) || '{}',
+  )
 
-watch(
-  () => showFilters.value, 
-  (val) => {
-    updateFilter(localKey, {showFilters: val})
-  }, {deep: true}
-)
+  parsed.showFilters = val
+
+  localStorage.setItem(localKey, JSON.stringify(parsed))
+
+  if (!val) {
+    updateFilters({
+      search: "",
+      sales_person_id: null,
+      customer_id: null,
+      per_page: 10,
+      page: 1,
+      sort_options: [],
+      status: null,
+      start_date: "",
+      end_date: "",
+    })
+  }
+})
 
 watch(useSPS, (val) => {
   if (!val) {
@@ -188,35 +190,28 @@ watch(activityStore, val => {
 })
 
 watch(debouncedQuery, val => {
-  activityStore.updateFilters({ search: val })
+  updateFilters({ search: val })
 })
 
-watch(
-  filters,
-  newVal => {
-    activityStore.updateFilters({ ...newVal })
-  },
-  { deep: true }
-)
 
 /* ================= STATUS BADGE ================= */
 const getStatus = (status: string) => {
-    switch (status) {
-      case STATUS.ASSIGNED:
-        return {color: 'warning', content: 'Assigned'}
-      case STATUS.ONGOING:
-        return {color: 'primary', content: 'Ongoing'}
-      case STATUS.SUBMITTED:
-        return {color: 'success', content: 'Submitted'}
-      case STATUS.COMPLETED:
-        return {color: 'success', content: 'Completed'}
-      case STATUS.CANCELLED:
-        return {color: 'error', content: 'Cancelled'}
-      case STATUS.MISSED:
-        return {color: 'error', content: 'Missed'}
-      case STATUS.DRAFT:
-        return {color: 'warning', content: 'Draft'}
-    }
+  switch (status) {
+    case STATUS.ASSIGNED:
+      return { color: 'warning', content: 'Assigned' }
+    case STATUS.ONGOING:
+      return { color: 'primary', content: 'Ongoing' }
+    case STATUS.SUBMITTED:
+      return { color: 'success', content: 'Submitted' }
+    case STATUS.COMPLETED:
+      return { color: 'success', content: 'Completed' }
+    case STATUS.CANCELLED:
+      return { color: 'error', content: 'Cancelled' }
+    case STATUS.MISSED:
+      return { color: 'error', content: 'Missed' }
+    case STATUS.DRAFT:
+      return { color: 'warning', content: 'Draft' }
+  }
 }
 
 const form = ref({
@@ -300,26 +295,28 @@ const handleClickEdit = (id: number) => {
   router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
 
-const handleClickEditReport = async(id: number) => {
+const handleClickEditReport = async (id: number) => {
   await activityStore.updateActivityStatus(id, STATUS.DRAFT, true)
   router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
-const handleCheckIn = async(id: number) => {
+const handleCheckIn = async (id: number) => {
   await activityStore.updateActivityStatus(id, STATUS.ONGOING)
   router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
 
-const handleDelete = async(id: number) => {
+const handleDelete = async (id: number) => {
   await activityStore.deleteActivity(id).then(() => {
     showDeleteModal.value = false
   })
+  await mutate()
 }
 
 const handelUpdateActivity = async () => {
   await activityStore.updateActivity(form.value)
   await nextTick()
   showScheduleForm.value = false
-} 
+  await mutate()
+}
 const handleEdit = async (item: IActivity) => {
   setFormValue(item)
   await customerStore.fetchCustomerOptions(null, salesPersonId.value.id)
@@ -328,7 +325,7 @@ const handleEdit = async (item: IActivity) => {
   showScheduleForm.value = true
 }
 
-const handleExportReport = async(id: string, customer: string, date?: string) => {
+const handleExportReport = async (id: string, customer: string, date?: string) => {
   activityStore.exportReport(id, customer, date)
 }
 
@@ -344,10 +341,11 @@ const handleUpdateEditable = async (item: IActivity, value: boolean) => {
     item.editable_until = editableUntil ?? undefined
   }
   loadingEditableUntilId.value = null
+  await mutate()
 }
 
 const updateSelectedType = (val: number) => {
- form.value.activity_type_id = val
+  form.value.activity_type_id = val
 }
 
 const customFilter = (item: any, queryText: string, itemText: string) => {
@@ -357,10 +355,8 @@ const customFilter = (item: any, queryText: string, itemText: string) => {
 }
 </script>
 <template>
-  <VBreadcrumbs
-    class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
-    :items="[{title: 'Home', to: '/', class: 'text-primary' },{ title: 'Activities'}]"
-    >
+  <VBreadcrumbs class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
+    :items="[{ title: 'Home', to: '/', class: 'text-primary' }, { title: 'Activities' }]">
     <template v-slot:prepend>
       <v-icon icon='tabler-home' size="small"></v-icon>
     </template>
@@ -369,246 +365,139 @@ const customFilter = (item: any, queryText: string, itemText: string) => {
     <VCardItem class="pb-4">
       <VCheckbox v-model="showFilters" label="Show Filters"></VCheckbox>
       <VCol cols="12" sm="4" md="4" lg="4" class="pl-0">
-        <AppCombobox 
-          v-model="filters.sales_person_id"
-          :disabled="loadingSalesPersonsOptions"
-          :loading="loadingSalesPersonsOptions"          
-          placeholder="Filter by sales person" 
-          :items="activityStore.salesPersonsOptions" 
-          clearable 
-          clear-icon="tabler-x"
-          :return-object="false"
-          autocomplete="off"
-          autocorrect="off"
-          spellcheck="false"
-        />
+        <AppCombobox v-model="filters.sales_person_id" :disabled="isSalesPersonLoading"
+          :loading="isSalesPersonLoading" placeholder="Filter by sales person"
+          :items="salesPersonOptions" clearable clear-icon="tabler-x" :return-object="false"
+          autocomplete="off" autocorrect="off" spellcheck="false" />
       </VCol>
     </VCardItem>
     <VCardText v-if="showFilters">
       <VRow>
-        <VCol 
-          v-if="isAdmin"
-          cols="12"
-          sm="4"
-        >
-          <AppCombobox 
-            v-model="filters.customer_id"
-            placeholder="Filter by Customer" 
-            :items="activityStore.customerOptions"
-            clearable 
-            clear-icon="tabler-x"
-            :return-object="false"
-            autocomplete="off"
-            autocorrect="off"
-            :filter="customFilter"
-            spellcheck="false"
-          />
+        <VCol v-if="isAdmin" cols="12" sm="4">
+          <AppCombobox v-model="filters.customer_id" placeholder="Filter by Customer"
+            :items="customerOptions" clearable clear-icon="tabler-x" :return-object="false"
+            autocomplete="off" autocorrect="off" :filter="customFilter" spellcheck="false" />
         </VCol>
         <VCol cols="12" sm="4">
-          <AppCombobox 
-            v-model="filters.status"
-            :disabled="activityStore.loading"
-            placeholder="Filter by status" 
-            :items="[
-              { title: 'Assigned', value: 'assigned' },
-              { title: 'On Going', value: 'ongoing' },
-              { title: 'Submitted', value: 'submitted' },
-              { title: 'Completed', value: 'completed' },
-              { title: 'Cancelled', value: 'cancelled' },
-              { title: 'Draft', value: 'draft' },
-              { title: 'Overdue', value: 'misssed' },
-            ]"
-            clearable 
-            clear-icon="tabler-x"
-            :return-object="false"
-            autocomplete="off"
-            autocorrect="off"
-            spellcheck="false"
-          />          
+          <AppCombobox v-model="filters.status" :disabled="activityStore.loading" placeholder="Filter by status" :items="[
+            { title: 'Assigned', value: 'assigned' },
+            { title: 'On Going', value: 'ongoing' },
+            { title: 'Submitted', value: 'submitted' },
+            { title: 'Completed', value: 'completed' },
+            { title: 'Cancelled', value: 'cancelled' },
+            { title: 'Draft', value: 'draft' },
+            { title: 'Overdue', value: 'misssed' },
+          ]" clearable clear-icon="tabler-x" :return-object="false" autocomplete="off" autocorrect="off"
+            spellcheck="false" />
         </VCol>
         <VCol cols="12" sm="4">
-          <AppDateTimePicker
-            v-model="activityStore.filters.start_date"
-            placeholder="Select start date"
-            clearable
-            clear-icon="tabler-x"
-            @update:model-value="val => val && activityStore.updateFilters({ start_date: val })"           
-          />
+          <AppDateTimePicker v-model="filters.start_date" placeholder="Select start date" clearable
+            clear-icon="tabler-x" @update:model-value="val => val && updateFilters({ start_date: val })" />
         </VCol>
-         <VCol cols="12" sm="4">
-          <AppDateTimePicker            
-            v-model="activityStore.filters.end_date"
-            placeholder="Select end date"
-            clearable
-            clear-icon="tabler-x"
-            @update:model-value="val => val && activityStore.updateFilters({ end_date: val })"
-          />
+        <VCol cols="12" sm="4">
+          <AppDateTimePicker v-model="filters.end_date" placeholder="Select end date" clearable clear-icon="tabler-x"
+            @update:model-value="val => val && updateFilters({ end_date: val })" />
         </VCol>
       </VRow>
     </VCardText>
     <VDivider />
-    
+
     <VCardText class="d-flex flex-wrap gap-4">
       <div class="me-3 d-flex gap-3">
-        <AppSelect
-          :model-value="activityStore.filters.per_page" 
-          :items="PAGINATION_ITEMS" style="inline-size: 6.25rem;"
-          @update:model-value="activityStore.setPerpage(parseInt($event, 10))" 
-        />
+        <AppSelect :model-value="filters.per_page" :items="PAGINATION_ITEMS" style="inline-size: 6.25rem;"
+          @update:model-value="updateFilters({ per_page: parseInt($event, 10), page: 1 })" />
       </div>
       <VSpacer />
-        <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-          <div style="inline-size: 15.625rem;">
-            <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
-          </div>
-          <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+      <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+        <div style="inline-size: 15.625rem;">
+          <AppTextField v-model="filters.search" placeholder="Search ..." clearable clear-icon="tabler-x" />
+        </div>
+        <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
             Export
           </VBtn> -->
-        </div>
+      </div>
     </VCardText>
     <VDivider />
-    <VDataTableServer 
-      :loading="activityStore.loadingList" 
-      v-model:items-per-page="activityStore.filters.per_page"
-      v-model:model-value="activityStore.selectedRows"
-      v-model:page="activityStore.filters.page"
-      :items="activityStore.activities"
-      :items-length="activityStore.pagination.total"
-      :headers="tableHeaders" class="text-no-wrap" 
-      return-object
+    <VDataTableServer :loading="loadingList" v-model:items-per-page="filters.per_page"
+      v-model:model-value="activityStore.selectedRows" v-model:page="filters.page" :items="activities"
+      :items-length="pagination.total" :headers="tableHeaders" class="text-no-wrap" return-object
       :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
-      @update:options="activityStore.updateSortOptions" 
-      @update:model-value="activityStore.setSelectedRows"
-      multi-sort
-    >
-    <template #item.editable="{ item }">
-      <div class="d-flex justify-center align-center gap-x-2">
-        <VCheckbox
-          :loading="loadingEditableUntilId === item.id"
-          :model-value="item.editable"
-          label=""
-          :disabled="item.status !== 'completed' || loadingEditableUntilId === item.id"
-          @update:model-value="val => handleUpdateEditable(item, !!val)"
-        />
-      </div>
-    </template>
+      @update:options="updateFilters({ sort_options: $event.sortBy })" @update:model-value="activityStore.setSelectedRows"
+      multi-sort>
+      <template #item.editable="{ item }">
+        <div class="d-flex justify-center align-center gap-x-2">
+          <VCheckbox :loading="loadingEditableUntilId === item.id" :model-value="item.editable" label=""
+            :disabled="item.status !== 'completed' || loadingEditableUntilId === item.id"
+            @update:model-value="val => handleUpdateEditable(item, !!val)" />
+        </div>
+      </template>
       <template #item.actions="{ item }">
-      <div class="d-flex justify-start gap-x-2">
+        <div class="d-flex justify-start gap-x-2">
 
-        <!-- ✅ DELETE: selalu tampil jika admin -->
-        <VBtn
-          v-if="isAdmin || item.assigned_to.id === user.id"
-          :key="`delete-${item.id}`"
-          :loading="activityStore.loadingId === item.id"
-          @click="() => { showDeleteModal = true; activityToDelete = item }"
-          size="small"
-          variant="tonal"
-          color="warning"
-          prepend-icon="tabler-trash"
-        >
-          Delete
-        </VBtn>
-
-        <!-- ASSIGNED -->
-        <template v-if="item.status === STATUS.ASSIGNED && !isAdmin">
-          <VBtn
-            v-if="item.assigned_to.id === user.id"
-            :key="item.id"
+          <!-- ✅ DELETE: selalu tampil jika admin -->
+          <VBtn v-if="isAdmin || item.assigned_to.id === user.id" :key="`delete-${item.id}`"
             :loading="activityStore.loadingId === item.id"
-            @click="handleCheckIn(item.id)"
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-play"
-          >
-            Start
+            @click="() => { showDeleteModal = true; activityToDelete = item }" size="small" variant="tonal"
+            color="warning" prepend-icon="tabler-trash">
+            Delete
           </VBtn>
 
-          <VBtn
-            v-if="item.assigned_to.id === user.id && item.status !== STATUS.ONGOING"
-            :key="`edit-${item.id}`"
-            @click="handleEdit(item)"
-            size="small"
-            variant="tonal"
-            color="warning"
-            prepend-icon="tabler-edit"
-          >
-            Edit Schedule
-          </VBtn>
-        </template>
+          <!-- ASSIGNED -->
+          <template v-if="item.status === STATUS.ASSIGNED && !isAdmin">
+            <VBtn v-if="item.assigned_to.id === user.id" :key="item.id" :loading="activityStore.loadingId === item.id"
+              @click="handleCheckIn(item.id)" size="small" variant="tonal" color="primary" prepend-icon="tabler-play">
+              Start
+            </VBtn>
 
-        <!-- COMPLETED -->
-        <template v-else-if="item.status === STATUS.COMPLETED">
-          <VBtn
-            v-if="item.assigned_to.id === user.id && item.editable"
-            :key="`re-edit-${item.id}`"          
-            @click="handleClickEditReport(item.id)"
-            size="small"
-            variant="tonal"
-            color="warning"
-            prepend-icon="tabler-edit"
-          >
-            Edit
-          </VBtn>
-          <VMenu
-            :key="`menu-view-${item.id}`"
-          >
-            <template #activator="{ props }">
-              <VBtn         
-                v-bind="props"
-                size="small"
-                variant="tonal"
-                color="primary"
-              >
-              View
-              </VBtn>
-            </template>
-            <VList>
-            <VListItem
-              class="text-sm"
-              v-for="menu in viewMenuItems"
-              :key="menu.value"
-              @click="handleMenu(item, menu)"
-            >
-              <template #prepend>
-                <VIcon :icon="menu.prependIcon" />
+            <VBtn v-if="item.assigned_to.id === user.id && item.status !== STATUS.ONGOING" :key="`edit-${item.id}`"
+              @click="handleEdit(item)" size="small" variant="tonal" color="warning" prepend-icon="tabler-edit">
+              Edit Schedule
+            </VBtn>
+          </template>
+
+          <!-- COMPLETED -->
+          <template v-else-if="item.status === STATUS.COMPLETED">
+            <VBtn v-if="item.assigned_to.id === user.id && item.editable" :key="`re-edit-${item.id}`"
+              @click="handleClickEditReport(item.id)" size="small" variant="tonal" color="warning"
+              prepend-icon="tabler-edit">
+              Edit
+            </VBtn>
+            <VMenu :key="`menu-view-${item.id}`">
+              <template #activator="{ props }">
+                <VBtn v-bind="props" size="small" variant="tonal" color="primary">
+                  View
+                </VBtn>
               </template>
-              <VListItemTitle>{{ menu.title }}</VListItemTitle>
-            </VListItem>
-          </VList>
-          </VMenu>
-          <VBtn
-            color="success"
-            size="small"
-            :loading="activityStore.loadingReport === `loading${item.id}`"
-            prepend-icon="tabler-file-export"
-            @click="handleExportReport(
-              item.id.toString(),
-              item.customers[0].CardName,
-              item.check_in
-            )"
-          >
-            Export
-          </VBtn>          
-        </template>
+              <VList>
+                <VListItem class="text-sm" v-for="menu in viewMenuItems" :key="menu.value"
+                  @click="handleMenu(item, menu)">
+                  <template #prepend>
+                    <VIcon :icon="menu.prependIcon" />
+                  </template>
+                  <VListItemTitle>{{ menu.title }}</VListItemTitle>
+                </VListItem>
+              </VList>
+            </VMenu>
+            <VBtn color="success" size="small" :loading="activityStore.loadingReport === `loading${item.id}`"
+              prepend-icon="tabler-file-export" @click="handleExportReport(
+                item.id.toString(),
+                item.customers[0].CardName,
+                item.check_in
+              )">
+              Export
+            </VBtn>
+          </template>
 
-        <!-- DRAFT / ONGOING -->
-        <template v-else-if="(item.status === STATUS.DRAFT || item.status === STATUS.ONGOING) && !isAdmin">
-          <VBtn
-            v-if="item.assigned_to.id === user.id"
-            :key="`continue-${item.id}`"
-            :loading="activityStore.loadingId === item.id"
-            @click="handleClickEdit(item.id)"
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="tabler-edit"
-          >
-            Continue
-          </VBtn>
-        </template>
+          <!-- DRAFT / ONGOING -->
+          <template v-else-if="(item.status === STATUS.DRAFT || item.status === STATUS.ONGOING) && !isAdmin">
+            <VBtn v-if="item.assigned_to.id === user.id" :key="`continue-${item.id}`"
+              :loading="activityStore.loadingId === item.id" @click="handleClickEdit(item.id)" size="small"
+              variant="tonal" color="primary" prepend-icon="tabler-edit">
+              Continue
+            </VBtn>
+          </template>
 
-      </div>
+        </div>
       </template>
       <template #item.scheduled_date="{ item }">
         <div class="d-flex align-center gap-x-4">
@@ -632,7 +521,7 @@ const customFilter = (item: any, queryText: string, itemText: string) => {
         <div class="d-flex align-center gap-x-4">
           <div class="d-flex flex-column">
             <div class="text-sm" v-for="customer in item.customers" :key="customer.id">
-              {{ `${customer.CardName} - ${customer.CompanyId}`   }}
+              {{ `${customer.CardName} - ${customer.CompanyId}` }}
             </div>
           </div>
         </div>
@@ -650,126 +539,87 @@ const customFilter = (item: any, queryText: string, itemText: string) => {
         <div class="d-flex align-center gap-x-4">
           <div class="d-flex flex-column">
             <div class="text-sm">
-              <VBadge 
-                :color="getStatus(item.status)?.color"
-                size="small"                
-                :content="getStatus(item.status)?.content" 
-              />
+              <VBadge :color="getStatus(item.status)?.color" size="small" :content="getStatus(item.status)?.content" />
             </div>
           </div>
         </div>
-      </template>      
+      </template>
     </VDataTableServer>
   </VCard>
- <VDialog v-model="showScheduleForm" width="450">
+  <VDialog v-model="showScheduleForm" width="450">
 
-  <DialogCloseBtn @click="showScheduleForm = false" />
+    <DialogCloseBtn @click="showScheduleForm = false" />
 
-  <VCard class="pa-4">
+    <VCard class="pa-4">
 
-    <VCardTitle>Edit Schedule</VCardTitle>
+      <VCardTitle>Edit Schedule</VCardTitle>
 
-    <VCardText>
+      <VCardText>
 
-      <VForm @submit.prevent="handelUpdateActivity">
+        <VForm @submit.prevent="handelUpdateActivity">
 
-        <VRow>
-          <!-- DATE -->
-          <VCol cols="12">
-            <AppDateTimePicker
-              v-model="form.scheduled_date"
-              label="Visit Date"
-              clearable
-            />
-          </VCol>
-          <!-- NOTES -->
-          <VCol cols="12">
-            <AppTextarea
-              v-model="form.notes"
-              label="Notes"
-              rows="3"
-            />
-          </VCol>
-          <VCol cols="12">
-            <AppSelect
-              v-model="form.activity_type_id"           
-              placeholder="Select Activity Type"
-              :items="activityStore.activityTypes"
-              clearable
-              clear-icon="tabler-x"
-              @update:model-value="updateSelectedType"
-            />
-          </VCol>
-        <VCol cols="12">
-          <VCheckbox
-            v-model="useSPS"
-            label="SPS Customer"
-            :disabled="disableSPS"
-          /> 
-        </VCol>
-        <VCol cols="12" v-if="useSPS">
-          <AppAutocomplete
-            autocomplete="off"
-            v-model="selectedSPS"
-            :items="customerStore.customerOptions.filter(cs => cs.companyId === COMPANIES.SPS)"
-            placeholder="Select SPS Customer"
-            clearable
-            clear-icon="tabler-x"
-          />
-        </VCol>
-         <VCol cols="12">
-          <VCheckbox
-            v-model="useBBS"
-            label="BBS Customer"
-            :disabled="disableBBS"
-          /> 
-        </VCol>
+          <VRow>
+            <!-- DATE -->
+            <VCol cols="12">
+              <AppDateTimePicker v-model="form.scheduled_date" label="Visit Date" clearable />
+            </VCol>
+            <!-- NOTES -->
+            <VCol cols="12">
+              <AppTextarea v-model="form.notes" label="Notes" rows="3" />
+            </VCol>
+            <VCol cols="12">
+              <AppSelect v-model="form.activity_type_id" placeholder="Select Activity Type"
+                :items="activityTypes" clearable clear-icon="tabler-x"
+                @update:model-value="updateSelectedType" />
+            </VCol>
+            <VCol cols="12">
+              <VCheckbox v-model="useSPS" label="SPS Customer" :disabled="disableSPS" />
+            </VCol>
+            <VCol cols="12" v-if="useSPS">
+              <AppAutocomplete autocomplete="off" v-model="selectedSPS"
+                :items="customerStore.customerOptions.filter(cs => cs.companyId === COMPANIES.SPS)"
+                placeholder="Select SPS Customer" clearable clear-icon="tabler-x" />
+            </VCol>
+            <VCol cols="12">
+              <VCheckbox v-model="useBBS" label="BBS Customer" :disabled="disableBBS" />
+            </VCol>
 
-        <VCol cols="12" v-if="useBBS">
-          <AppAutocomplete
-            autocomplete="off"
-            v-model="selectedBBS"
-            :items="customerStore.customerOptions.filter(cs => cs.companyId === COMPANIES.BBS)"
-            placeholder="Select BBS Customer"
-            clearable
-            clear-icon="tabler-x"
-          />
-        </VCol>
-          <!-- BUTTON -->
-          <VCol cols="12" class="text-right">
-            <VBtn
-              color="primary"
-              type="submit"
-              :loading="activityStore.loadingId === form.id"
-            >
-              Save
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VForm>
-    </VCardText>
-  </VCard>
-</VDialog>
+            <VCol cols="12" v-if="useBBS">
+              <AppAutocomplete autocomplete="off" v-model="selectedBBS"
+                :items="customerStore.customerOptions.filter(cs => cs.companyId === COMPANIES.BBS)"
+                placeholder="Select BBS Customer" clearable clear-icon="tabler-x" />
+            </VCol>
+            <!-- BUTTON -->
+            <VCol cols="12" class="text-right">
+              <VBtn color="primary" type="submit" :loading="activityStore.loadingId === form.id">
+                Save
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+    </VCard>
+  </VDialog>
 
- <VDialog v-model="showDeleteModal" width="450">
+  <VDialog v-model="showDeleteModal" width="450">
 
-  <DialogCloseBtn @click="() => {showDeleteModal = false; activityToDelete = null}" />
+    <DialogCloseBtn @click="() => { showDeleteModal = false; activityToDelete = null }" />
 
-  <VCard class="pa-4">
+    <VCard class="pa-4">
 
-    <VCardTitle>Delete Activity</VCardTitle>
+      <VCardTitle>Delete Activity</VCardTitle>
 
-    <VCardText>
-      <p>Are you sure you want to delete this activity?</p>
-    </VCardText>
+      <VCardText>
+        <p>Are you sure you want to delete this activity?</p>
+      </VCardText>
 
-   <VCardActions>
-    <VBtn @click="showDeleteModal = false">Cancel</VBtn>
-    <VBtn color="error" v-if="activityToDelete != null" @click="handleDelete(activityToDelete?.id)">Delete</VBtn>
-    <VSpacer />
-  </VCardActions>
-  </VCard>
-</VDialog>
+      <VCardActions>
+        <VBtn @click="showDeleteModal = false">Cancel</VBtn>
+        <VBtn color="error" v-if="activityToDelete != null" @click="handleDelete(activityToDelete?.id)">Delete</VBtn>
+        <VSpacer />
+      </VCardActions>
+    </VCard>
+  </VDialog>
 
 </template>
 

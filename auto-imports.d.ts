@@ -167,6 +167,7 @@ declare global {
   const urlValidator: typeof import('./src/@core/utils/validators')['urlValidator']
   const useAbs: typeof import('@vueuse/math')['useAbs']
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
+  const useActivities: typeof import('./src/@core/composable/useActivities')['useActivities']
   const useAnimate: typeof import('@vueuse/core')['useAnimate']
   const useApi: typeof import('./src/composables/useApi')['useApi']
   const useArrayDifference: typeof import('@vueuse/core')['useArrayDifference']
@@ -536,6 +537,7 @@ declare module 'vue' {
     readonly urlValidator: UnwrapRef<typeof import('./src/@core/utils/validators')['urlValidator']>
     readonly useAbs: UnwrapRef<typeof import('@vueuse/math')['useAbs']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
+    readonly useActivities: UnwrapRef<typeof import('./src/@core/composable/useActivities')['useActivities']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
     readonly useApi: UnwrapRef<typeof import('./src/composables/useApi')['useApi']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>

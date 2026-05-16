@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import { Filters, useActivityStore, useAuthStore, useCustomerStore } from '@/@core/stores';
+import { Filters, useActivityStore } from '@/@core/stores';
 import { IActivity } from '@/@core/typedefs';
+import { getLocalStoreKey } from './functions';
 
 const activityStore = useActivityStore()
-const customerStore = useCustomerStore()
-const authStore = useAuthStore()
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => {
   if(user.value.role){
@@ -13,31 +12,38 @@ const isAdmin = computed(() => {
     return false
   }
 })
-const isSpv = computed(() => {
-  if(user.value.role){
-    return user.value.role.role === 'spv'
-  } else {
-    return false
-  }
-})
 
 const searchQuery = ref('')
-const salesPersonId = computed(() => user.value.sales_person.filter((sp: any) => sp.CompanyId ==='SPS')[0])
 const debouncedQuery = useDebounce(searchQuery, 400)
-const router = useRouter()
-const showFilters = ref(false)
-const loadingSalesPersonsOptions = ref(true)
+// const loadingSalesPersonsOptions = ref(true)
 const showScheduleForm = ref(false)
 const showRestoreModal = ref(false)
 const showDeleteModal = ref(false)
 const selectedActivity = ref({} as IActivity | null)
 
-const filters = ref<Partial<Filters>>({
-  sales_person_id: null,
-  customer_id: null,
-  status: null,
-  deleted: true
-})
+const localKey = getLocalStoreKey(user.value.id)
+const savedFilters = localStorage.getItem(localKey)
+const parsedFilters = savedFilters
+  ? JSON.parse(savedFilters)
+  : {}
+
+
+const showFilters = ref(savedFilters ? JSON.parse(savedFilters).showFilters : false)
+const { 
+  filters,
+  activities,
+  updateFilters,
+  pagination,
+  mutate,
+  loadingList,
+  salesPersonOptions,
+  isSalesPersonLoading,
+  customerOptions
+} = useActivities(
+  localKey,
+  parsedFilters as Partial<Filters>, 
+  {deleted: true}
+)
 
 const STATUS = {
   ASSIGNED: 'assigned',
@@ -62,36 +68,48 @@ const headers = computed(() => {
   return headers
 })
 
-activityStore.$reset()
+// activityStore.$reset()
 
 const loadActivity = async () => {
   if(user.value && !isAdmin.value) {
     activityStore.filters.assigned_to = user.value.id
   }
   activityStore.filters.deleted = true
-  activityStore.fetchSalesPersonOptions()
   await activityStore.initialize()
 }
 
 onMounted(loadActivity)
 
 /* ================= WATCH ================= */
-watch(activityStore, val => {
-  if (val.salesPersonsOptions.length > 0)
-    loadingSalesPersonsOptions.value = false
-})
+
 
 watch(debouncedQuery, val => {
-  activityStore.updateFilters({ search: val })
+  updateFilters({ search: val })
 })
 
-watch(
-  filters,
-  newVal => {
-    activityStore.updateFilters({ ...newVal })
-  },
-  { deep: true }
-)
+watch(showFilters, (val) => {
+  const parsed = JSON.parse(
+    localStorage.getItem(localKey) || '{}',
+  )
+
+  parsed.showFilters = val
+
+  localStorage.setItem(localKey, JSON.stringify(parsed))
+
+  if (!val) {
+    updateFilters({
+      search: "",
+      sales_person_id: null,
+      customer_id: null,
+      per_page: 10,
+      page: 1,
+      sort_options: [],
+      status: null,
+      start_date: "",
+      end_date: "",
+    })
+  }
+})
 
 /* ================= STATUS BADGE ================= */
 const getStatus = (status: string) => {
@@ -115,59 +133,23 @@ const getStatus = (status: string) => {
 
 const form = ref({
   id: null as number | null,
-
   scheduled_date: null as Date | null,
-
-
   notes: '',
 })
 
-
-const setFormValue = (data: IActivity) => {
-  let date: Date | null = null
-
-  if (data.scheduled_date) {
-    const d = new Date(data.scheduled_date)
-
-    if (!isNaN(d.getTime())) {
-      date = d
-    }
-  }
-
-
-  form.value = {
-    id: data.id,
-
-    scheduled_date: date,
-
-    notes: data.notes ?? '',
-  }
-}
-
-
-const handleClickViewReport = (id: number) => {
-  router.push({ path: createUrl(`/activity/${id}/view-report`).value })
-}
-
-const handleClickEdit = (id: number) => {
-  router.push({ path: createUrl(`/activity/${id}/report`).value })
-}
-
-const handleCheckIn = async(id: number) => {
-  await activityStore.updateActivityStatus(id, STATUS.ONGOING)
-  router.push({ path: createUrl(`/activity/${id}/report`).value })
-}
 
 const handleRestore = async(id: number) => {
   await activityStore.restoreActivity(id).then(() => {
     showRestoreModal.value = false
   })
+  await mutate()
 }
 
 const handleDelete = async(id: number) => {
   await activityStore.deleteActivity(id, true).then(() => {
     showDeleteModal.value = false
   })
+  await mutate()
 }
 
 const handelUpdateActivity = async () => {
@@ -175,17 +157,6 @@ const handelUpdateActivity = async () => {
   await nextTick()
   showScheduleForm.value = false
 } 
-const handleEdit = async (item: IActivity) => {
-  setFormValue(item)
-
-  await nextTick()
-
-  showScheduleForm.value = true
-}
-
-const handleExportReport = async(id: string, customer: string, date?: string) => {
-  activityStore.exportReport(id, customer, date)
-}
 
 </script>
 <template>
@@ -210,10 +181,10 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
         >
          <AppCombobox 
           v-model="filters.sales_person_id"
-          :disabled="loadingSalesPersonsOptions"
-          :loading="loadingSalesPersonsOptions"          
+          :disabled="isSalesPersonLoading"
+          :loading="isSalesPersonLoading"          
           placeholder="Filter by sales person" 
-          :items="activityStore.salesPersonsOptions" 
+          :items="salesPersonOptions" 
           clearable 
           clear-icon="tabler-x"
           :return-object="false"
@@ -230,7 +201,7 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
           <AppCombobox 
             v-model="filters.customer_id"
             placeholder="Filter by Customer" 
-            :items="activityStore.customerOptions"
+            :items="customerOptions"
             clearable 
             clear-icon="tabler-x"
             :return-object="false"
@@ -263,20 +234,20 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
         </VCol>
         <VCol cols="12" sm="4">
           <AppDateTimePicker
-            v-model="activityStore.filters.start_date"
+            v-model="filters.start_date"
             placeholder="Select start date"
             clearable
             clear-icon="tabler-x"
-            @update:model-value="val => val && activityStore.updateFilters({ start_date: val })"           
+            @update:model-value="val => val && updateFilters({ start_date: val })"           
           />
         </VCol>
          <VCol cols="12" sm="4">
           <AppDateTimePicker            
-            v-model="activityStore.filters.end_date"
+            v-model="filters.end_date"
             placeholder="Select end date"
             clearable
             clear-icon="tabler-x"
-            @update:model-value="val => val && activityStore.updateFilters({ end_date: val })"
+            @update:model-value="val => val && updateFilters({ end_date: val })"
           />
         </VCol>
       </VRow>
@@ -286,15 +257,15 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
     <VCardText class="d-flex flex-wrap gap-4">
       <div class="me-3 d-flex gap-3">
         <AppSelect
-          :model-value="activityStore.filters.per_page" 
+          :model-value="filters.per_page"
           :items="PAGINATION_ITEMS" style="inline-size: 6.25rem;"
-          @update:model-value="activityStore.setPerpage(parseInt($event, 10))" 
+          @update:model-value="updateFilters({ per_page: parseInt($event, 10), page: 1 })" 
         />
       </div>
       <VSpacer />
         <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
           <div style="inline-size: 15.625rem;">
-            <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
+            <AppTextField v-model="filters.search" placeholder="Search ..." clearable clear-icon="tabler-x" />
           </div>
           <!-- <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
             Export
@@ -303,16 +274,16 @@ const handleExportReport = async(id: string, customer: string, date?: string) =>
     </VCardText>
     <VDivider />
     <VDataTableServer 
-      :loading="activityStore.loadingList" 
-      v-model:items-per-page="activityStore.filters.per_page"
+      :loading="loadingList" 
+      v-model:items-per-page="filters.per_page"
       v-model:model-value="activityStore.selectedRows"
-      v-model:page="activityStore.filters.page"
-      :items="activityStore.activities"
-      :items-length="activityStore.pagination.total"
+      v-model:page="filters.page"
+      :items="activities"
+      :items-length="pagination.total"
       :headers="headers" class="text-no-wrap" 
       return-object
       :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
-      @update:options="activityStore.updateSortOptions" 
+      @update:options="updateFilters({ sort_options: $event.sortBy })" 
       @update:model-value="activityStore.setSelectedRows"
       multi-sort
     >
