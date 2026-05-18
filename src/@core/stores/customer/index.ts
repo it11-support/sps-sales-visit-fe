@@ -9,7 +9,7 @@ interface Meta {
   total: number
 }
 
-export interface Filters {
+export interface CustomerFilters {
   search?: string
   status?: string
   sales_person_id: number[]
@@ -68,7 +68,7 @@ export const useCustomerStore = defineStore('customer', {
       hideZeroInvoice: false,
       dormantMonth: undefined,
       companyIds: [COMPANIES.SPS]
-    } as Filters,
+    } as CustomerFilters,
   }),
 
   actions: {
@@ -182,7 +182,7 @@ export const useCustomerStore = defineStore('customer', {
       });
     },
 
-    async updateFilters(newFilters: Partial<Filters>, shouldFetch = true) {
+    async updateFilters(newFilters: Partial<CustomerFilters>, shouldFetch = true) {
       this.filters = {
         ...this.filters,
         ...newFilters

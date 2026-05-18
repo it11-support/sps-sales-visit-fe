@@ -206,6 +206,7 @@ declare global {
   const useCssVar: typeof import('@vueuse/core')['useCssVar']
   const useCssVars: typeof import('vue')['useCssVars']
   const useCurrentElement: typeof import('@vueuse/core')['useCurrentElement']
+  const useCustomerStore: typeof import('./src/@core/composable/useCustomers')['useCustomerStore']
   const useCustomers: typeof import('./src/@core/composable/useCustomers')['useCustomers']
   const useCycleList: typeof import('@vueuse/core')['useCycleList']
   const useDark: typeof import('@vueuse/core')['useDark']

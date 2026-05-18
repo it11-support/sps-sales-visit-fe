@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { Filters, useCustomerStore } from '@/@core/stores/customer'
 import { useSalesPersonStore } from '@/@core/stores/sales-person'
 import { ISalesPerson } from '@/@core/typedefs'
 
-const customerStore = useCustomerStore()
 const salesStore = useSalesPersonStore()
 // 👉 Store
 const searchQuery = ref('')
@@ -14,7 +12,7 @@ const deleteId = ref('')
 const debouncedQuery = useDebounce(searchQuery, 400)
 
 // Data table options
-const selectedRows = customerStore.selectedRows
+
 const filterDormantCustomer = ref(false)
 // Delayed search
 const user = useCookie<any>('userData')
@@ -39,15 +37,25 @@ const loadingPaymentOptions = ref(true)
 const loadingPriceListOptions = ref(true)
 const loadingCityOptions = ref(true)
 
-const filters = ref<Partial<Filters>>({
-  sales_person_id: [],
-  group_name: null,
-  payment_term: null,
-  city: null
-})
+const {
+  filters,
+  updateFilters,
+  customers,
+  isReady,
+  pagination,
+  loadingList,
+  groupNameOptions,
+  paymentTermOptions,
+  priceListOptions,
+  cityOptions,
+  mutateCustomers,
+  loadingFilters,
+  selectedRows,
+   setSelectedRows
+} = useCustomers()
 
 watch(debouncedQuery, (val) => {
-  customerStore.updateFilters({ search: val })
+  updateFilters({ search: val, page: 1 })
 })
 
 // Headers
@@ -69,37 +77,46 @@ const headers = [
   // { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-customerStore.$reset()
+// customerStore.$reset()
 salesStore.$reset()
 
-onMounted(async() => {
-  const ids = !isAdmin.value ? user.value.sales_person
-      .filter((sp: ISalesPerson) => selectedCompanies.value.includes(sp.CompanyId))
-      .map((sp: ISalesPerson) => sp.id) : []
+onMounted(() => {
+  const ids = !isAdmin.value
+    ? user.value.sales_person
+        .filter((sp: ISalesPerson) =>
+          selectedCompanies.value.includes(sp.CompanyId),
+        )
+        .map((sp: ISalesPerson) => sp.id)
+    : []
 
-  if(isAdmin.value) {
-    await customerStore.initialize()
-  } else if(isSpv.value) {   
-    await customerStore.initialize(ids, user.value.team_id)
-  } else {    
-    await customerStore.initialize(ids)
-  }
-  salesStore.updateQuery({ per_page: -1, page: 1 })
+  updateFilters({
+    sales_person_id: isAdmin.value ? [] : ids,
+    team_id: isSpv.value
+      ? user.value.team_id
+      : undefined,
+  })
+
+  isReady.value = true
+
+  salesStore.updateQuery({
+    per_page: -1,
+    page: 1,
+  })
 })
 
 watch(showFilter, (newVal) => {
   if(newVal){
     salesStore.fetchSalesPersons()
-    customerStore.fetchFilters()
+    mutateCustomers()
   }
 })
 
-watch([salesStore, customerStore], ([sales, customer]) => {
+watch([salesStore], ([sales]) => {
   if(sales.salesPersonOptions.length > 0) loadingSalesPerson.value = false
-  if(customer.groupNameOptions.length > 0) loadingGroupName.value = false
-  if(customerStore.paymentTermOptions.length > 0) loadingPaymentOptions.value = false
-  if(customerStore.priceListOptions.length > 0) loadingPriceListOptions.value = false
-  if(customerStore.cityOptions.length > 0) loadingCityOptions.value = false
+  if(groupNameOptions.value.length > 0) loadingGroupName.value = false
+  if(paymentTermOptions.value.length > 0) loadingPaymentOptions.value = false
+  if(priceListOptions.value.length > 0) loadingPriceListOptions.value = false
+  if(cityOptions.value.length > 0) loadingCityOptions.value = false
 })
 // 👉 search filters
 const status = [
@@ -138,72 +155,76 @@ const deleteCustomer = async (id: string) => {
   deleteModal.value = false
 
   // Remove deleted customer from selected rows
-  const index = selectedRows.findIndex(row => row.CardCode === id)
-  if (index !== -1) selectedRows.splice(index, 1)
+ selectedRows.value = selectedRows.value.filter(
+  row => row.CardCode !== id,
+)
   // Refetch customers
-  customerStore.fetchCustomers()
-}
-
-const updateSelected = (val: string) => {
-  const selectedCompanies = customerStore.filters.companyIds ?? []
-
-  let newValue: string[]
-
-  if (selectedCompanies.includes(val)) {
-    // hapus val
-    newValue = selectedCompanies.filter(item => item !== val)
-  } else {
-    // tambah val
-    newValue = [...selectedCompanies, val]
-  }
-
-  customerStore.updateFilters({ companyIds: newValue })
+  mutateCustomers()
 }
 
 const selectedCompanies = computed<string[]>({
   get() {
-    return customerStore.filters.companyIds ?? []
+    return filters.companyIds ?? []
   },
   set(val) {
-    const current = customerStore.filters.companyIds ?? []
+    const current = filters.companyIds ?? []
     if (JSON.stringify(current) === JSON.stringify(val)) return
-    customerStore.updateFilters({ companyIds: val.length ? val : undefined })
+    updateFilters({ companyIds: val.length ? val : undefined, page: 1 })
   }
 })
 
 watch(
-  filters,
-  (newVal) => {
-    const isNotAdmin = !isAdmin.value && !isSpv.value
-    const finalSalesPersonIds = isNotAdmin
-      ? user.value.sales_person
-          .filter((sp: ISalesPerson) =>
-            selectedCompanies.value.includes(sp.CompanyId)
-          )
-          .map((sp: ISalesPerson) => Number(sp.id))
-      : Array.isArray(newVal.sales_person_id)
-        ? newVal.sales_person_id.map(Number)
-        : newVal.sales_person_id
-          ? [Number(newVal.sales_person_id)]
-          : []
-    
-    customerStore.updateFilters({
-      ...newVal,
-      sales_person_id: finalSalesPersonIds,
-    })
+  [
+    filters,
+    selectedCompanies,
+  ],
+  () => {
+    const isNotAdmin =
+      !isAdmin.value && !isSpv.value
+
+    if (!isNotAdmin)
+      return
+
+    const finalSalesPersonIds =
+      user.value.sales_person
+        .filter((sp: ISalesPerson) =>
+          selectedCompanies.value.includes(
+            sp.CompanyId,
+          ),
+        )
+        .map((sp: ISalesPerson) =>
+          Number(sp.id),
+        )
+
+    // guard biar tidak update terus
+    const currentIds =
+      filters.sales_person_id.map(Number)
+
+    const isSame =
+      JSON.stringify(currentIds)
+      === JSON.stringify(finalSalesPersonIds)
+
+    if (isSame)
+      return
+
+    filters.sales_person_id =
+      finalSalesPersonIds
   },
-  { deep: true, immediate: true }
+  {
+    deep: true,
+    immediate: true,
+  },
 )
 watch(selectedCompanies, 
   (val, val1) => {
-    if(val.length !== val1.length) {
-      filters.value = {
-        ...filters.value,
+    if (val.length !== val1.length) {
+      Object.assign(filters, {
+        ...filters,
         sales_person_id: [],
         group_name: null,
         payment_term: null,
         city: null
-      }
+      })
     }
   },
   { deep: true }
@@ -273,10 +294,10 @@ watch(selectedCompanies,
             <AppCombobox 
               v-model="filters.group_name"
               placeholder="Filter by group name" 
-              :items="customerStore.groupNameOptions"
+              :items="groupNameOptions"
               clearable
               clear-icon="tabler-x" 
-              :loading="loadingGroupName"
+              :loading="loadingFilters"
               :return-object="false"
               autocomplete="off"
               autocorrect="off"
@@ -286,8 +307,8 @@ watch(selectedCompanies,
 
           <VCol cols="12" md="4" sm="4">
             <AppSelect
-              v-model="customerStore.filters.status"
-              @update:model-value="customerStore.updateFilters({ status: $event })" 
+              v-model="filters.status"
+              @update:model-value="updateFilters({ status: $event })" 
               placeholder="Filter by status"
               :items="status" 
               clearable 
@@ -298,10 +319,10 @@ watch(selectedCompanies,
             <AppCombobox
               v-model="filters.payment_term"
               placeholder="Filter by Payment Term"
-              :items="customerStore.paymentTermOptions"
+              :items="paymentTermOptions"
               clearable
               clear-icon="tabler-x" 
-              :loading="loadingPaymentOptions"
+              :loading="loadingFilters"
               :return-object="false"
               autocomplete="off"
               autocorrect="off"
@@ -310,23 +331,23 @@ watch(selectedCompanies,
           </VCol>
           <VCol cols="12" md="4" sm="4">
             <AppSelect
-              v-model="customerStore.filters.price_list"
-              @update:model-value="customerStore.updateFilters({ price_list: $event })"
+              v-model="filters.price_list"
+              @update:model-value="updateFilters({ price_list: $event })"
               placeholder="Filter by Price List" 
-              :items="customerStore.priceListOptions" 
+              :items="priceListOptions" 
               clearable 
               clear-icon="tabler-x" 
-              :loading="loadingPriceListOptions"
+              :loading="loadingFilters"
             />
           </VCol>
           <VCol cols="12" md="4" sm="4">
             <AppCombobox
               v-model="filters.city"
               placeholder="Filter by City / Area"
-              :items="customerStore.cityOptions" 
+              :items="cityOptions" 
               clearable 
               clear-icon="tabler-x" 
-              :loading="loadingCityOptions"
+              :loading="loadingFilters"
               :return-object="false"
               autocomplete="off"
               autocorrect="off"
@@ -338,15 +359,15 @@ watch(selectedCompanies,
           <VCol cols="12" sm="12">
             <VRow class="d-flex justify-start">
               <VCol cols="12" lg="2" sm="12">
-                <VCheckbox v-model="filterDormantCustomer" label="Dormant Customer" @update:model-value="customerStore.updateFilters({
-                  dormantMonth: filterDormantCustomer && customerStore.filters.dormantMonth
-                    ? customerStore.filters.dormantMonth
+                <VCheckbox v-model="filterDormantCustomer" label="Dormant Customer" @update:model-value="updateFilters({
+                  dormantMonth: filterDormantCustomer && filters.dormantMonth
+                    ? filters.dormantMonth
                     : undefined
                 })" />
               </VCol>
               <VCol v-if="filterDormantCustomer" cols="12" lg="3" sm="12">
-                <AppSelect :items="dormantOptions" v-model="customerStore.filters.dormantMonth"
-                  @update:model-value="customerStore.updateFilters({ dormantMonth: $event })"
+                <AppSelect :items="dormantOptions" v-model="filters.dormantMonth"
+                  @update:model-value="updateFilters({ dormantMonth: $event })"
                   placeholder="Filter by last transaction" clearable clear-icon="tabler-x" />
               </VCol>
             </VRow>
@@ -358,15 +379,15 @@ watch(selectedCompanies,
         <!-- Wrapper untuk AppSelect dan Checkbox -->
         <div class="d-flex gap-3 flex-column flex-sm-row me-4">
           <AppSelect
-            :model-value="customerStore.filters.per_page"
+            :model-value="filters.per_page"
             :items="PAGINATION_ITEMS"
             style="inline-size: 6.25rem;"
-            @update:model-value="customerStore.setPerpage(parseInt($event, 10))"
+            @update:model-value="updateFilters({per_page:parseInt($event, 10)})"
           />
           <VCheckbox
             label="Hide Zero Invoice"
-            v-model="customerStore.filters.hideZeroInvoice"
-            @update:model-value="customerStore.updateFilters({ hideZeroInvoice: $event as boolean })"
+            v-model="filters.hideZeroInvoice"
+            @update:model-value="updateFilters({ hideZeroInvoice: $event as boolean })"
           />
         </div>
 
@@ -389,20 +410,21 @@ watch(selectedCompanies,
 
       <!-- SECTION datatable -->
       <VDataTableServer
-        :loading="customerStore.loadingList"
-        v-model:items-per-page="customerStore.filters.per_page"
-        v-model:model-value="customerStore.selectedRows"        
-        :items="customerStore.customers"
+        :loading="loadingList"
+        v-model:items-per-page="filters.per_page"
+         v-model:page="filters.page"
+        v-model:model-value="selectedRows"        
+        :items="customers"
         item-value="CardCode"
-        :items-length="customerStore.pagination.total"
+        :items-length="pagination.total"
         :headers="headers"
         class="text-no-wrap"
         show-select
         :select-strategy="'all'"
         :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
         return-object
-        @update:options="customerStore.updateSortOptions"
-        @update:model-value="customerStore.setSelectedRows"
+        @update:options="updateFilters({ sort_options: $event.sortBy })"
+        @update:model-value="setSelectedRows"
         multi-sort
       >
         <template #item.actions="{ item }">
