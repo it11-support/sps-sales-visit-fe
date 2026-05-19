@@ -11,7 +11,7 @@ export const useRoleStore = defineStore('roleStore', {
       updated_at: new Date(),
     } as IRole,
     roles: [] as IRole[],
-    fitler: {
+    filter: {
       search: '',
       per_page: 10,
       page: 1,

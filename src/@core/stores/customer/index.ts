@@ -130,7 +130,7 @@ export const useCustomerStore = defineStore('customer', {
     },
     async fetchFilters() {
       this.loadingList = true
-      const { data, error } = await useApi<any>(createUrl('customer/get-fitlers'))
+      const { data, error } = await useApi<any>(createUrl('customer/get-filters'))
       if (error.value) {
         console.error('Error fetching filters:', error.value)
         this.loadingList = false
