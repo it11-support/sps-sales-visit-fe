@@ -134,6 +134,7 @@ const loadActivity = async () => {
       ...parsedFilters
     }
     showFilters.value = parsedFilters.showFilters
+    searchQuery.value = parsedFilters.search
     filters.value = {
       ...filters.value,
       sales_person_id: parsedFilters.sales_person_id,
@@ -165,6 +166,15 @@ watch(
 watch(
   () => showFilters.value, 
   (val) => {
+    if(!val){
+       filters.value = {
+         sales_person_id: null,
+         customer_id: null,
+         status: null
+       }
+       searchQuery.value = ''
+       updateFilter(localKey, {sales_person_id: null, customer_id: null, status: null, search: ''})
+    }
     updateFilter(localKey, {showFilters: val})
   }, {deep: true}
 )
