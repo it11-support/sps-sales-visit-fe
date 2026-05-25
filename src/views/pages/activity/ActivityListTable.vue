@@ -39,6 +39,9 @@ const viewMenuItems = [
   { title: 'Open', value: 'open', link: true, prependIcon: 'tabler-eye' },
   { title: 'Open in New Tab', value: 'open_new_tab', link: true, prependIcon: 'tabler-external-link' }
 ]
+
+const showWarningDialog = ref(false)
+
 const selectedSPS = computed<number | null>({
   get() {
     return form.value.customers.find(id =>
@@ -314,6 +317,15 @@ const handleClickEditReport = async(id: number) => {
   await activityStore.updateActivityStatus(id, STATUS.DRAFT, true)
   router.push({ path: createUrl(`/activity/${id}/report`).value })
 }
+const verifyAndCheckIn = async(itemId: number) => {
+  await activityStore.checkActiveVisit(itemId)
+  
+  if (activityStore.hasActiveVisit) {
+    showWarningDialog.value = true
+  } else {
+    handleCheckIn(itemId)
+  }
+}
 const handleCheckIn = async(id: number) => {
   await activityStore.updateActivityStatus(id, STATUS.ONGOING)
   router.push({ path: createUrl(`/activity/${id}/report`).value })
@@ -358,6 +370,11 @@ const handleUpdateEditable = async (item: IActivity, value: boolean) => {
 
 const updateSelectedType = (val: number) => {
  form.value.activity_type_id = val
+}
+
+ const handleSheetClick = async(visitId: number) => {
+  showWarningDialog.value = false      
+  handleClickEdit(visitId)
 }
 
 const customFilter = (item: any, queryText: string, itemText: string) => {
@@ -525,7 +542,7 @@ const customFilter = (item: any, queryText: string, itemText: string) => {
             v-if="item.assigned_to.id === user.id"
             :key="item.id"
             :loading="activityStore.loadingId === item.id"
-            @click="handleCheckIn(item.id)"
+            @click="verifyAndCheckIn(item.id)"
             size="small"
             variant="tonal"
             color="primary"
@@ -778,6 +795,54 @@ const customFilter = (item: any, queryText: string, itemText: string) => {
     <VBtn color="error" v-if="activityToDelete != null" @click="handleDelete(activityToDelete?.id)">Delete</VBtn>
     <VSpacer />
   </VCardActions>
+  </VCard>
+</VDialog>
+
+<VDialog v-model="showWarningDialog" max-width="400">
+  <VCard>
+    <VCardTitle class="text-h6 font-weight-bold pt-4 px-6 text-warning">
+      <VIcon icon="tabler-alert-triangle" class="me-2" color="warning" />
+      Active Visit Detected
+    </VCardTitle>
+    
+
+    <VCardText class="px-6 text-body-1">
+    <p class="mb-4">Please finish the active visit before creating a new one.</p>
+  
+      <VSheet 
+        v-for="visit in activityStore.activeVisit" 
+        :key="visit.id"
+        color="amber-lighten-5" 
+        class="pa-3 rounded border-s-4 border-warning text-body-2 mb-2 cursor-pointer elevation-1"
+        @click="handleSheetClick(visit.id)"
+      >
+        <div class="d-flex justify-between align-center mb-1">
+          <div>
+            <strong>Visit ID:</strong> #{{ visit.id }}
+          </div>
+          <!-- Ikon petunjuk bawaan Vuetify/Tabler agar user tahu ini bisa diklik -->
+          <VIcon icon="tabler-chevron-right" size="18" color="warning" />
+        </div>
+        
+        <div class="d-flex align-center">
+          <strong>Status:</strong> 
+          <VChip 
+            size="x-small" 
+            :color="visit.status === 'ongoing' ? 'success' : 'warning'" 
+            class="text-uppercase ms-2 font-weight-bold"
+          >
+            {{ visit.status }}
+          </VChip>
+        </div>
+      </VSheet>
+    </VCardText>
+    
+    <VCardActions class="pb-4 px-6">
+      <VSpacer />
+      <VBtn color="warning" outlined variant="text" @click="showWarningDialog = false">
+        OK
+      </VBtn>
+    </VCardActions>
   </VCard>
 </VDialog>
 

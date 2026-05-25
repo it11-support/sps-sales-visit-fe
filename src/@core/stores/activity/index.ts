@@ -22,6 +22,8 @@ export interface Filters {
 export const useActivityStore = defineStore('activity', {
   state: () => ({
     isReady: false,
+    hasActiveVisit: false,
+    activeVisit: [] as IActivity[],
     tabs: [] as string[],
     activityTypes: [] as {value: number, label: string}[],
     activity: {} as IActivity,
@@ -623,6 +625,23 @@ export const useActivityStore = defineStore('activity', {
       if (!this.allCompetitorOptions.some(opt => opt.name === competitor.name)) {
         this.allCompetitorOptions.push(competitor)
       }
+    },
+    async checkActiveVisit(itemId: number) {
+      
+      this.loadingId = itemId
+      const url = createUrl(`activity/check-active-visit`)
+      
+      const { data, error } = await useApi<any>(url)
+      
+      if (error.value) {
+        console.error('Error fetching active visit:', error.value)
+        return
+      }
+
+      this.hasActiveVisit = data.value.data.has_active_visit
+      this.activeVisit = data.value.data.active_visit
+      this.loadingId = null
     }
+
   }
 })
