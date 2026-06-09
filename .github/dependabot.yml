@@ -1,0 +1,44 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+
+    schedule:
+      interval: "daily"
+
+    open-pull-requests-limit: 10
+
+    versioning-strategy: increase
+
+    groups:
+      vue-core:
+        patterns:
+          - "vue"
+          - "@vue/*"
+          - "vue-router"
+          - "pinia"
+
+      vuetify-ecosystem:
+        patterns:
+          - "vuetify"
+          - "vite-plugin-vuetify"
+
+      vite-core:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "unplugin-*"
+
+      tiptap-editor:
+        patterns:
+          - "@tiptap/*"
+
+      fullcalendar:
+        patterns:
+          - "@fullcalendar/*"
+
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"

@@ -28,7 +28,9 @@ const getCompanyField = (
   field: keyof ISalesSummary
 ) =>
   computed(() =>
-    (salesSummaryStore.summary[type][company] ?? []).map((item, index, arr) => {
+    (Array.isArray(salesSummaryStore.summary?.[type]?.[company]) 
+    ? salesSummaryStore.summary[type][company] : [])
+    .map((item, index, arr) => {
       if (field === 'month') {
         return item[field];
       }

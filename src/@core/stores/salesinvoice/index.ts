@@ -36,7 +36,7 @@ export const useSalesInvoiceStore = defineStore('salesinvoice', {
   actions: {
     async fetchSalesInvoiceOptions() {
       this.loading = true
-      const url = createUrl(`invoice/get-fitlers`)
+      const url = createUrl(`invoice/get-filters`)
       const { data: invoicesData, error } = await useApi<any>(url)
       if (error.value) {
         console.error('Error fetching sales person options:', error.value)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { IMonthlySummary, useStatisticStore } from '@/@core/stores/statistic';
+import { IMonthlySummary, IMonthlySummaryItem, useStatisticStore } from '@/@core/stores/statistic';
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -73,21 +73,29 @@ const datasetSales = computed(() => {
 })
 
 const topFiveSales = computed(() => {
-  const summary = statStore.summary?.monthly_summary
+  const summary = statStore.summary?.top_items as IMonthlySummaryItem[] | undefined
   if (!summary || summary.length === 0) return []
 
-  const totalByItem: Record<string, number> = {}
+  const totalByItem: Record<string, { total_sales: number; invoice_count: number; unit: string }> = {}
 
-  summary.forEach((month: IMonthlySummary) => {
-    month.items.forEach((item) => {
-      totalByItem[item.description] = (totalByItem[item.description] || 0) + item.invoice_count
-    })
+  // Akumulasikan nilai berdasarkan deskripsi item
+  summary.forEach((item) => {
+    if (!totalByItem[item.description]) {
+      totalByItem[item.description] = { total_sales: 0, invoice_count: 0, unit: item.unit }
+    }
+    totalByItem[item.description].total_sales += item.total_sales
+    totalByItem[item.description].invoice_count += item.invoice_count
   })
 
   return Object.entries(totalByItem)
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => b[1].total_sales - a[1].total_sales)
     .slice(0, 5)
-    .map(([description, count]) => ({ description, count }))
+    .map(([description, data]) => ({
+      description,
+      totalSales: data.total_sales,
+      invoiceCount: data.invoice_count,
+      unit: data.unit
+    }))
 })
 
 const datasetInvoice = computed(() => {
