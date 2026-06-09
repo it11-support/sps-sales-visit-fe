@@ -83,7 +83,7 @@
     "@tiptap/extension-underline": "^2.11.9",
     "@types/lodash.debounce": "^4.0.9",
     "@types/mapbox-gl": "3.4.1",
-    "@types/node": "22.10.2",
+    "@types/node": "22.19.20",
     "@types/webfontloader": "1.6.38",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
