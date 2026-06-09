@@ -55,7 +55,7 @@
     "vue-router": "4.5.0",
     "vue3-apexcharts": "1.8.0",
     "vue3-perfect-scrollbar": "2.0.0",
-    "vuetify": "3.7.5",
+    "vuetify": "3.12.8",
     "webfontloader": "1.6.28"
   },
   "devDependencies": {
@@ -120,7 +120,7 @@
     "vite": "5.4.11",
     "vite-plugin-vue-devtools": "7.3.7",
     "vite-plugin-vue-layouts": "0.11.0",
-    "vite-plugin-vuetify": "2.0.3",
+    "vite-plugin-vuetify": "2.1.3",
     "vite-svg-loader": "5.1.0",
     "vue-shepherd": "3.0.0",
     "vue-tsc": "2.1.10"
