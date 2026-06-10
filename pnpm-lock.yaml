@@ -20,14 +20,14 @@ importers:
         specifier: 2.2.2
         version: 2.2.2(@casl/ability@6.7.2)(vue@3.5.13(typescript@5.7.2))
       '@floating-ui/dom':
-        specifier: 1.6.8
-        version: 1.6.8
+        specifier: 1.7.6
+        version: 1.7.6
       '@formkit/drag-and-drop':
         specifier: 0.1.6
         version: 0.1.6
       '@sindresorhus/is':
-        specifier: 7.0.1
-        version: 7.0.1
+        specifier: 7.2.0
+        version: 7.2.0
       '@tiptap/extension-highlight':
         specifier: ^2.11.9
         version: 2.11.9(@tiptap/core@2.11.9(@tiptap/pm@2.11.9))
@@ -957,14 +957,14 @@ packages:
     resolution: {integrity: sha512-ZAoA40rNMPwSm+AeHpCq8STiNAwzWLJuP8Xv4CHIc9wv/PSuExjMrmjfYNj682vW0OOiZ1HKxzvjQr9XZIisQA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@floating-ui/core@1.6.9':
-    resolution: {integrity: sha512-uMXCuQ3BItDUbAMhIXw7UPXRfAlOAvZzdK9BWpE60MCn+Svt3aLn9jsPTi/WNGlRUu2uI0v5S7JiIUsbsvh3fw==}
+  '@floating-ui/core@1.7.5':
+    resolution: {integrity: sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==}
 
-  '@floating-ui/dom@1.6.8':
-    resolution: {integrity: sha512-kx62rP19VZ767Q653wsP1XZCGIirkE09E0QUGNYTM/ttbbQHqcGPdSfWFxUyyNLc/W6aoJRBajOSXhP6GXjC0Q==}
+  '@floating-ui/dom@1.7.6':
+    resolution: {integrity: sha512-9gZSAI5XM36880PPMm//9dfiEngYoC6Am2izES1FF406YFsjvyBMmeJ2g4SAju3xWwtuynNRFL2s9hgxpLI5SQ==}
 
-  '@floating-ui/utils@0.2.9':
-    resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
+  '@floating-ui/utils@0.2.11':
+    resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
   '@formkit/drag-and-drop@0.1.6':
     resolution: {integrity: sha512-wZyxvk7WTbQ12q8ZGvLoYner1ktBOUf+lCblJT3P0LyqpjGCKTfQMKJtwToKQzJgTbhvow4LBu+yP92Mux321w==}
@@ -1433,8 +1433,8 @@ packages:
   '@shikijs/vscode-textmate@9.3.1':
     resolution: {integrity: sha512-79QfK1393x9Ho60QFyLti+QfdJzRQCVLFb97kOIV7Eo9vQU/roINgk7m24uv0a7AUvN//RDH36FLjjK48v0s9g==}
 
-  '@sindresorhus/is@7.0.1':
-    resolution: {integrity: sha512-QWLl2P+rsCJeofkDNIT3WFmb6NrRud1SUYW8dIhXK/46XFV8Q/g7Bsvib0Askb0reRLe+WYPeeE+l5cH7SlkuQ==}
+  '@sindresorhus/is@7.2.0':
+    resolution: {integrity: sha512-P1Cz1dWaFfR4IR+U13mqqiGsLFf1KbayybWwdd2vfctdV6hDpUkgCY0nKOLLTMSoRd/jJNjtbqzf13K8DCCXQw==}
     engines: {node: '>=18'}
 
   '@stylistic/eslint-plugin@4.2.0':
@@ -5961,16 +5961,16 @@ snapshots:
       '@eslint/core': 0.13.0
       levn: 0.4.1
 
-  '@floating-ui/core@1.6.9':
+  '@floating-ui/core@1.7.5':
     dependencies:
-      '@floating-ui/utils': 0.2.9
+      '@floating-ui/utils': 0.2.11
 
-  '@floating-ui/dom@1.6.8':
+  '@floating-ui/dom@1.7.6':
     dependencies:
-      '@floating-ui/core': 1.6.9
-      '@floating-ui/utils': 0.2.9
+      '@floating-ui/core': 1.7.5
+      '@floating-ui/utils': 0.2.11
 
-  '@floating-ui/utils@0.2.9': {}
+  '@floating-ui/utils@0.2.11': {}
 
   '@formkit/drag-and-drop@0.1.6': {}
 
@@ -6407,7 +6407,7 @@ snapshots:
 
   '@shikijs/vscode-textmate@9.3.1': {}
 
-  '@sindresorhus/is@7.0.1': {}
+  '@sindresorhus/is@7.2.0': {}
 
   '@stylistic/eslint-plugin@4.2.0(eslint@9.25.1)(typescript@5.7.2)':
     dependencies:
@@ -10163,12 +10163,12 @@ snapshots:
 
   shepherd.js@11.2.0:
     dependencies:
-      '@floating-ui/dom': 1.6.8
+      '@floating-ui/dom': 1.7.6
       deepmerge: 4.3.1
 
   shepherd.js@13.0.3:
     dependencies:
-      '@floating-ui/dom': 1.6.8
+      '@floating-ui/dom': 1.7.6
       '@scarf/scarf': 1.4.0
       deepmerge-ts: 5.1.0
 
