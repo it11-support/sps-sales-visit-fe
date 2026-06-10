@@ -1,11 +1,14 @@
 import { setupLayouts } from 'virtual:generated-layouts'
 import type { App } from 'vue'
 
-import type { RouteRecordRaw } from 'vue-router/auto'
+// Pindahkan semua import secara bersih ke core 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+// Ambil rute hasil generate otomatis dari modul virtual bawaan Vue Router 5
+import { routes } from 'vue-router/auto-routes' 
 
 import UnauthorizedPage from '@/layouts/components/redirects/Unauthorized.vue'
-import { createRouter, createWebHistory } from 'vue-router/auto'
 import { setupGuards } from './guards'
+
 function recursiveLayouts(route: RouteRecordRaw): RouteRecordRaw {
   if (route.children) {
     for (let i = 0; i < route.children.length; i++)
@@ -13,32 +16,33 @@ function recursiveLayouts(route: RouteRecordRaw): RouteRecordRaw {
 
     return route
   }
-
   return setupLayouts([route])[0]
 }
 
-const redirects = [
+const redirects: RouteRecordRaw[] = [
   {
     path: '/unauthorized',
     name: 'unauthorized',
     component: UnauthorizedPage,
-    meta: {
-      public: true,
-    },
+    meta: { public: true },
   }
 ]
+
+// Gabungkan rute statis (redirects) dan rute otomatis secara manual di sini
+const finalRoutes = [
+  ...redirects,
+  ...routes.map(route => recursiveLayouts(route)),
+]
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(to) {
     if (to.hash)
       return { el: to.hash, behavior: 'smooth', top: 60 }
-
     return { top: 0 }
   },
-  extendRoutes: pages => [
-    ...redirects,
-    ...[...pages].map(route => recursiveLayouts(route)),
-  ],
+  // Masukkan array rute yang sudah bersih di sini
+  routes: finalRoutes, 
 })
 
 setupGuards(router)
