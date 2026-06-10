@@ -101,8 +101,8 @@ importers:
         specifier: 13.0.3
         version: 13.0.3
       swiper:
-        specifier: 11.1.15
-        version: 11.1.15
+        specifier: 11.2.10
+        version: 11.2.10
       ufo:
         specifier: 1.5.4
         version: 1.5.4
@@ -4717,8 +4717,8 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
-  swiper@11.1.15:
-    resolution: {integrity: sha512-IzWeU34WwC7gbhjKsjkImTuCRf+lRbO6cnxMGs88iVNKDwV+xQpBCJxZ4bNH6gSrIbbyVJ1kuGzo3JTtz//CBw==}
+  swiper@11.2.10:
+    resolution: {integrity: sha512-RMeVUUjTQH+6N3ckimK93oxz6Sn5la4aDlgPzB+rBrG/smPdCTicXyhxa+woIpopz+jewEloiEE3lKo1h9w2YQ==}
     engines: {node: '>= 4.7.0'}
 
   synckit@0.10.3:
@@ -10311,7 +10311,7 @@ snapshots:
       csso: 5.0.5
       picocolors: 1.1.1
 
-  swiper@11.1.15: {}
+  swiper@11.2.10: {}
 
   synckit@0.10.3:
     dependencies:
