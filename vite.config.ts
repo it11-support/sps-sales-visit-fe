@@ -79,6 +79,18 @@ export default defineConfig({
 
   ],
   define: { 'process.env': {} },
+    css: {
+    preprocessorOptions: {
+      sass: {
+        api: 'modern-compiler',
+        quietDeps: true
+      },
+      scss: {
+        api: 'modern-compiler',
+        quietDeps: true
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

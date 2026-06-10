@@ -24,6 +24,7 @@
     }
   ],
   "rules": {
+    "scss/no-global-function-names": null,
     "@stylistic/max-line-length": [
       220,
       {
