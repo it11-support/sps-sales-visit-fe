@@ -30,7 +30,7 @@
     "@vueuse/math": "10.11.1",
     "apexcharts": "3.54.1",
     "chart.js": "4.5.1",
-    "cookie-es": "1.2.2",
+    "cookie-es": "1.2.3",
     "dayjs": "^1.11.13",
     "destr": "2.0.3",
     "eslint-plugin-regexp": "2.7.0",
