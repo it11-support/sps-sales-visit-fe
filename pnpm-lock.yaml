@@ -22,8 +22,8 @@ importers:
         specifier: 1.7.6
         version: 1.7.6
       '@formkit/drag-and-drop':
-        specifier: 0.1.6
-        version: 0.1.6
+        specifier: 0.5.3
+        version: 0.5.3
       '@sindresorhus/is':
         specifier: 7.2.0
         version: 7.2.0
@@ -1264,8 +1264,8 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@formkit/drag-and-drop@0.1.6':
-    resolution: {integrity: sha512-wZyxvk7WTbQ12q8ZGvLoYner1ktBOUf+lCblJT3P0LyqpjGCKTfQMKJtwToKQzJgTbhvow4LBu+yP92Mux321w==}
+  '@formkit/drag-and-drop@0.5.3':
+    resolution: {integrity: sha512-VGQsKYc350OOMbz7wYt69YqDbn49x7RJ32eqiJieNke54nGZYmx18XEqTw0lBiJmH3RaiH6V45gB1u+tvI/TNw==}
 
   '@fullcalendar/core@6.1.15':
     resolution: {integrity: sha512-BuX7o6ALpLb84cMw1FCB9/cSgF4JbVO894cjJZ6kP74jzbUZNjtwffwRdA+Id8rrLjT30d/7TrkW90k4zbXB5Q==}
@@ -6450,7 +6450,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@formkit/drag-and-drop@0.1.6': {}
+  '@formkit/drag-and-drop@0.5.3': {}
 
   '@fullcalendar/core@6.1.15':
     dependencies:
