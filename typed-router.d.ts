@@ -14,10 +14,15 @@ import type {
   ParamValueZeroOrMore,
   ParamValueZeroOrOne,
 } from 'vue-router'
+import type {
+  _ExtractParamParserType,
+} from 'vue-router/experimental'
 
 declare module 'vue-router' {
   interface TypesConfig {
-    ParamParsers: never
+    _ParamParsers: {}
+    RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap
+    _RouteFileInfoMap: import('vue-router/auto-routes')._RouteFileInfoMap
   }
 }
 
@@ -156,17 +161,23 @@ declare module 'vue-router/auto-routes' {
         | 'root'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/[...error].vue': {
       routes:
         | '$error'
       views:
         | never
+      pathParamNames:
+        | 'error'
     }
     'src/pages/activity/[id]/report/index.vue': {
       routes:
         | 'activity-id-report'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/activity/[id]/report/edit/index.vue': {
@@ -174,11 +185,15 @@ declare module 'vue-router/auto-routes' {
         | 'activity-id-report-edit'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/activity/[id]/view-report/index.vue': {
       routes:
         | 'activity-id-view-report'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/activity/deleted/index.vue': {
@@ -186,11 +201,15 @@ declare module 'vue-router/auto-routes' {
         | 'activity-deleted'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/activity/list/index.vue': {
       routes:
         | 'activity-list'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/customers/list/index.vue': {
@@ -198,11 +217,15 @@ declare module 'vue-router/auto-routes' {
         | 'customers-list'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/customers/view/[customerId]/index.vue': {
       routes:
         | 'customers-view-customer-id'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/customers/view/[customerId]/invoice/[invoiceId]/index.vue': {
@@ -210,11 +233,15 @@ declare module 'vue-router/auto-routes' {
         | 'customers-view-customer-id-invoice-invoice-id'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/customers/view/[customerId]/item/[itemId]/index.vue': {
       routes:
         | 'customers-view-customer-id-item-item-id'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/login.vue': {
@@ -222,11 +249,15 @@ declare module 'vue-router/auto-routes' {
         | 'login'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/profile.vue': {
       routes:
         | 'profile'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/sales/list/index.vue': {
@@ -234,17 +265,23 @@ declare module 'vue-router/auto-routes' {
         | 'sales-list'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/second-page.vue': {
       routes:
         | 'second-page'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/users/list/index.vue': {
       routes:
         | 'users-list'
       views:
+        | never
+      pathParamNames:
         | never
     }
   }
