@@ -103,8 +103,8 @@ importers:
         specifier: 12.1.2
         version: 12.1.2
       ufo:
-        specifier: 1.5.4
-        version: 1.5.4
+        specifier: 1.6.4
+        version: 1.6.4
       unplugin-vue-define-options:
         specifier: 1.5.5
         version: 1.5.5(vue@3.5.13(typescript@5.7.2))
@@ -5055,9 +5055,6 @@ packages:
   uc.micro@2.1.0:
     resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
 
-  ufo@1.5.4:
-    resolution: {integrity: sha512-UsUk3byDzKd04EyoZ7U4DOlxQaD14JUKQl6/P7wiX4FNvUfm3XL246n9W5AmqwW5RSFJ27NAuM0iLscAOYUiGQ==}
-
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
 
@@ -9807,7 +9804,7 @@ snapshots:
     dependencies:
       destr: 2.0.3
       node-fetch-native: 1.6.6
-      ufo: 1.5.4
+      ufo: 1.6.4
 
   once@1.4.0:
     dependencies:
@@ -10785,8 +10782,6 @@ snapshots:
   typescript@5.7.2: {}
 
   uc.micro@2.1.0: {}
-
-  ufo@1.5.4: {}
 
   ufo@1.6.4: {}
 
