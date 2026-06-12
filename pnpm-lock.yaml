@@ -167,8 +167,8 @@ importers:
         specifier: 6.1.15
         version: 6.1.15(@fullcalendar/core@6.1.15)(vue@3.5.13(typescript@5.7.2))
       '@iconify-json/fa':
-        specifier: 1.2.1
-        version: 1.2.1
+        specifier: 1.2.2
+        version: 1.2.2
       '@iconify-json/mdi':
         specifier: 1.2.2
         version: 1.2.2
@@ -1126,8 +1126,8 @@ packages:
     resolution: {integrity: sha512-xeO57FpIu4p1Ri3Jq/EXq4ClRm86dVF2z/+kvFnyqVYRavTZmaFaUBbWCOuuTh0o/g7DSsk6kc2vrS4Vl5oPOQ==}
     engines: {node: '>=18.18'}
 
-  '@iconify-json/fa@1.2.1':
-    resolution: {integrity: sha512-aY2+tQNWq5ch+ShtAz3KKbNrFfwf4BPrXvyN7S4/lcf6Wms+kIxsd7C7KortzHZhoBnbhVN+qo+YUWLW7rLs9Q==}
+  '@iconify-json/fa@1.2.2':
+    resolution: {integrity: sha512-Rw0L97uO3W0Gy2rq4cM/TH3QjzuPuRca1F2steumZ57zOeheGQdiqo50O6KHjm+WgImmV92IFPUTU6eiaJsrTw==}
 
   '@iconify-json/mdi@1.2.2':
     resolution: {integrity: sha512-84aznJXzfGdbOXGe8xB7E5uNAb7Yo5IABwTgq2X3kczb819qZeS9eL31bTVn7wJdCLK5ieaoUc2GTS3QYIkJ6g==}
@@ -6180,7 +6180,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.2': {}
 
-  '@iconify-json/fa@1.2.1':
+  '@iconify-json/fa@1.2.2':
     dependencies:
       '@iconify/types': 2.0.0
 
