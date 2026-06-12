@@ -231,9 +231,9 @@ watchEffect(() => {
         align-items: center;
         justify-content: center;
         border-radius: 0.375rem;
-        background-color: rgba(var(--v-theme-on-surface), var(--v-selected-opacity));
+        background-color: rgb(var(--v-theme-on-surface), var(--v-selected-opacity));
         block-size: 2.375rem;
-        color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+        color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
         inline-size: 2.375rem;
       }
     }
@@ -244,7 +244,7 @@ watchEffect(() => {
           @include templateMixins.custom-elevation(var(--v-theme-primary), "sm");
 
           background-color: rgb(var(--v-theme-primary));
-          color: rgba(var(--v-theme-on-primary));
+          color: rgb(var(--v-theme-on-primary));
         }
       }
     }
@@ -252,8 +252,8 @@ watchEffect(() => {
     .stepper-steps-completed {
       .stepper-icon-step {
         .stepper-icon {
-          background: rgba(var(--v-theme-primary), var(--v-activated-opacity));
-          color: rgba(var(--v-theme-primary));
+          background: rgb(var(--v-theme-primary), var(--v-activated-opacity));
+          color: rgb(var(--v-theme-primary));
         }
       }
     }
@@ -292,21 +292,21 @@ watchEffect(() => {
 
     /* stylelint-disable-next-line no-descending-specificity */
     .stepper-title {
-      color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+      color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
       font-size: 0.9375rem;
       font-weight: 500 !important;
     }
 
     /* stylelint-disable-next-line no-descending-specificity */
     .stepper-subtitle {
-      color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+      color: rgb(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
       font-size: 0.8125rem;
       line-height: 1.25rem;
     }
 
     /* stylelint-disable-next-line no-descending-specificity */
     .stepper-chevron-indicator {
-      color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+      color: rgb(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
     }
 
     /* stylelint-disable-next-line no-descending-specificity */
@@ -314,7 +314,7 @@ watchEffect(() => {
       /* stylelint-disable-next-line no-descending-specificity */
       .stepper-title,
       .stepper-subtitle {
-        color: rgba(var(--v-theme-on-surface), var(--v-disabled-opacity));
+        color: rgb(var(--v-theme-on-surface), var(--v-disabled-opacity));
       }
 
       .stepper-chevron-indicator {

@@ -24,7 +24,7 @@ h6,
 .text-button,
 .text-overline,
 .v-card-title {
-  color: rgba(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
+  color: rgb(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
 }
 
 body,
@@ -32,7 +32,7 @@ body,
 .text-body-2,
 .text-subtitle-1,
 .text-subtitle-2 {
-  color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
+  color: rgb(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
 }
 
 // 👉 Grid
@@ -188,7 +188,7 @@ body,
   }
 
   .v-pagination {
-    color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
   }
 }
 
@@ -202,20 +202,20 @@ body,
   opacity: 1 !important;
 
   &:not(.v-field-label--floating) {
-    color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
+    color: rgb(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
   }
 }
 
 // 👉 Overlay
 .v-overlay__scrim,
 .v-navigation-drawer__scrim {
-  background: rgba(var(--v-overlay-scrim-background), var(--v-overlay-scrim-opacity)) !important;
+  background: rgb(var(--v-overlay-scrim-background), var(--v-overlay-scrim-opacity)) !important;
   opacity: 1 !important;
 }
 
 // 👉 VMessages
 .v-messages {
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  color: rgb(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
   opacity: 1 !important;
 }
 
@@ -246,7 +246,7 @@ body,
 
 // 👉 VCard and VList subtitle color
 .v-list-item-subtitle {
-  color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
+  color: rgb(var(--v-theme-on-background), var(--v-medium-emphasis-opacity));
 }
 
 // 👉 placeholders
@@ -255,7 +255,7 @@ body,
     & input::placeholder,
     input#{&}::placeholder,
     textarea#{&}::placeholder {
-      color: rgba(var(--v-theme-on-surface), var(--v-disabled-opacity)) !important;
+      color: rgb(var(--v-theme-on-surface), var(--v-disabled-opacity)) !important;
       opacity: 1 !important;
     }
   }

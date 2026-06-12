@@ -171,7 +171,7 @@ const isCompleted = computed(() => activityStore.currentReport.assignment?.statu
               <div class="d-flex justify-start align-start flex-wrap">
                 <h3
                   class="mb-0 flex-grow-1 min-width-0"
-                  style="white-space: normal; word-break: break-word;"
+                  style="white-space: normal; word-break: break-all;"
                 >
                  {{ activeCustomer?.CardName }}
                 </h3>

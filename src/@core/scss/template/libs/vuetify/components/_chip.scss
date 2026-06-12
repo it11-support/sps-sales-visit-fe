@@ -19,12 +19,12 @@
   }
 
   &:not(.v-chip--variant-elevated) {
-    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
   }
 
   &.v-chip--variant-elevated {
-    background-color: rgba(var(--v-theme-on-surface), var(--v-activated-opacity));
-    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+    background-color: rgb(var(--v-theme-on-surface), var(--v-activated-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
   }
 
   &:not([class*="text-"]) {

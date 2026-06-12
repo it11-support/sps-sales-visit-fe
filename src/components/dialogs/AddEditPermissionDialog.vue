@@ -85,7 +85,7 @@ watch(() => props, () => {
 <style lang="scss">
 .permission-table {
   td {
-    border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-block-end: 1px solid rgb(var(--v-border-color), var(--v-border-opacity));
     padding-block: 0.5rem;
     padding-inline: 0;
   }

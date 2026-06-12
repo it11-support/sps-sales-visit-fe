@@ -36,12 +36,12 @@ $v-input-density: (
     &.v-field--variant-filled {
       --v-field-padding-top: 7px !important;
 
-      color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+      color: rgb(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
     }
 
     // Color for text field
     .v-field__input {
-      color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+      color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
     }
 
     // Make field border width 2px when error
@@ -102,7 +102,7 @@ $v-input-density: (
       .v-field .v-field__clearable {
         > .v-icon {
           block-size: map.get($settings, icon-size);
-          color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+          color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
           font-size: map.get($settings, icon-size);
           inline-size: map.get($settings, icon-size);
           opacity: 1;
@@ -192,12 +192,12 @@ body {
     // Disabled state
     &:has(.v-input.v-input--disabled) {
       .v-label {
-        color: rgba(var(--v-theme-on-surface), 0.38);
+        color: rgb(var(--v-theme-on-surface), 0.38);
       }
 
       .v-input {
         .v-field.v-field--disabled {
-          background-color: rgba(var(--v-theme-on-surface), var(--v-hover-opacity));
+          background-color: rgb(var(--v-theme-on-surface), var(--v-hover-opacity));
           opacity: 1;
 
           .v-field__outline {
@@ -205,7 +205,7 @@ body {
           }
 
           .v-field__input {
-            color: rgba(var(--v-theme-on-surface), var(--v-disabled-opacity));
+            color: rgb(var(--v-theme-on-surface), var(--v-disabled-opacity));
           }
         }
       }
@@ -214,7 +214,7 @@ body {
     // Apply color to label
     @each $color-name in variables.$theme-colors-name {
       .v-label {
-        color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+        color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
 
         &:has(+ .v-input .v-field.v-field--focused .v-field__outline.text-#{$color-name}) {
           color: rgb(var(--v-theme-#{$color-name}));
@@ -280,14 +280,14 @@ body {
     .app-autocomplete__content {
       .v-list-item--active {
         .v-autocomplete__mask {
-          background: rgba(92, 82, 192, 60%);
+          background: rgb(92, 82, 192, 60%);
         }
       }
 
       .v-theme--dark {
         .v-list-item:not(.v-list-item--active) {
           .v-autocomplete__mask {
-            background: rgba(59, 64, 92, 60%);
+            background: rgb(59, 64, 92, 60%);
           }
         }
       }
