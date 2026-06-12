@@ -3,8 +3,8 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import { fileURLToPath } from 'node:url'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { VueRouterAutoImports, getPascalCaseRouteName } from 'unplugin-vue-router'
-import VueRouter from 'unplugin-vue-router/vite'
+import VueRouter from 'vue-router/vite'
+import { getPascalCaseRouteName } from 'vue-router/unplugin'
 import { defineConfig } from 'vite'
 import Layouts from 'vite-plugin-vue-layouts'
 import vuetify from 'vite-plugin-vuetify'
@@ -13,7 +13,7 @@ import svgLoader from 'vite-svg-loader'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    // Docs: https://github.com/posva/unplugin-vue-router
+    // Docs: https://vuejs.org
     // ℹ️ This plugin should be placed before vue plugin
     VueRouter({
       getRouteName: routeNode => {
@@ -22,7 +22,6 @@ export default defineConfig({
           .replace(/([a-z\d])([A-Z])/g, '$1-$2')
           .toLowerCase()
       },
-
     }),
     vue({
       template: {
@@ -61,7 +60,7 @@ export default defineConfig({
 
     // Docs: https://github.com/antfu/unplugin-auto-import#unplugin-auto-import
     AutoImport({
-      imports: ['vue', VueRouterAutoImports, '@vueuse/core', '@vueuse/math', 'vue-i18n', 'pinia'],
+      imports: ['vue', 'vue-router', '@vueuse/core', '@vueuse/math', 'vue-i18n', 'pinia'],
       dirs: [
         './src/@core/utils',
         './src/@core/composable/',
@@ -79,6 +78,18 @@ export default defineConfig({
 
   ],
   define: { 'process.env': {} },
+  css: {
+    preprocessorOptions: {
+      sass: {
+        api: 'modern-compiler',
+        quietDeps: true
+      },
+      scss: {
+        api: 'modern-compiler',
+        quietDeps: true
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
