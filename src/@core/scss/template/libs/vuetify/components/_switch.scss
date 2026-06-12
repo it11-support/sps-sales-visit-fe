@@ -19,7 +19,7 @@
 
       &:not(.v-selection-control--dirty) {
         .v-switch__track {
-          box-shadow: 0 0 4px 0 rgba(0, 0, 0, 16%) inset;
+          box-shadow: 0 0 4px 0 rgb(0, 0, 0, 16%) inset;
         }
       }
     }
@@ -30,7 +30,7 @@
       --v-selection-control-size: 0.875rem;
 
       .v-switch__thumb {
-        box-shadow: 0 1px 6px rgba(var(--v-shadow-key-umbra-color), var(--v-shadow-xs-opacity));
+        box-shadow: 0 1px 6px rgb(var(--v-shadow-key-umbra-color), var(--v-shadow-xs-opacity));
         transform: scale(1);
       }
     }
@@ -43,7 +43,7 @@
   }
 
   .v-label {
-    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
     line-height: 1.375rem !important;
   }
 }

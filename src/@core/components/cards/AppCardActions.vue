@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { Emit } from '@core/types'
-
 interface Props {
   collapsed?: boolean
   noActions?: boolean
@@ -9,6 +7,14 @@ interface Props {
   actionRemove?: boolean
   loading?: boolean | undefined
   title?: string
+}
+
+interface Emit {
+  (e: 'collapsed', isContentCollapsed: boolean): void
+  (e: 'refresh', stopLoading: () => void): void
+  (e: 'trash'): void
+  (e: 'initialLoad'): void
+  (e: 'update:loading', loading: boolean): void
 }
 
 defineOptions({
@@ -64,14 +70,6 @@ const triggeredRemove = () => {
   isCardRemoved.value = true
   emit('trash')
 }
-
-watch(
-  () => props.collapsed,
-  newVal => {
-    isContentCollapsed.value = newVal
-  }
-)
-
 </script>
 
 <template>

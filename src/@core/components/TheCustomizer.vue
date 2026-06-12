@@ -362,7 +362,7 @@ const resetCustomizer = async () => {
                 :key="color.main"
                 style="
               border-radius: 0.375rem;
-              outline: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+              outline: 1px solid rgb(var(--v-border-color), var(--v-border-opacity));
               padding-block: 0.5rem;
               padding-inline: 0.625rem;"
                 class="primary-color-wrapper cursor-pointer"
@@ -380,7 +380,7 @@ const resetCustomizer = async () => {
                 class="primary-color-wrapper cursor-pointer d-flex align-center"
                 style="
               border-radius: 0.375rem;
-              outline: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+              outline: 1px solid rgb(var(--v-border-color), var(--v-border-opacity));
               padding-block: 0.5rem;
               padding-inline: 0.625rem;"
                 :class="vuetifyTheme.current.value.colors.primary === customPrimaryColor ? 'active' : ''"
@@ -586,7 +586,7 @@ const resetCustomizer = async () => {
     .v-label.custom-input {
       border: none;
       color: rgb(var(--v-theme-on-surface));
-      outline: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+      outline: 1px solid rgb(var(--v-border-color), var(--v-border-opacity));
     }
   }
 
@@ -601,13 +601,13 @@ const resetCustomizer = async () => {
   }
 
   .v-label.custom-input:not(.active):hover {
-    border-color: rgba(var(--v-border-color), 0.22);
+    border-color: rgb(var(--v-border-color), 0.22);
   }
 
   .customizer-skins {
     .custom-input.active {
       .customizer-skins-icon-wrapper {
-        background-color: rgba(var(--v-global-theme-primary), var(--v-selected-opacity));
+        background-color: rgb(var(--v-global-theme-primary), var(--v-selected-opacity));
       }
     }
   }
@@ -615,7 +615,7 @@ const resetCustomizer = async () => {
   .app-customizer-primary-colors {
     .primary-color-wrapper:not(.active) {
       &:hover {
-        outline-color: rgba(var(--v-border-color), 0.22) !important;
+        outline-color: rgb(var(--v-border-color), 0.22) !important;
       }
     }
   }

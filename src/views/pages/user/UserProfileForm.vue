@@ -164,7 +164,7 @@ const submitUserHandler = async () => {
     line-height: 1.4;
     text-overflow: ellipsis;
     white-space: normal;
-    word-break: break-word;
+    word-break: break-all;
   }
 }
 </style>

@@ -1,19 +1,19 @@
 .v-timeline-item {
   .app-timeline-title {
-    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
     font-size: 15px;
     font-weight: 500;
     line-height: 1.3125rem;
   }
 
   .app-timeline-meta {
-    color: rgba(var(--v-theme-on-surface), var(--v-disabled-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-disabled-opacity));
     font-size: 11px;
     line-height: 0.875rem;
   }
 
   .app-timeline-text {
-    color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
     font-size: 13px;
     line-height: 1.25rem;
   }
@@ -41,7 +41,7 @@
 }
 
 .text-white-variant {
-  color: rgba(255, 255, 255, 78%) !important;
+  color: rgb(255, 255, 255, 78%) !important;
 }
 
 .bg-custom-background {

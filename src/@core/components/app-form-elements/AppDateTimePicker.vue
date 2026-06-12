@@ -3,7 +3,7 @@ import FlatPickr from 'vue-flatpickr-component'
 import { useTheme } from 'vuetify'
 
 // @ts-expect-error There won't be declaration file for it
-import { VField, filterFieldProps, makeVFieldProps } from 'vuetify/lib/components/VField/VField'
+import { VField, makeVFieldProps } from 'vuetify/lib/components/VField/VField'
 
 // @ts-expect-error There won't be declaration file for it
 import { VInput, makeVInputProps } from 'vuetify/lib/components/VInput/VInput'
@@ -19,6 +19,10 @@ defineOptions({
 })
 
 const props = defineProps({
+  modelValue: {
+    type: String,
+    default: '',
+  },
   autofocus: Boolean,
   counter: [Boolean, Number, String] as PropType<true | number | string>,
   counterValue: Function as PropType<(value: any) => number>,
@@ -57,7 +61,7 @@ const attrs = useAttrs()
 
 const [rootAttrs, compAttrs] = filterInputAttrs(attrs)
 const inputProps = ref(VInput.filterProps(props))
-const fieldProps = ref(filterFieldProps(props))
+const fieldProps = ref(VField.filterProps(props))
 
 const refFlatPicker = ref()
 
@@ -115,7 +119,7 @@ const emitModelValue = (val: string) => {
 }
 
 watch(() => props, () => {
-  fieldProps.value = filterFieldProps(props)
+  fieldProps.value = VField.filterProps(props)
   inputProps.value = VInput.filterProps(props)
 },
 {
@@ -144,7 +148,7 @@ const elementId = computed (() => {
 
     <VInput
       v-bind="{ ...inputProps, ...rootAttrs }"
-      :model-value="modelValue"
+      :model-value="props.modelValue"
       :hide-details="props.hideDetails"
       :class="[{
         'v-text-field--prefixed': props.prefix,
@@ -174,7 +178,7 @@ const elementId = computed (() => {
                 v-if="!isInlinePicker"
                 v-bind="compAttrs"
                 ref="refFlatPicker"
-                :model-value="modelValue"
+                :model-value="props.modelValue"
                 :placeholder="props.placeholder"
                 :readonly="isReadonly.value"
                 class="flat-picker-custom-style h-100 w-100"
@@ -187,7 +191,7 @@ const elementId = computed (() => {
               <!-- simple input for inline prop -->
               <input
                 v-if="isInlinePicker"
-                :value="modelValue"
+                :value="props.modelValue"
                 :placeholder="props.placeholder"
                 :readonly="isReadonly.value"
                 class="flat-picker-custom-style h-100 w-100"
@@ -204,7 +208,7 @@ const elementId = computed (() => {
       v-if="isInlinePicker"
       v-bind="compAttrs"
       ref="refFlatPicker"
-      :model-value="modelValue"
+      :model-value="props.modelValue"
       @update:model-value="emitModelValue"
       @on-open="isCalendarOpen = true"
       @on-close="isCalendarOpen = false"
@@ -229,9 +233,9 @@ const elementId = computed (() => {
   padding-inline: var(--v-field-padding-start);
 }
 
-$heading-color: rgba(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
-$body-color: rgba(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
-$disabled-color: rgba(var(--v-theme-on-background), var(--v-disabled-opacity));
+$heading-color: rgb(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
+$body-color: rgb(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
+$disabled-color: rgb(var(--v-theme-on-background), var(--v-disabled-opacity));
 
 // hide the input when your picker is inline
 input[altinputclass="inlinePicker"] {
@@ -249,8 +253,8 @@ input[altinputclass="inlinePicker"] {
   inline-size: 16.875rem;
 
   .flatpickr-day:focus {
-    border-color: rgba(var(--v-border-color), var(--v-border-opacity));
-    background: rgba(var(--v-border-color), var(--v-border-opacity));
+    border-color: rgb(var(--v-border-color), var(--v-border-opacity));
+    background: rgb(var(--v-border-color), var(--v-border-opacity));
   }
 
   .flatpickr-rContainer {
@@ -285,13 +289,13 @@ input[altinputclass="inlinePicker"] {
     &.today {
       &:not(.selected) {
         border: none !important;
-        background: rgba(var(--v-theme-primary), 0.24);
+        background: rgb(var(--v-theme-primary), 0.24);
         color: rgb(var(--v-theme-primary));
       }
 
       &:hover {
         border: none !important;
-        background: rgba(var(--v-theme-primary), 0.24);
+        background: rgb(var(--v-theme-primary), 0.24);
         color: rgb(var(--v-theme-primary));
       }
     }
@@ -308,7 +312,7 @@ input[altinputclass="inlinePicker"] {
     &.inRange,
     &.inRange:hover {
       border: none;
-      background: rgba(var(--v-theme-primary), var(--v-activated-opacity)) !important;
+      background: rgb(var(--v-theme-primary), var(--v-activated-opacity)) !important;
       box-shadow: none !important;
       color: rgb(var(--v-theme-primary));
     }
@@ -344,7 +348,7 @@ input[altinputclass="inlinePicker"] {
 
     &:hover {
       border-color: transparent;
-      background: rgba(var(--v-theme-on-surface), 0.06);
+      background: rgb(var(--v-theme-on-surface), 0.06);
     }
   }
 
@@ -368,11 +372,11 @@ input[altinputclass="inlinePicker"] {
   .flatpickr-months {
     .flatpickr-prev-month,
     .flatpickr-next-month {
-      color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+      color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
       fill: $body-color;
 
       &:hover {
-        color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+        color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
       }
 
       &:hover i,
@@ -394,7 +398,7 @@ input[altinputclass="inlinePicker"] {
   &.hasTime.open {
     .flatpickr-innerContainer + .flatpickr-time {
       block-size: auto;
-      border-block-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+      border-block-start: 1px solid rgb(var(--v-border-color), var(--v-border-opacity));
     }
 
     .flatpickr-time {
@@ -504,7 +508,7 @@ input[altinputclass="inlinePicker"] {
     justify-content: center;
     padding: 0;
     border-radius: 5rem;
-    background: rgba(var(--v-theme-on-surface), var(--v-selected-opacity));
+    background: rgb(var(--v-theme-on-surface), var(--v-selected-opacity));
     block-size: 1.875rem;
     inline-size: 1.875rem;
     inset-block-start: 15px !important;
