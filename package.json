@@ -38,7 +38,7 @@
     "jwt-decode": "4.0.0",
     "lodash.debounce": "^4.0.8",
     "mapbox-gl": "3.24.0",
-    "ofetch": "1.4.1",
+    "ofetch": "1.5.1",
     "pinia": "2.3.1",
     "prismjs": "1.30.0",
     "roboto-fontface": "0.10.0",
