@@ -130,8 +130,8 @@ importers:
         specifier: 5.1.0
         version: 5.1.0(@vue/compiler-sfc@3.5.38)(pinia@2.3.1(typescript@5.7.2)(vue@3.5.38(typescript@5.7.2)))(vite@6.4.3(@types/node@22.19.21)(sass@1.100.0)(tsx@4.22.4)(yaml@2.9.0))(vue@3.5.38(typescript@5.7.2))
       vue3-apexcharts:
-        specifier: 1.8.0
-        version: 1.8.0(apexcharts@3.54.1)(vue@3.5.38(typescript@5.7.2))
+        specifier: 1.11.1
+        version: 1.11.1(apexcharts@3.54.1)(vue@3.5.38(typescript@5.7.2))
       vue3-perfect-scrollbar:
         specifier: 2.0.0
         version: 2.0.0(vue@3.5.38(typescript@5.7.2))
@@ -5297,10 +5297,10 @@ packages:
     peerDependencies:
       typescript: '>=5.0.0'
 
-  vue3-apexcharts@1.8.0:
-    resolution: {integrity: sha512-5tSD4mXTBbIJ9ir+58qHE6oNtIe0RNgqIRYMKpcsIaxkKtwUww4JhvPkpUFlmiW4OJbbdklgjleXq1lfcM4gdA==}
+  vue3-apexcharts@1.11.1:
+    resolution: {integrity: sha512-MbN3vg8bMG19wc0Lm1HkeQvODgLm56DgpIxtNUO0xpf/JCzYWVGE4jzXp2JISzy2s3Kul1yOxNQUYsLvKQ5L9g==}
     peerDependencies:
-      apexcharts: '>=4.0.0'
+      apexcharts: '>=5.10.0'
       vue: '>=3.0.0'
 
   vue3-perfect-scrollbar@2.0.0:
@@ -11032,7 +11032,7 @@ snapshots:
       '@vue/language-core': 2.2.12(typescript@5.7.2)
       typescript: 5.7.2
 
-  vue3-apexcharts@1.8.0(apexcharts@3.54.1)(vue@3.5.38(typescript@5.7.2)):
+  vue3-apexcharts@1.11.1(apexcharts@3.54.1)(vue@3.5.38(typescript@5.7.2)):
     dependencies:
       apexcharts: 3.54.1
       vue: 3.5.38(typescript@5.7.2)
