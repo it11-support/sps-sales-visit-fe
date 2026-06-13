@@ -21,7 +21,7 @@ watch(
 </script>
 
 <template>
-  <IconBtn color="rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity))">
+  <IconBtn color="rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity))">
     <VIcon :icon="props.themes.find(t => t.name === configStore.theme)?.icon" />
 
     <VTooltip

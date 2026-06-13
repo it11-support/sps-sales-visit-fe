@@ -48,7 +48,7 @@ $header: ".layout-navbar";
 
   // Vertical Nav
   .layout-vertical-nav {
-    border-inline-end: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-inline-end: thin solid rgb(var(--v-border-color), var(--v-border-opacity));
   }
 
   // Expansion Panels
@@ -58,7 +58,7 @@ $header: ".layout-navbar";
     }
 
     .v-expansion-panel {
-      border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+      border: 1px solid rgb(var(--v-border-color), var(--v-border-opacity));
 
       &:not(:last-child) {
         margin-block-end: -1px;

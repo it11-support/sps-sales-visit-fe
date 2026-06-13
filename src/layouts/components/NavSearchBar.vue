@@ -245,7 +245,7 @@ const LazyAppBarSearch = defineAsyncComponent(() => import('@core/components/App
 @use "@styles/variables/vuetify.scss";
 
 .meta-key {
-  border: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border: thin solid rgb(var(--v-border-color), var(--v-border-opacity));
   border-radius: 6px;
   block-size: 1.5625rem;
   font-size: 0.8125rem;

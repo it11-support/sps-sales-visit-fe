@@ -10,7 +10,7 @@ import Summary from '@/views/pages/analytic/Summary.vue';
     :items="[
       {
         title: 'Home',
-        to : { name: '' },
+        to : { name: 'root' },
         class: 'text-primary'
       },
     ]"

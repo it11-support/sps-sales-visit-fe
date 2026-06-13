@@ -5,7 +5,7 @@
 .layout-nav-type-vertical {
   // 👉 Layout Vertical nav
   .layout-vertical-nav {
-    color: rgba(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
+    color: rgb(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
 
     @include mixins.elevation(4);
 

@@ -36,7 +36,7 @@ watch(buyNowUrl, val => {
   appearance: none;
   background: linear-gradient(-45deg, #ffa63d, #ff3d77, #338aff, #3cf0c5);
   background-size: 600%;
-  color: rgba(255, 255, 255, 90%);
+  color: rgb(255, 255, 255, 90%);
   cursor: pointer;
   font-size: 0.9375rem;
   font-weight: 500;

@@ -42,7 +42,7 @@
 @media (min-width: 960px) {
   .skin--bordered {
     .auth-card-v2 {
-      border-inline-start: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+      border-inline-start: 1px solid rgb(var(--v-border-color), var(--v-border-opacity)) !important;
     }
   }
 }

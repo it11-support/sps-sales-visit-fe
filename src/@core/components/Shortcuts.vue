@@ -91,6 +91,6 @@ const router = useRouter()
 
 <style lang="scss">
 .shortcut-icon:hover {
-  background-color: rgba(var(--v-theme-on-surface), var(--v-hover-opacity));
+  background-color: rgb(var(--v-theme-on-surface), var(--v-hover-opacity));
 }
 </style>

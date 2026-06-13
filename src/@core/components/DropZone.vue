@@ -127,6 +127,6 @@ useDropZone(dropZoneRef, onDrop)
 
 <style lang="scss" scoped>
 .drop-zone {
-  border: 1px dashed rgba(var(--v-theme-on-surface), var(--v-border-opacity));
+  border: 1px dashed rgb(var(--v-theme-on-surface), var(--v-border-opacity));
 }
 </style>

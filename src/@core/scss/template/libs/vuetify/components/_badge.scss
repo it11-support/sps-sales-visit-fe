@@ -17,7 +17,7 @@
   &.v-badge--tonal {
     @each $color-name in variables.$theme-colors-name {
       .v-badge__badge.bg-#{$color-name} {
-        background-color: rgba(var(--v-theme-#{$color-name}), 0.16) !important;
+        background-color: rgb(var(--v-theme-#{$color-name}), 0.16) !important;
         color: rgb(var(--v-theme-#{$color-name})) !important;
       }
     }

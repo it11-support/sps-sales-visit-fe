@@ -135,8 +135,8 @@ const handleRefresh = (stopLoading: () => void) => {
         v-model:page="page"
         v-model:items-per-page="itemsPerPage" 
         v-model:selected-rows="selectedRows"
-        v-model:on-update-options="updateOptions" 
-        v-model:on-update-selected-rows="updateSelectedRows"
+        @update:options="updateOptions" 
+        @update:selected-rows="updateSelectedRows"
         :grouped="false" 
       />
     </AppCardActions>

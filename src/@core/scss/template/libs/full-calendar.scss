@@ -1,7 +1,7 @@
 /* stylelint-disable no-duplicate-selectors */
 /* stylelint-disable no-descending-specificity */
 @use "@core/scss/base/mixins";
-@use "@styles/variables/vuetify.scss";
+@use "@styles/variables/vuetify";
 
 .calendar-add-event-drawer {
   .v-navigation-drawer__content {
@@ -10,10 +10,10 @@
 }
 
 body .fc {
-  --fc-today-bg-color: rgba(var(--v-theme-on-surface), var(--v-hover-opacity));
-  --fc-border-color: rgba(var(--v-border-color), var(--v-border-opacity));
+  --fc-today-bg-color: rgb(var(--v-theme-on-surface), var(--v-hover-opacity));
+  --fc-border-color: rgb(var(--v-border-color), var(--v-border-opacity));
   --fc-neutral-bg-color: rgb(var(--v-theme-background));
-  --fc-list-event-hover-bg-color: rgba(var(--v-theme-on-surface), 0.02);
+  --fc-list-event-hover-bg-color: rgb(var(--v-theme-on-surface), 0.02);
   --fc-page-bg-color: rgb(var(--v-theme-surface));
   --fc-event-border-color: currentcolor;
 
@@ -38,7 +38,7 @@ body .fc {
   }
 
   .fc-day-other .fc-daygrid-day-top {
-    color: rgba(var(--v-theme-on-surface), var(--v-disabled-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-disabled-opacity));
     opacity: 1;
   }
 
@@ -47,7 +47,7 @@ body .fc {
   }
 
   .fc-col-header-cell-cushion {
-    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
     font-size: 0.9375rem;
     font-weight: 500;
     line-height: 1.375rem;
@@ -55,7 +55,7 @@ body .fc {
 
   .fc-toolbar-title {
     display: inline-block;
-    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
     font-size: clamp(1.1rem, 2.5vw, 1.5rem);
     font-weight: 500;
     line-height: 38px;
@@ -134,14 +134,14 @@ body .fc {
     font-size: 0.8125rem;
 
     .fc-list-day-cushion.fc-cell-shaded {
-      background-color: rgba(var(--v-theme-on-surface), var(--v-hover-opacity));
-      color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+      background-color: rgb(var(--v-theme-on-surface), var(--v-hover-opacity));
+      color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
       font-weight: 500;
     }
 
     .fc-list-event-time,
     .fc-list-event-title {
-      color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+      color: rgb(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
       font-size: 0.9375rem;
     }
 
@@ -153,18 +153,18 @@ body .fc {
     }
 
     .fc-list-table {
-      border-block-end: 1px solid rgba(var(--v-theme-on-surface));
+      border-block-end: 1px solid rgb(var(--v-theme-on-surface));
     }
   }
 
   .fc-timegrid-axis {
-    color: rgba(var(--v-theme-on-surface), var(--v-disabled-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-disabled-opacity));
     font-size: 0.8125rem;
     text-transform: capitalize;
   }
 
   .fc-timegrid-slot-label-frame {
-    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+    color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
     font-size: 0.8125rem;
     text-align: center;
     text-transform: uppercase;
@@ -188,7 +188,7 @@ body .fc {
         &:not(.disabled):active {
           border-color: transparent;
           background-color: transparent;
-          color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+          color: rgb(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
         }
 
         &:focus {
@@ -203,7 +203,7 @@ body .fc {
 
         .fc-button,
         .fc-button:active {
-          background-color: rgba(var(--v-theme-primary), 0.16);
+          background-color: rgb(var(--v-theme-primary), 0.16);
           color: rgb(var(--v-theme-primary));
           font-size: 0.9375rem;
           font-weight: 500;
@@ -212,11 +212,11 @@ body .fc {
           text-transform: capitalize;
 
           &:not(:last-child) {
-            border-inline-end: 0.0625rem solid rgba(var(--v-theme-primary), var(--v-border-opacity));
+            border-inline-end: 0.0625rem solid rgb(var(--v-theme-primary), var(--v-border-opacity));
           }
 
           &.fc-button-active {
-            background-color: rgba(var(--v-theme-primary), 0.24);
+            background-color: rgb(var(--v-theme-primary), 0.24);
             color: rgb(var(--v-theme-primary));
           }
         }
@@ -306,7 +306,7 @@ body .fc {
       // ℹ️ Below two `background-image` styles contains static color due to browser limitation of not parsing the css var inside CSS url()
       .fc-drawerToggler-button {
         display: none;
-        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' stroke='rgba(47,43,61,0.9)' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round' class='css-i6dzq1'%3E%3Cpath d='M3 12h18M3 6h18M3 18h18'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' stroke='rgb(47,43,61,0.9)' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round' class='css-i6dzq1'%3E%3Cpath d='M3 12h18M3 6h18M3 18h18'/%3E%3C/svg%3E");
         background-position: 50%;
         background-repeat: no-repeat;
         block-size: 1.5625rem;
@@ -343,9 +343,9 @@ body .fc {
 }
 
 .v-theme--dark .fc .fc-toolbar-chunk .fc-button-group .fc-drawerToggler-button {
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' stroke='rgba(225,222,245,0.9)' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round' class='css-i6dzq1'%3E%3Cpath d='M3 12h18M3 6h18M3 18h18'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' stroke='rgb(225,222,245,0.9)' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round' class='css-i6dzq1'%3E%3Cpath d='M3 12h18M3 6h18M3 18h18'/%3E%3C/svg%3E");
 }
 
 .v-theme--dark .fc .fc-toolbar-chunk .fc-button-group .fc-drawerToggler-button {
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' stroke='rgba(232,232,241,0.68)' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round' class='css-i6dzq1'%3E%3Cpath d='M3 12h18M3 6h18M3 18h18'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' stroke='rgb(232,232,241,0.68)' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round' class='css-i6dzq1'%3E%3Cpath d='M3 12h18M3 6h18M3 18h18'/%3E%3C/svg%3E");
 }

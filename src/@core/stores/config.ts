@@ -86,16 +86,16 @@ export const initConfigStore = () => {
   watch(
     [() => configStore.theme, userPreferredColorScheme],
     () => {
-      vuetifyTheme.global.name.value = configStore.theme === 'system'
-        ? userPreferredColorScheme.value === 'dark'
-          ? 'dark'
-          : 'light'
-        : configStore.theme
+       const targetTheme = configStore.theme === 'system'
+      ? (userPreferredColorScheme.value === 'dark' ? 'dark' : 'light')
+      : configStore.theme;
+
+      vuetifyTheme.change(targetTheme);
     })
 
   onMounted(() => {
     if (configStore.theme === 'system')
-      vuetifyTheme.global.name.value = userPreferredColorScheme.value
+      vuetifyTheme.change(userPreferredColorScheme.value)
   })
 }
 // !SECTION
