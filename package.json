@@ -17,7 +17,7 @@
     "@casl/ability": "7.0.0",
     "@casl/vue": "3.0.0",
     "@floating-ui/dom": "1.7.6",
-    "@formkit/drag-and-drop": "0.5.3",
+    "@formkit/drag-and-drop": "0.6.1",
     "@sindresorhus/is": "7.2.0",
     "@tiptap/extension-highlight": "^2.27.2",
     "@tiptap/extension-image": "^2.27.2",
