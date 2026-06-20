@@ -254,8 +254,8 @@ importers:
         specifier: 1.10.0
         version: 1.10.0(eslint@10.5.0)
       eslint-plugin-sonarjs:
-        specifier: 4.0.3
-        version: 4.0.3(eslint@10.5.0)
+        specifier: 4.1.0
+        version: 4.1.0(eslint@10.5.0)
       eslint-plugin-unicorn:
         specifier: 65.0.1
         version: 65.0.1(eslint@10.5.0)
@@ -2439,8 +2439,8 @@ packages:
     resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
     engines: {node: '>=6'}
 
-  builtin-modules@5.0.0:
-    resolution: {integrity: sha512-bkXY9WsVpY7CvMhKSR6pZilZu9Ln5WDrKVBUXf2S443etkmEO4V58heTecXcUIsNsi4Rx8JUO4NfX1IcQl4deg==}
+  builtin-modules@5.2.0:
+    resolution: {integrity: sha512-02yxLeyxF4dNl6SlY6/5HfRSrSdZ/sCPoxy2kZNP5dZZX8LSAD9aE2gtJIUgWrsQTiMPl3mxESyrobSwvRGisQ==}
     engines: {node: '>=18.20'}
 
   bundle-name@4.1.0:
@@ -3072,8 +3072,8 @@ packages:
     peerDependencies:
       eslint: '>=9.38.0'
 
-  eslint-plugin-sonarjs@4.0.3:
-    resolution: {integrity: sha512-5drkJKLC9qQddIiaATV0e8+ygbUc7b0Ti6VB7M2d3jmKNh3X0RaiIJYTs3dr9xnlhlrxo+/s1FoO3Jgv6O/c7g==}
+  eslint-plugin-sonarjs@4.1.0:
+    resolution: {integrity: sha512-rh+FlVz0yfd2RNIb6WqSkuGh0addX/Qi5scwQ5FphXDFrM6fZKcxP1+attJ78yUKcyYfiu6MTaISPpAFPzqRJw==}
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0 || ^10.0.0
 
@@ -6928,7 +6928,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.61.0
       debug: 4.4.3
       minimatch: 10.2.5
-      semver: 7.8.4
+      semver: 7.8.5
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@5.9.3)
       typescript: 5.9.3
@@ -6943,7 +6943,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.61.1
       debug: 4.4.3
       minimatch: 10.2.5
-      semver: 7.8.4
+      semver: 7.8.5
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@5.9.3)
       typescript: 5.9.3
@@ -7516,7 +7516,7 @@ snapshots:
 
   builtin-modules@3.3.0: {}
 
-  builtin-modules@5.0.0: {}
+  builtin-modules@5.2.0: {}
 
   bundle-name@4.1.0:
     dependencies:
@@ -8027,7 +8027,7 @@ snapshots:
   eslint-compat-utils@0.5.1(eslint@10.5.0):
     dependencies:
       eslint: 10.5.0
-      semver: 7.8.4
+      semver: 7.8.5
 
   eslint-config-airbnb-base@15.0.0(eslint-plugin-import@2.32.0)(eslint@10.5.0):
     dependencies:
@@ -8283,7 +8283,7 @@ snapshots:
       regexp-ast-analysis: 0.7.1
       scslre: 0.3.0
 
-  eslint-plugin-sonarjs@4.0.3(eslint@10.5.0):
+  eslint-plugin-sonarjs@4.1.0(eslint@10.5.0):
     dependencies:
       '@eslint-community/regexpp': 4.12.2
       builtin-modules: 3.3.0
@@ -8295,9 +8295,10 @@ snapshots:
       lodash.merge: 4.6.2
       minimatch: 10.2.5
       scslre: 0.3.0
-      semver: 7.8.4
+      semver: 7.8.5
       ts-api-utils: 2.5.0(typescript@5.9.3)
       typescript: 5.9.3
+      yaml: 2.9.0
 
   eslint-plugin-toml@1.4.0(eslint@10.5.0):
     dependencies:
@@ -8850,11 +8851,11 @@ snapshots:
 
   is-builtin-module@5.0.0:
     dependencies:
-      builtin-modules: 5.0.0
+      builtin-modules: 5.2.0
 
   is-bun-module@2.0.0:
     dependencies:
-      semver: 7.8.4
+      semver: 7.8.5
 
   is-callable@1.2.7: {}
 
@@ -9007,13 +9008,13 @@ snapshots:
       acorn: 8.17.0
       eslint-visitor-keys: 3.4.3
       espree: 9.6.1
-      semver: 7.8.4
+      semver: 7.8.5
 
   jsonc-eslint-parser@3.1.0:
     dependencies:
       acorn: 8.17.0
       eslint-visitor-keys: 5.0.1
-      semver: 7.8.4
+      semver: 7.8.5
 
   jsonfile@6.2.1:
     dependencies:
