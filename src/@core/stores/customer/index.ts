@@ -9,7 +9,7 @@ interface Meta {
   total: number
 }
 
-export interface Filters {
+export interface CustomerFilters {
   search?: string
   status?: string
   sales_person_id: number[]
@@ -57,7 +57,8 @@ export const useCustomerStore = defineStore('customer', {
     filters: {
       search: '',
       status: undefined,
-      sales_person_id: [],
+      sales_person_id: [] as number[],
+      team_id: undefined,
       group_name: undefined,
       payment_term: undefined,
       price_list: undefined,
@@ -67,8 +68,8 @@ export const useCustomerStore = defineStore('customer', {
       sort_options: [],
       hideZeroInvoice: false,
       dormantMonth: undefined,
-      companyIds: [COMPANIES.SPS]
-    } as Filters,
+      companyIds: [COMPANIES.SPS] as string[]
+    } as CustomerFilters,
   }),
 
   actions: {
@@ -169,36 +170,43 @@ export const useCustomerStore = defineStore('customer', {
       this.isReady = true
     },
     updateSortOptions(options: any) {
-      if (!this.isReady) return;
+      if (!this.isReady) return
 
-      // Update page, perPage, dan sort secara bersamaan
+      const sortOptions = options.sortBy.map((s: any) => ({
+        key: s.key,
+        order: s.order,
+      }))
+
+      if (
+        this.filters.page === options.page &&
+        this.filters.per_page === options.itemsPerPage &&
+        JSON.stringify(this.filters.sort_options) === JSON.stringify(sortOptions)
+      ) return
+
       this.updateFilters({
         page: options.page,
         per_page: options.itemsPerPage,
-        sort_options: options.sortBy.map((s: any) => ({
-          key: s.key,
-          order: s.order,
-        })),
-      });
+        sort_options: sortOptions,
+      })
     },
 
-    async updateFilters(newFilters: Partial<Filters>, shouldFetch = true) {
+    async updateFilters(newFilters: Partial<CustomerFilters>, shouldFetch = true) {
       this.filters = {
         ...this.filters,
         ...newFilters
       }
       if (shouldFetch) {
-        this.fetchCustomers()
+        await this.fetchCustomers()
       }
     },
 
     setPage(page: number) {
-     this.updateFilters({page})
+      this.updateFilters({page})
     },
 
     setPerpage(perpage: number) {
-      this.pagination.per_page = perpage
-      this.updateFilters({per_page: perpage})
+        this.pagination.per_page = perpage
+        this.updateFilters({per_page: perpage})
     },
 
     setSelectedRows(rows: ICustomerData[]) {

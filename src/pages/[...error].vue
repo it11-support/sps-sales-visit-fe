@@ -4,6 +4,10 @@ import misc404 from '@images/pages/404.png'
 import miscMaskDark from '@images/pages/misc-mask-dark.png'
 import miscMaskLight from '@images/pages/misc-mask-light.png'
 
+import { useDisplay } from 'vuetify'
+
+const { smAndDown } = useDisplay()
+
 const authThemeMask = useGenerateImageVariant(miscMaskLight, miscMaskDark)
 
 definePage({
@@ -35,7 +39,7 @@ definePage({
       <VImg
         :src="misc404"
         alt="error 404"
-        :max-height="$vuetify.display.smAndDown ? 350 : 500"
+        :max-height="smAndDown ? 350 : 500"
         class="mx-auto"
       />
     </div>
@@ -50,5 +54,5 @@ definePage({
 </template>
 
 <style lang="scss">
-@use "@core/scss/template/pages/misc.scss";
+@use "@core/scss/template/pages/misc";
 </style>

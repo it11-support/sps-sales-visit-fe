@@ -2,9 +2,10 @@
 import AppAutocomplete from '@/@core/components/app-form-elements/AppAutocomplete.vue'
 import AppStepper from '@/@core/components/AppStepper.vue'
 import { MissingProduct, useActivityStore, useConfigStore, useProductStore, useStatisticStore } from '@/@core/stores'
-import { ICompetitor } from '@/@core/typedefs'
+import { ICompetitor, ICompetitorOption } from '@/@core/typedefs'
 import { VWindow } from 'vuetify/components'
 import { VForm } from 'vuetify/components/VForm'
+import { unref } from 'vue'
 import CheckIn from './CheckIn.vue'
 
 const statStore = useStatisticStore()
@@ -266,32 +267,35 @@ watch(
   { deep: true }
 )
 
-const computedItems = computed<ICompetitor[]>(() => {
-  const baseItems = activityStore.allCompetitorOptions
+const computedItems = computed<ICompetitorOption[]>(() => {
+   const baseItems = activityStore.allCompetitorOptions
+   const items = unref(baseItems) ?? []
 
-  const trimmed = search.value.trim()
+   const trimmed = search.value.trim()
 
-  if (!trimmed || isSelecting.value) return baseItems
+   if (!trimmed || isSelecting.value) return items
 
-  const exists = (baseItems ?? []).some(item =>
-    item.name.toLowerCase() === trimmed.toLowerCase()
-  )
+   const exists = items.some(item =>
+     item.name.toLowerCase() === trimmed.toLowerCase()
+   )
 
-  if (!exists) {
-    return [
-      ...baseItems,
-      {
-        id: `new-${trimmed}`,
-        name: `+ Add "${trimmed}"`,
-        address: '',
-        isNew: true,
-        rawName: trimmed,
-      }
-    ]
-  }
+   if (!exists) {
+     return [
+       ...items,
+       {
+         id: `new-${trimmed}`,
+         value: `new-${trimmed}`,
+         title: `+ Add "${trimmed}"`,
+         name: `+ Add "${trimmed}"`,
+         address: '',
+         isNew: true,
+         rawName: trimmed,
+       }
+     ]
+   }
 
-  return baseItems
-})
+   return items
+ })
 
 const onProductSearch = (val: string) => {
   searchProduct.value = val
@@ -361,33 +365,35 @@ const handleCheckOut = async() => {
   configStore.overlay = false
 }
 
-const onSelect = (val: ICompetitor, index: number) => {
+const onSelect = (val: ICompetitorOption, index: number) => {
 
-  isSelecting.value = true
-  const newName = val.name.split(' - ')[0]
+   isSelecting.value = true
+   const newName = val.name.split(' - ')[0]
 
-  if (val?.isNew) {
-    const newItem: ICompetitor = {
-      id: Date.now(),
-      name: val.rawName || val.name,
-      address: '',
-      product: '',
-      price: undefined,
-      qty: undefined,
-      isNew: true,
-    }
+   if (val?.isNew) {
+     const newItem: ICompetitorOption = {
+       id: Date.now(),
+       value: Date.now(),
+       title: val.rawName || val.name,
+       name: val.rawName || val.name,
+       address: '',
+       product: '',
+       price: undefined,
+       qty: undefined,
+       isNew: true,
+     }
 
-    activityStore.competitorOptions.push(newItem)
-    competitors[index] = { ...newItem, product: '', qty: undefined, price: undefined }
-  } else {
-    competitors[index] = { ...val, name: newName,  product: '', qty: undefined, price: undefined }
-  }
+     activityStore.competitorOptions.push(newItem)
+     competitors[index] = { ...newItem, product: '', qty: undefined, price: undefined }
+   } else {
+     competitors[index] = { ...val, name: newName,  product: '', qty: undefined, price: undefined }
+   }
 
-  nextTick(() => {
-    search.value = ''
-    isSelecting.value = false
-  })
-}
+   nextTick(() => {
+     search.value = ''
+     isSelecting.value = false
+   })
+ }
 
 const showButton = computed(() => {
   return activityPurposeReport?.value.activity_purposes && activityPurposeReport?.value.activity_purposes.length > 0
@@ -728,14 +734,14 @@ const handleRemoveImage = () => {
                           :return-object="true"
                           label="Competitors"
                           placeholder="Competitors"
-                          @update:model-value="val => {
-                            if(!val) {
-                              activityStore.currentReport.competitors[index] = {name: '', address: '', product: '', price: undefined, qty: undefined}
-                            } else { 
-                              onSelect(val, index)
-                              isSelecting = true
-                            }               
-                          }"
+@update:model-value="val => {
+                             if(!val) {
+                               activityStore.currentReport.competitors[index] = {name: '', address: '', product: '', price: undefined, qty: undefined}
+                             } else { 
+                               onSelect(val as ICompetitorOption, index)
+                               isSelecting = true
+                             }               
+                           }"
                           @update:search="val => {
                             search = val
                             isSelecting = false

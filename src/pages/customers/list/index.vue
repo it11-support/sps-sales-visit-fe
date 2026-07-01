@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Filters, useCustomerStore } from '@/@core/stores/customer'
+import { CustomerFilters, useCustomerStore } from '@/@core/stores/customer'
 import { useSalesPersonStore } from '@/@core/stores/sales-person'
 import { ISalesPerson } from '@/@core/typedefs'
 
@@ -39,7 +39,7 @@ const loadingPaymentOptions = ref(true)
 const loadingPriceListOptions = ref(true)
 const loadingCityOptions = ref(true)
 
-const filters = ref<Partial<Filters>>({
+const filters = ref<Partial<CustomerFilters>>({
   sales_person_id: [],
   group_name: null,
   payment_term: null,
@@ -69,12 +69,32 @@ const headers = [
   // { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-customerStore.$reset()
-salesStore.$reset()
+const userCompanies = computed<string[]>(() => {
+  const salesPersons = user.value?.sales_person as ISalesPerson[] | undefined
+  if (!salesPersons) return []
+  return Array.from(new Set(salesPersons.map((sp) => sp.CompanyId)))
+})
+
+const disabledCompanies = computed<string[]>(() => {
+  return [COMPANIES.SPS, COMPANIES.BBS].filter(c => !userCompanies.value.includes(c))
+})
 
 onMounted(async() => {
+  customerStore.$reset()
+  salesStore.$reset()
+
+  // For non-admin users (including spv), set companyIds based on their accessible companies
+  if (!isAdmin.value && userCompanies.value.length > 0) {
+    const hasBoth = userCompanies.value.includes(COMPANIES.SPS) && userCompanies.value.includes(COMPANIES.BBS)
+    customerStore.updateFilters({ 
+      companyIds: hasBoth ? [COMPANIES.SPS] : userCompanies.value 
+    }, false)
+  }
+
+  // Use userCompanies directly since it's computed from cookie and already available
+  const userCompanyIds = userCompanies.value
   const ids = !isAdmin.value ? user.value.sales_person
-      .filter((sp: ISalesPerson) => selectedCompanies.value.includes(sp.CompanyId))
+      .filter((sp: ISalesPerson) => userCompanyIds.includes(sp.CompanyId))
       .map((sp: ISalesPerson) => sp.id) : []
 
   if(isAdmin.value) {
@@ -132,7 +152,7 @@ const dormantOptions = [
 
 // Delete customer method
 const deleteCustomer = async (id: string) => {
-  await useApi<any>(createUrl(`customer/${id}`), {
+  await useApi<any>(`/customer/${id}`, {
     method: 'DELETE',
   })
   deleteModal.value = false
@@ -145,16 +165,14 @@ const deleteCustomer = async (id: string) => {
 }
 
 const updateSelected = (val: string) => {
-  const selectedCompanies = customerStore.filters.companyIds ?? []
+  const currentCompanies = customerStore.filters.companyIds ?? []
 
   let newValue: string[]
 
-  if (selectedCompanies.includes(val)) {
-    // hapus val
-    newValue = selectedCompanies.filter(item => item !== val)
+  if (currentCompanies.includes(val)) {
+    newValue = currentCompanies.filter(item => item !== val)
   } else {
-    // tambah val
-    newValue = [...selectedCompanies, val]
+    newValue = [...currentCompanies, val]
   }
 
   customerStore.updateFilters({ companyIds: newValue })
@@ -167,7 +185,7 @@ const selectedCompanies = computed<string[]>({
   set(val) {
     const current = customerStore.filters.companyIds ?? []
     if (JSON.stringify(current) === JSON.stringify(val)) return
-    customerStore.updateFilters({ companyIds: val.length ? val : undefined })
+    customerStore.updateFilters({ companyIds: val.length ? val : undefined }, isAdmin.value || isSpv.value)
   }
 })
 
@@ -192,7 +210,7 @@ watch(
       sales_person_id: finalSalesPersonIds,
     })
   },
-  { deep: true, immediate: true }
+  { deep: true }
 )
 watch(selectedCompanies, 
   (val, val1) => {
@@ -223,32 +241,34 @@ watch(selectedCompanies,
     <VCard class="mb-6">
       <VCardItem class="pb-4">
         <VRow class="d-flex align-center">
-          <VCol cols="12" class="d-flex flex-wrap align-center">
-            <!-- Show Filters -->
-            <VCheckbox 
-              v-model="showFilter" 
-              label="Show Filters"
-              hide-details
-              class="mr-6"             
-            />
-            <!-- Company -->
-            <label class="mr-4 pl-4">Company: </label>
-            <div class="d-flex flex-wrap">
-              <VCheckbox
-                v-model="selectedCompanies"
-                :label="COMPANIES.SPS"
-                :value="COMPANIES.SPS"
-                hide-details          
-                class="mr-4"                
-              />
-              <VCheckbox
-                v-model="selectedCompanies"
-                :label="COMPANIES.BBS"
-                :value="COMPANIES.BBS"
-                hide-details               
-              />
-            </div>
-          </VCol>
+<VCol cols="12" class="d-flex flex-wrap align-center">
+             <!-- Show Filters -->
+             <VCheckbox 
+               v-model="showFilter" 
+               label="Show Filters"
+               hide-details
+               class="mr-6"             
+             />
+<!-- Company - Show for admin or if user has access to multiple companies -->
+              <template v-if="isAdmin || userCompanies.length > 1">
+                <label class="mr-4 pl-4">Company: </label>
+                <div class="d-flex flex-wrap">
+                  <VCheckbox
+                    v-model="selectedCompanies"
+                    :label="COMPANIES.SPS"
+                    :value="COMPANIES.SPS"
+                    hide-details          
+                    class="mr-4"
+                  />
+                  <VCheckbox
+                    v-model="selectedCompanies"
+                    :label="COMPANIES.BBS"
+                    :value="COMPANIES.BBS"
+                    hide-details
+                  />
+                </div>
+              </template>
+           </VCol>
         </VRow>
       </VCardItem>
       <VCardText v-if="showFilter">

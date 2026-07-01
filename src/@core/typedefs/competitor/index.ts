@@ -9,3 +9,8 @@ export interface ICompetitor {
   isNew?: boolean
   rawName?: string
 }
+
+export interface ICompetitorOption extends ICompetitor {
+  value: string | number | undefined
+  title: string
+}

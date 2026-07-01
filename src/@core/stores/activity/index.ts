@@ -1,4 +1,4 @@
-import { IActivity, IActivityReport, ICompetitor, ICustomerData, IProduct, IReasonQtyDrop, SortItem } from "@/@core/types"
+import { IActivity, IActivityReport, ICompetitor, ICompetitorOption, ICustomerData, IProduct, IReasonQtyDrop, SortItem } from "@/@core/types"
 import dayjs from "dayjs"
 import { useStatisticStore } from "../statistic"
 
@@ -70,8 +70,8 @@ export const useActivityStore = defineStore('activity', {
     activityReport: {} as IActivityReport,
     activeTab: 'SPS' as string,
     customers: [] as ICustomerData[],
-    allCompetitorOptions: ref<ICompetitor[]>([]),
-    competitorOptions: ref<ICompetitor[]>([])
+    allCompetitorOptions: [] as ICompetitorOption[],
+    competitorOptions: [] as ICompetitorOption[],
   }),
    getters: {
     currentReport(state): IActivityReport {
@@ -385,15 +385,17 @@ export const useActivityStore = defineStore('activity', {
         }
       });
 
-      this.allCompetitorOptions = Array.from(uniqueCompetitors.values()).map((competitor: ICompetitor) => ({
-        value: competitor.id,
-        title: `${competitor.name}`,
-        name: `${competitor.name} - ${competitor.address}`,
-        address: competitor.address,
-        product: competitor.product,
-        price: competitor.price,
-        qty: competitor.qty
-      }));
+      this.allCompetitorOptions = Array.from(uniqueCompetitors.values()).map(
+        (competitor): ICompetitorOption => ({
+          value: competitor.id,
+          title: competitor.name,
+          name: `${competitor.name} - ${competitor.address}`,
+          address: competitor.address,
+          product: competitor.product,
+          price: competitor.price,
+          qty: competitor.qty,
+        })
+      );
 
 
       this.reasonQtyDropOptions = competitorsData.value.data.reasonQtyDrops.map((reason: IReasonQtyDrop) => ({
@@ -616,16 +618,26 @@ export const useActivityStore = defineStore('activity', {
       }
     },
     addCompetitor(competitor: ICompetitor) {
-      const report = this.currentReport
+       const report = this.currentReport
 
-      if (!report.competitors.some(c => c.name === competitor.name)) {
-        report.competitors.push(competitor)
-      }
+       if (!report.competitors.some(c => c.name === competitor.name)) {
+         report.competitors.push(competitor)
+       }
 
-      if (!this.allCompetitorOptions.some(opt => opt.name === competitor.name)) {
-        this.allCompetitorOptions.push(competitor)
-      }
-    },
+       const option: ICompetitorOption = {
+         value: competitor.id,
+         title: competitor.name,
+         name: competitor.name,
+         address: competitor.address,
+         product: competitor.product,
+         price: competitor.price,
+         qty: competitor.qty
+       }
+
+       if (!this.allCompetitorOptions.some(opt => opt.name === competitor.name)) {
+         this.allCompetitorOptions.push(option)
+       }
+     },
     async checkActiveVisit(itemId: number) {
       
       this.loadingId = itemId

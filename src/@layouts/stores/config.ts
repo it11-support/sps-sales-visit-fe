@@ -67,25 +67,32 @@ export const useLayoutConfigStore = defineStore('layoutConfig', () => {
     },
   })
 
+  const { y: windowScrollY } = useWindowScroll()
+
   // 👉 Layout Classes
   const _layoutClasses = computed(() => {
-    const { y: windowScrollY } = useWindowScroll()
-
     return [
       `layout-nav-type-${appContentLayoutNav.value}`,
       `layout-navbar-${navbarType.value}`,
       `layout-footer-${footerType.value}`,
       {
         'layout-vertical-nav-collapsed':
-          isVerticalNavCollapsed.value
-          && appContentLayoutNav.value === 'vertical'
-          && !isLessThanOverlayNavBreakpoint.value,
+          isVerticalNavCollapsed.value &&
+          appContentLayoutNav.value === 'vertical' &&
+          !isLessThanOverlayNavBreakpoint.value,
       },
-      { [`horizontal-nav-${horizontalNavType.value}`]: appContentLayoutNav.value === 'horizontal' },
+      {
+        [`horizontal-nav-${horizontalNavType.value}`]:
+          appContentLayoutNav.value === 'horizontal',
+      },
       `layout-content-width-${appContentWidth.value}`,
-      { 'layout-overlay-nav': isLessThanOverlayNavBreakpoint.value },
-      { 'window-scrolled': unref(windowScrollY) },
-      route.meta.layoutWrapperClasses ? route.meta.layoutWrapperClasses : null,
+      {
+        'layout-overlay-nav': isLessThanOverlayNavBreakpoint.value,
+      },
+      {
+        'window-scrolled': windowScrollY.value > 0,
+      },
+      route.meta.layoutWrapperClasses ?? null,
     ]
   })
 
