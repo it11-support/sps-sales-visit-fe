@@ -59,7 +59,7 @@
     "webfontloader": "1.6.28"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^9.0.0",
+    "@antfu/eslint-config": "^9.1.0",
     "@antfu/utils": "9.3.0",
     "@fullcalendar/core": "6.1.21",
     "@fullcalendar/daygrid": "6.1.21",
