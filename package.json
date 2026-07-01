@@ -75,7 +75,7 @@
     "@iconify/vue": "5.0.1",
     "@intlify/unplugin-vue-i18n": "11.2.4",
     "@stylistic/stylelint-config": "5.0.0",
-    "@stylistic/stylelint-plugin": "5.2.0",
+    "@stylistic/stylelint-plugin": "5.2.1",
     "@tiptap/extension-character-count": "^2.27.2",
     "@tiptap/extension-placeholder": "^2.27.2",
     "@tiptap/extension-subscript": "^2.27.2",
