@@ -561,17 +561,29 @@ export const useActivityStore = defineStore('activity', {
     clearSelectedRows() {
       this.selectedRows = []
     },
-    async fetchSalesPersonOptions() {
+    async fetchSalesPersonOptions(teamId?: number) {
       this.loading = true
-      const url = createUrl(`activity/get-filters`)
+      const url = createUrl(`activity/get-filters`, {
+        query: {
+          team_id: teamId,
+        },
+      })
       const { data: salesPersonsData, error } = await useApi<any>(url)
       if (error.value) {
         console.error('Error fetching sales person options:', error.value)
         return
       }
 
+      const salesPersons = teamId
+        ? salesPersonsData.value.data.salesPersons.filter((item: any) => {
+          const users = Array.isArray(item.user) ? item.user : item.user ? [item.user] : []
+
+          return users.some((user: any) => Number(user.team_id) === Number(teamId))
+        })
+        : salesPersonsData.value.data.salesPersons
+
       const distinctSalesPersons = Object.values(
-        salesPersonsData.value.data.salesPersons.reduce((acc: any, item: any) => {
+        salesPersons.reduce((acc: any, item: any) => {
           acc[item.SlpName] = item;
           return acc;
         }, {})
