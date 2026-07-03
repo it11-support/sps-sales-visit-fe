@@ -24,7 +24,7 @@ const isSpv = computed(() => {
     return false
   }
 })
-const canFilterSalesPerson = computed(() => isAdmin.value || isSpv.value)
+const canFilterSalesPerson = computed(() => isAdmin.value || !!activityTeamScopeId.value)
 const activityTeamScopeId = computed(() => {
   return userTeamId.value
 })
@@ -153,7 +153,7 @@ const loadActivity = async () => {
 
   }
 
-  const shouldScopeToOwnActivities = !!activityTeamScopeId.value || (!isAdmin.value && !isSpv.value)
+  const shouldScopeToOwnActivities = !isAdmin.value && !activityTeamScopeId.value
   const scopeFilters: Partial<Filters> = {
     team_id: activityTeamScopeId.value,
     assigned_to: shouldScopeToOwnActivities ? user.value.id : undefined,
