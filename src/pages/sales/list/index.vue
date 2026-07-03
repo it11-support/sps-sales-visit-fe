@@ -32,7 +32,10 @@ const headers = [
 
 // Update sort options
 const updateOptions = (options: any) => {
-  sortOptions.value = [options.sortBy]
+  const newSort = [options.sortBy]
+  if (JSON.stringify(sortOptions.value) !== JSON.stringify(newSort)) {
+    sortOptions.value = newSort
+  }
 }
 
 watch(searchQuery, (newVal) => {

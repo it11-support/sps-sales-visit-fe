@@ -30,7 +30,13 @@ watch(searchQuery, (val) => {
   if (debounceTimeout) clearTimeout(debounceTimeout)
   debounceTimeout = setTimeout(() => {
     debouncedQuery.value = val
+    page.value = 1
   }, 400)
+})
+
+// Reset page to 1 on filter changes
+watch([startDate, endDate, groupBy], () => {
+  page.value = 1
 })
 
 // Single source of truth for fetch
@@ -50,7 +56,7 @@ const fetchSalesInvoices = async() => {
 
 // Watch all params that affect the API
 watch(
-  [sortOptions, startDate, endDate, debouncedQuery],
+  [sortOptions, startDate, endDate, debouncedQuery, page, itemsPerPage, groupBy],
   fetchSalesInvoices,
   { deep: true, immediate: true } // immediate = fetch on mount
 )
@@ -75,7 +81,10 @@ const computedHeaders = computed(() =>
 
 // Handlers
 const updateOptions = (options: any) => {
-  sortOptions.value = options.sortBy.length > 0 ? [options.sortBy] : [{ key: 'DocDate', order: 'desc' }]
+  const newSortOptions = options.sortBy.length > 0 ? [options.sortBy] : [{ key: 'DocDate', order: 'desc' }]
+  if (JSON.stringify(sortOptions.value) !== JSON.stringify(newSortOptions)) {
+    sortOptions.value = newSortOptions
+  }
 }
 const updateSelectedRows = (rows: ISalesInvoice[]) => {
   selectedRows.value = rows.map(r => ({ ...r }))

@@ -25,12 +25,12 @@ onMounted(async () => {
   salesInvoiceStore.updateQuery({
     id: router.params.customerId,
     itemId: router.params.itemId,
-    per_page: itemsPerPage,
-    page,
-    sort_options: sortOptions,
-    start_date: startDate,
-    end_date: endDate,
-    group_by: groupBy
+    per_page: itemsPerPage.value,
+    page: page.value,
+    sort_options: sortOptions.value,
+    start_date: startDate.value,
+    end_date: endDate.value,
+    group_by: groupBy.value
   })
   salesInvoiceStore.fetchSalesInvoices()
 })
@@ -94,10 +94,9 @@ const salesInvoicesData = computed(() => salesInvoiceStore.salesInvoices)
 const totalSales = computed(() => salesInvoiceStore.salesInvoices.total)
 
 const updateOptions = (options: any) => {
-  if (JSON.stringify(options.sortBy) !== JSON.stringify(sortOptions.value)) {
-    sortOptions.value = [options.sortBy]
-  } else {
-    sortOptions.value = [{ "key": "DocDate", "order": "desc" }]
+  const newSortOptions = options.sortBy.length > 0 ? [options.sortBy] : [{ key: 'DocDate', order: 'desc' }]
+  if (JSON.stringify(sortOptions.value) !== JSON.stringify(newSortOptions)) {
+    sortOptions.value = newSortOptions
   }
 }
 

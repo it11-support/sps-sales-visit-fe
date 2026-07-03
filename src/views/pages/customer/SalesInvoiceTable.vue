@@ -48,6 +48,14 @@ watch(localItemsPerPage, (val) => {
   }
 })
 
+watch(() => props.page, (val) => {
+  localPage.value = val
+})
+
+watch(() => props.itemsPerPage, (val) => {
+  localItemsPerPage.value = val
+})
+
 const computedHeaders = computed(() => {
   if(props.groupBy){
     if(props.groupBy === 'ItemCode') {

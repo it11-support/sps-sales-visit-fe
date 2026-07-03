@@ -25,15 +25,35 @@ onMounted(async () => {
   salesInvoiceStore.updateQuery({
     id: router.params.customerId,
     invoiceId: router.params.invoiceId,
-    per_page: itemsPerPage,
-    page,
-    sort_options: [[{ key: 'DocDate', order: 'desc' }]],
-    start_date: startDate,
-    end_date: endDate,
-    group_by: groupBy
+    per_page: itemsPerPage.value,
+    page: page.value,
+    sort_options: sortOptions.value,
+    start_date: startDate.value,
+    end_date: endDate.value,
+    group_by: groupBy.value
   })
   salesInvoiceStore.fetchSalesInvoices()
 })
+
+watch(
+  [page, itemsPerPage, sortOptions],
+  () => {
+    salesInvoiceStore.updateQuery({
+      id: router.params.customerId,
+      invoiceId: router.params.invoiceId,
+      per_page: itemsPerPage.value,
+      page: page.value,
+      sort_options: sortOptions.value,
+      start_date: startDate.value,
+      end_date: endDate.value,
+      group_by: groupBy.value,
+      search: searchQuery.value,
+    })
+
+    salesInvoiceStore.fetchSalesInvoices()
+  },
+  { deep: true }
+)
 
 const { data: customerData, execute: fetchCustomer } = await useApi<any>(`customer/${router.params.customerId}`)
 
@@ -67,10 +87,9 @@ const salesInvoicesData = computed(() => salesInvoiceStore.salesInvoices)
 const totalSales = computed(() => salesInvoiceStore.salesInvoices.total)
 
 const updateOptions = (options: any) => {
-  if (JSON.stringify(options.sortBy) !== JSON.stringify(sortOptions.value)) {
-    sortOptions.value = [options.sortBy]
-  } else {
-    sortOptions.value = [{ "key": "DocDate", "order": "desc" }]
+  const newSortOptions = options.sortBy.length > 0 ? [options.sortBy] : [{ key: 'DocDate', order: 'desc' }]
+  if (JSON.stringify(sortOptions.value) !== JSON.stringify(newSortOptions)) {
+    sortOptions.value = newSortOptions
   }
 }
 
