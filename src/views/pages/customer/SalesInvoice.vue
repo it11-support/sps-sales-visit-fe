@@ -63,7 +63,7 @@ watch(
 
 // Computed
 const salesInvoicesData = computed(() => salesInvoiceStore.salesInvoices)
-const totalSales = computed(() => salesInvoiceStore.salesInvoices.total)
+const totalSales = computed(() => salesInvoiceStore.salesInvoices.total ?? 0)
 const headers = [
   { title: 'Invoice', value: 'DocNum' },
   { title: 'Inv Date', value: 'DocDate' },
