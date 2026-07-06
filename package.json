@@ -85,7 +85,7 @@
     "@types/node": "22.20.0",
     "@types/webfontloader": "1.6.38",
     "@typescript-eslint/eslint-plugin": "8.62.1",
-    "@typescript-eslint/parser": "8.62.1",
+    "@typescript-eslint/parser": "8.63.0",
     "@vitejs/plugin-vue": "5.2.4",
     "@vitejs/plugin-vue-jsx": "4.2.0",
     "esbuild": "0.28.1",
