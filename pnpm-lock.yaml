@@ -4890,8 +4890,8 @@ packages:
     resolution: {integrity: sha512-h5IS/hKkuVCbKSieR9uQCj9w+zLHoPh+ce19bBYyqF53g6mnPB8sAtIbe1s9dh2S2fCmYX2xel1Ln3PJBbK4kw==}
     engines: {node: '>= 0.8.0'}
 
-  svgo@3.3.3:
-    resolution: {integrity: sha512-+wn7I4p7YgJhHs38k2TNjy1vCfPIfLIJWR5MnCStsN8WuuTcBnRKcMHQLMM2ijxGZmDoZwNv8ipl5aTTen62ng==}
+  svgo@3.3.4:
+    resolution: {integrity: sha512-GsNRis4e8jxn2Y9ENz/8lbJ93CstG8svtMnuRaHbiF2LTJ5tK0/q3t/URPq9Zc7zVWBJnNnJMIp6bevK7bSmNg==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -10495,7 +10495,7 @@ snapshots:
     dependencies:
       svg.js: 2.7.1
 
-  svgo@3.3.3:
+  svgo@3.3.4:
     dependencies:
       commander: 7.2.0
       css-select: 5.1.0
@@ -10929,7 +10929,7 @@ snapshots:
   vite-svg-loader@5.1.1(vue@3.5.39(typescript@5.9.3)):
     dependencies:
       debug: 4.4.3
-      svgo: 3.3.3
+      svgo: 3.3.4
       vue: 3.5.39(typescript@5.9.3)
     transitivePeerDependencies:
       - supports-color
