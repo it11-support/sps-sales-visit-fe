@@ -12,19 +12,14 @@
  */
 import { promises as fs } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'url'
-import { createRequire } from 'module'
-
-const require = createRequire(import.meta.url)
-
-
-// Installation: npm install --save-dev @iconify/tools @iconify/utils @iconify/json @iconify/iconify
-import { cleanupSVG, importDirectory, isEmptyColor, parseColors, runSVGO } from '@iconify/tools'
+import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
 import type { IconifyJSON } from '@iconify/types'
 import { getIcons, getIconsCSS, stringToIcon } from '@iconify/utils'
 
-const tablerIconPath = require.resolve('@iconify-json/tabler/icons.json')
+const require = createRequire(import.meta.url)
 
+const tablerIconPath = require.resolve('@iconify-json/tabler/icons.json')
 const mdiIconPath = require.resolve('@iconify-json/mdi/icons.json')
 const faIconPath = require.resolve('@iconify-json/fa/icons.json')
 /**
@@ -137,6 +132,18 @@ const target = join(__dirname, 'icons.css')
  */
 
 ;(async function () {
+  const [
+    { importDirectory },
+    { cleanupSVG },
+    { runSVGO },
+    { parseColors, isEmptyColor },
+  ] = await Promise.all([
+    import('@iconify/tools/lib/import/directory'),
+    import('@iconify/tools/lib/svg/cleanup'),
+    import('@iconify/tools/lib/optimise/svgo'),
+    import('@iconify/tools/lib/colors/parse'),
+  ])
+
   // Create directory for output if missing
   const dir = dirname(target)
   try {
@@ -217,7 +224,7 @@ const target = join(__dirname, 'icons.css')
       })
 
       // Validate, clean up, fix palette, etc.
-      await iconSet.forEach(async (name, type) => {
+      await iconSet.forEach(async (name: string, type: string) => {
         if (type !== 'icon')
           return
 
@@ -234,12 +241,12 @@ const target = join(__dirname, 'icons.css')
         // Clean up and optimise icons
         try {
           // Clean up icon code
-          await cleanupSVG(svg)
+          cleanupSVG(svg)
 
           if (source.monotone) {
             // Replace color with currentColor, add if missing
             // If icon is not monotone, remove this code
-            await parseColors(svg, {
+            parseColors(svg, {
               defaultColor: 'currentColor',
               callback: (attr, colorStr, color) => {
                 return !color || isEmptyColor(color) ? colorStr : 'currentColor'
@@ -248,7 +255,7 @@ const target = join(__dirname, 'icons.css')
           }
 
           // Optimise
-          await runSVGO(svg)
+          runSVGO(svg)
         }
         catch (err) {
           // Invalid icon

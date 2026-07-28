@@ -70,7 +70,7 @@
     "@iconify-json/fa": "1.2.2",
     "@iconify-json/mdi": "1.2.3",
     "@iconify-json/tabler": "1.2.35",
-    "@iconify/tools": "4.2.0",
+    "@iconify/tools": "5.0.12",
     "@iconify/utils": "3.1.4",
     "@iconify/vue": "5.0.1",
     "@intlify/unplugin-vue-i18n": "11.2.4",
