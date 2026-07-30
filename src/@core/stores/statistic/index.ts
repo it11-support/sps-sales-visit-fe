@@ -51,7 +51,7 @@ export interface MonthlySalesItem {
 }
 
 export interface MissingProduct {
-  id?: BigInt;
+  id?: bigint;
   ItemCode: string;
   ItemName: string;
   ItemGroup: string;
