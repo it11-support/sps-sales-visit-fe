@@ -10,20 +10,18 @@
 }
 
 @mixin boxed-content($nest-selector: false) {
-  & {
-    @extend %boxed-content-spacing;
+  @extend %boxed-content-spacing;
 
-    @at-root {
-      @if $nest-selector == false {
-        .layout-content-width-boxed#{&} {
-          @extend %boxed-content;
-        }
+  @at-root {
+    @if $nest-selector == false {
+      .layout-content-width-boxed#{&} {
+        @extend %boxed-content;
       }
-      // stylelint-disable-next-line @stylistic/indentation
-      @else {
-        .layout-content-width-boxed & {
-          @extend %boxed-content;
-        }
+    }
+    // stylelint-disable-next-line @stylistic/indentation
+    @else {
+      .layout-content-width-boxed & {
+        @extend %boxed-content;
       }
     }
   }
