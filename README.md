@@ -110,3 +110,8 @@
 🚀 Sync assignment data before store
 ✨ Upload image if camera inaccessible
 🚀 Edit Completed report
+
+# Code Quality
+Code quality is continuously monitored using CodeFactor to help maintain a clean, consistent, and maintainable codebase.
+
+[![CodeFactor](https://www.codefactor.io/repository/github/it11-support/sps-sales-visit-fe/badge)](https://www.codefactor.io/repository/github/it11-support/sps-sales-visit-fe)
