@@ -365,7 +365,7 @@ watch(
 .camera-shutter {
   position: absolute;
   border-radius: 6px;
-  background-color: rgba(0, 0, 0, 30%);
+  background-color: rgb(0 0 0 / 30%);
   block-size: 100%;
   inline-size: 100%;
   opacity: 0;
