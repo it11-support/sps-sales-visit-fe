@@ -71,9 +71,9 @@ export interface ISalesDetails {
 }
 
 export interface IsalesDetailsResponse{
-  id?: BigInt
+  id?: bigint
   CompanyId: string
-  assignment_detail_id?: BigInt
+  assignment_detail_id?: bigint
   total_items: number
   total_sales: number
   date: Date
