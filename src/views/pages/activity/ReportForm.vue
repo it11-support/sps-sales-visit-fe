@@ -45,7 +45,7 @@ const activityRef = ref<VForm>()
 const productRef = ref<VForm>()
 const notesRef = ref<VForm>()
 const competitorsRef = ref<VForm>()
-const competitors = reactive<ICompetitor[]>([])
+const competitors = reactive<ICompetitorOption[]>([])
 const isSelecting = ref(false)
 const isCurrentStepValid = ref(true)
 const activityStore = useActivityStore()
@@ -55,6 +55,10 @@ const router = useRouter()
 const props = defineProps<Props>()
 const configStore = useConfigStore()
 const searchProduct = ref('')
+
+const snackbar = ref(false)
+const snackbarMessage = ref('')
+const snackbarColor = ref('error')
 
 let initializing = true
 
@@ -147,10 +151,18 @@ watch(
 
     if (cachedCompetitors && cachedCompetitors.length > 0) {
       competitors.length = 0; 
-      competitors.push(...cachedCompetitors);
+      competitors.push(...cachedCompetitors.map((c: any) => ({
+        ...c,
+        value: c.value ?? c.id,
+        title: c.title ?? c.name,
+      })));
     } else {
       competitors.length = 0;
-      competitors.push(...(newVal.competitors ?? []));
+      competitors.push(...(newVal.competitors ?? []).map((c: any) => ({
+        ...c,
+        value: c.value ?? c.id,
+        title: c.title ?? c.name,
+      })));
     }
     
     nextTick(() => (initializing = false))
@@ -307,38 +319,86 @@ const onProductSelect = (val: any) => {
   })
 }
 
-const validateForm = (ref: VForm | undefined) => {
-  ref?.validate().then(valid => {
-    if(valid.valid) {
-      currentStep.value ++
-      isCurrentStepValid.value = true
-      activityStore.updateForm({
+const stepNames = [
+  'Activity Purpose',
+  'Products',
+  'Notes',
+  'Competitors',
+  'Attachment'
+]
 
-      })
+const showNotification = (message: string, color: string = 'error') => {
+  snackbarMessage.value = message
+  snackbarColor.value = color
+  snackbar.value = true
+}
+
+const validateForm = (formRef: VForm | undefined) => {
+  formRef?.validate().then(valid => {
+    if (valid.valid) {
+      currentStep.value++
+      isCurrentStepValid.value = true
+      activityStore.updateForm({})
     } else {
       isCurrentStepValid.value = false
+      showNotification(`Validation error at step "${stepNames[currentStep.value]}". Please check again.`)
     }
   })
+}
+
+const validateAllSteps = async (): Promise<boolean> => {
+  const forms = [
+    { ref: activityRef, name: stepNames[0], index: 0 },
+    { ref: productRef, name: stepNames[1], index: 1 },
+    { ref: notesRef, name: stepNames[2], index: 2 },
+    { ref: competitorsRef, name: stepNames[3], index: 3 },
+  ]
+
+  for (const form of forms) {
+    if (form.ref.value) {
+      const result = await form.ref.value.validate()
+      if (!result.valid) {
+        currentStep.value = form.index
+        showNotification(`Validation error at step "${form.name}". Please check again.`)
+        const el = document.getElementById('scrollTarget')
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+        return false
+      }
+    }
+  }
+
+  if (activityStore.activity.image_path === null) {
+    currentStep.value = 4
+    showNotification('Please take a photo before submitting the report.')
+    return false
+  }
+
+  if (activityStore.activity.check_out === null) {
+    currentStep.value = 4
+    showNotification('Please check out before submitting the report.')
+    return false
+  }
+
+  return true
 }
 
 const handleSaveAsDraft = async () => {
   isDraft.value = true
   configStore.overlay = true
   try {
-    if (!isCurrentStepValid.value) {
+    const isValid = await validateAllSteps()
+    if (!isValid) {
       configStore.overlay = false
-      const el = document.getElementById('scrollTarget')
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
       return
     }
-    await activityStore.storeActivityReport(true).then(() => {
-      router.push({ path: createUrl(`/activity/${props.assignmentId}/report`).value })
-    })
-  } catch (error) {
-    configStore.overlay = false
-    console.log(error)
+    await activityStore.storeActivityReport(true)
+    showNotification('Draft saved successfully!', 'success')
+    router.push({ path: createUrl(`/activity/${props.assignmentId}/report`).value })
+  } catch (error: any) {
+    console.error('Save draft error:', error)
+    showNotification(error?.message ?? 'Failed to save draft. Please try again.')
   }
   configStore.overlay = false
 }
@@ -347,20 +407,17 @@ const handleCheckOut = async() => {
   isDraft.value = true
   configStore.overlay = true
   try {
-    if (!isCurrentStepValid.value) {
+    const isValid = await validateAllSteps()
+    if (!isValid) {
       configStore.overlay = false
-      const el = document.getElementById('scrollTarget')
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
       return
     }
-    await activityStore.updateReport(props.assignmentId as unknown as number, false).then(async() => {
-      await activityStore.checkOut(Number(props.assignmentId))
-    })    
-  } catch (error) {
-    configStore.overlay = false
-    console.log(error)
+    await activityStore.updateReport(props.assignmentId as unknown as number, false)
+    await activityStore.checkOut(Number(props.assignmentId))
+    showNotification('Check out successful!', 'success')
+  } catch (error: any) {
+    console.error('Check out error:', error)
+    showNotification(error?.message ?? 'Failed to check out. Please try again.')
   }
   configStore.overlay = false
 }
@@ -404,26 +461,24 @@ const handleRemoveCompetitor = (index: number) => {
 }
 
 const handleAddCompetitor = () => {
-  competitors.push({ name: '', address: '', product: '', price: undefined, qty: undefined })
+  competitors.push({ name: '', address: '', product: '', price: undefined, qty: undefined, value: undefined, title: '' })
 }
 
 const handleSubmit = async () => {
   configStore.overlay = true
   try {
-    if (!isCurrentStepValid.value) {
-      const el = document.getElementById('scrollTarget')
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
+    const isValid = await validateAllSteps()
+    if (!isValid) {
       configStore.overlay = false
       return
     }
     
-    await activityStore.storeActivityReport(false).then(() => {
-      router.push({ path: createUrl(`/activity/list`).value })
-    })
-  } catch (error) {
-    console.log(error)
+    await activityStore.storeActivityReport(false)
+    showNotification('Report saved successfully!', 'success')
+    router.push({ path: createUrl(`/activity/list`).value })
+  } catch (error: any) {
+    console.error('Submit error:', error)
+    showNotification(error?.message ?? 'Failed to save report. Please try again.')
   }
   configStore.overlay = false
 }
@@ -734,11 +789,11 @@ const handleRemoveImage = () => {
                           :return-object="true"
                           label="Competitors"
                           placeholder="Competitors"
-@update:model-value="val => {
+                          @update:model-value="val => {
                              if(!val) {
                                activityStore.currentReport.competitors[index] = {name: '', address: '', product: '', price: undefined, qty: undefined}
                              } else { 
-                               onSelect(val as ICompetitorOption, index)
+                               onSelect(val as unknown as ICompetitorOption, index)
                                isSelecting = true
                              }               
                            }"
@@ -943,6 +998,22 @@ const handleRemoveImage = () => {
     </VCardText>
   </VCard>
   <CheckIn :show="showCheckIn" :assignmentId="Number(props.assignmentId)" @update:show="showCheckIn = $event" />
+  
+  <VSnackbar
+    v-model="snackbar"
+    :color="snackbarColor"
+    :timeout="5000"
+    location="top right"
+  >
+    {{ snackbarMessage }}
+    <template #actions>
+      <VBtn
+        icon="tabler-x"
+        variant="text"
+        @click="snackbar = false"
+      />
+    </template>
+  </VSnackbar>
 </template>
 
 

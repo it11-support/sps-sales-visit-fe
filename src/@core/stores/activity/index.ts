@@ -419,7 +419,7 @@ export const useActivityStore = defineStore('activity', {
         growth[company].growth = periods.growth ?? null;
         for (const [period, data] of Object.entries(periods)) {
           if(period === 'growth' || period === 'missing_items') continue
-          const { invoices, ...rest } = data as any; // hapus invoices
+          const { invoices, ...rest } = data as any;
           growth[company][period] = rest;
         }
       }
@@ -440,13 +440,12 @@ export const useActivityStore = defineStore('activity', {
         }
         
       })
-      if(!isDraft && data.value.status === 'success') {
-        removeLocalItem(this.activityReport.assignment_id)
-      }
       if (error.value) {
-        console.error('Error fetching activity detail:', error.value)
         this.loading = false
-        return
+        throw new Error(error.value?.message ?? 'Gagal menyimpan laporan')
+      }
+      if(!isDraft && data.value?.status === 'success') {
+        removeLocalItem(this.activityReport.assignment_id)
       }
       this.loading = false
     },
@@ -470,9 +469,8 @@ export const useActivityStore = defineStore('activity', {
       }
 
       if (error.value) {
-        console.error('Error fetching activity detail:', error.value)
         this.loading = false
-        return
+        throw new Error(error.value?.message ?? 'Gagal memperbarui laporan')
       }
       this.loading = false
     },

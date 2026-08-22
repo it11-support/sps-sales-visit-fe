@@ -8,6 +8,8 @@ export interface ICompetitor {
   assignment_detail_id?: number
   isNew?: boolean
   rawName?: string
+  value?: string | number
+  title?: string
 }
 
 export interface ICompetitorOption extends ICompetitor {
