@@ -346,7 +346,7 @@ const validateForm = (formRef: VForm | undefined) => {
   })
 }
 
-const validateAllSteps = async (): Promise<boolean> => {
+const validateAllSteps = async (requireAttachment = true): Promise<boolean> => {
   const forms = [
     { ref: activityRef, name: stepNames[0], index: 0 },
     { ref: productRef, name: stepNames[1], index: 1 },
@@ -369,16 +369,18 @@ const validateAllSteps = async (): Promise<boolean> => {
     }
   }
 
-  if (activityStore.activity.image_path === null) {
-    currentStep.value = 4
-    showNotification('Please take a photo before submitting the report.')
-    return false
-  }
+  if (requireAttachment) {
+    if (activityStore.activity.image_path === null) {
+      currentStep.value = 4
+      showNotification('Please take a photo before submitting the report.')
+      return false
+    }
 
-  if (activityStore.activity.check_out === null) {
-    currentStep.value = 4
-    showNotification('Please check out before submitting the report.')
-    return false
+    if (activityStore.activity.check_out === null) {
+      currentStep.value = 4
+      showNotification('Please check out before submitting the report.')
+      return false
+    }
   }
 
   return true
@@ -388,7 +390,7 @@ const handleSaveAsDraft = async () => {
   isDraft.value = true
   configStore.overlay = true
   try {
-    const isValid = await validateAllSteps()
+    const isValid = await validateAllSteps(false)
     if (!isValid) {
       configStore.overlay = false
       return
@@ -407,12 +409,28 @@ const handleCheckOut = async() => {
   isDraft.value = true
   configStore.overlay = true
   try {
-    const isValid = await validateAllSteps()
+    if (activityStore.activity.check_in === null || activityStore.activity.check_in === undefined) {
+      showNotification('Please check in before checking out.')
+      configStore.overlay = false
+      return
+    }
+
+    if (activityStore.activity.image_path === null) {
+      showNotification('Please take a photo before checking out.')
+      configStore.overlay = false
+      return
+    }
+
+    const isValid = await validateAllSteps(false)
     if (!isValid) {
       configStore.overlay = false
       return
     }
-    await activityStore.updateReport(props.assignmentId as unknown as number, false)
+    try {
+      await activityStore.updateReport(props.assignmentId as unknown as number, false)
+    } catch (reportError) {
+      console.warn('Failed to save draft before checkout:', reportError)
+    }
     await activityStore.checkOut(Number(props.assignmentId))
     showNotification('Check out successful!', 'success')
   } catch (error: any) {

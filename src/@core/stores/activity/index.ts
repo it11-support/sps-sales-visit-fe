@@ -331,9 +331,13 @@ export const useActivityStore = defineStore('activity', {
     },
     async checkOut(id: number) {
       this.loadingId = id
-      await $api(`/activity/check-out/${id}`, {
+      const { error } = await useApi<any>(`/activity/check-out/${id}`, {
         method: 'PUT',
       })
+      if (error.value) {
+        this.loadingId = null
+        throw new Error(error.value?.message ?? 'Failed to check out')
+      }
       this.loadingId = null
       this.fetchActivityById(id.toString())
     },
@@ -470,7 +474,7 @@ export const useActivityStore = defineStore('activity', {
 
       if (error.value) {
         this.loading = false
-        throw new Error(error.value?.message ?? 'Gagal memperbarui laporan')
+        throw new Error(error.value?.message ?? error.value?.data?.message ?? 'Failed to update report')
       }
       this.loading = false
     },
