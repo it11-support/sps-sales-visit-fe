@@ -48,9 +48,9 @@ export const useApi = createFetch({
 
       if (status === 401) {
         console.warn('Unauthorized, redirecting to login...')
-        // Remove token
         useCookie('accessToken').value = null
         useCookie('userData').value = null
+        window.location.href = '/login'
       }
 
       return ctx

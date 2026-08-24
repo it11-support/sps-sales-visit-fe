@@ -445,8 +445,20 @@ export const useActivityStore = defineStore('activity', {
         
       })
       if (error.value) {
+        console.error('storeActivityReport error.value:', error.value)
+        console.error('storeActivityReport error type:', typeof error.value)
         this.loading = false
-        throw new Error(error.value?.message ?? 'Gagal menyimpan laporan')
+        let errorMessage = 'Failed to save report'
+        if (typeof error.value === 'string') {
+          errorMessage = error.value
+        } else if (error.value?.message) {
+          errorMessage = error.value.message
+        } else if (error.value?.data?.message) {
+          errorMessage = error.value.data.message
+        } else if (error.value?.statusText) {
+          errorMessage = error.value.statusText
+        }
+        throw new Error(errorMessage)
       }
       if(!isDraft && data.value?.status === 'success') {
         removeLocalItem(this.activityReport.assignment_id)
