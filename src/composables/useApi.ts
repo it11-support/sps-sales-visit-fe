@@ -1,8 +1,14 @@
 import { useConfigStore } from '@core/stores/config'
 import { createFetch } from '@vueuse/core'
 import { destr } from 'destr'
+import { reportFrontendError } from '@/utils/frontendErrorLogger'
 
 const configStore = useConfigStore()
+
+type FetchLogContext = {
+  url?: string
+  options?: RequestInit
+}
 
 export const useApi = createFetch({
   baseUrl: import.meta.env.VITE_API_BASE_URL || '/api',
@@ -13,7 +19,8 @@ export const useApi = createFetch({
   },
   options: {
     refetch: true,
-    async beforeFetch({ options }) {
+    async beforeFetch(ctx) {
+      const { options } = ctx
       configStore.loading = true
       const accessToken = useCookie('accessToken').value
 
@@ -45,6 +52,18 @@ export const useApi = createFetch({
     onFetchError(ctx) {
       configStore.loading = false
       const status = ctx.response?.status
+      const fetchLogContext = ctx as typeof ctx & FetchLogContext
+
+      reportFrontendError({
+        type: 'api_error',
+        message: ctx.error?.message || ctx.response?.statusText || 'API request failed',
+        api_url: ctx.response?.url || fetchLogContext.url,
+        api_method: fetchLogContext.options?.method?.toString().toUpperCase(),
+        api_status: status,
+        api_request_body: fetchLogContext.options?.body,
+        api_response: ctx.data,
+        stack: ctx.error?.stack,
+      })
 
       if (status === 401) {
         console.warn('Unauthorized, redirecting to login...')
@@ -75,7 +94,18 @@ export const downloadApi = async(url: string, filename: string) => {
   )
 
   if (!response.ok)
+  {
+    reportFrontendError({
+      type: 'download_error',
+      message: `Download failed with status ${response.status}`,
+      api_url: response.url,
+      api_method: 'GET',
+      api_status: response.status,
+      api_response: await response.clone().text().catch(() => null),
+    })
+
     throw new Error('Download failed')
+  }
 
   const blob = await response.blob()
 

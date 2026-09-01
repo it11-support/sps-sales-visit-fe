@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getLocalStoreKey } from '@/views/pages/activity/functions'
+import { reportFrontendError } from '@/utils/frontendErrorLogger'
 import { useConfigStore } from '@core/stores/config'
 import avatar1 from '@images/avatars/user-default.png'
 const userData = useCookie<any>('userData')
@@ -13,7 +14,16 @@ const logout = async () => {
     await $api('/user/logout', {
       method: 'POST',
       body: {},
-      onResponseError({ response }) {},
+      onResponseError({ response, options }) {
+        reportFrontendError({
+          type: 'api_error',
+          message: response._data?.message || response.statusText || 'API request failed',
+          api_url: response.url,
+          api_method: options?.method?.toString().toUpperCase(),
+          api_status: response.status,
+          api_response: response._data,
+        })
+      },
     })
   } catch (err) {
     console.error(err)

@@ -1,6 +1,7 @@
 <!-- ❗Errors in the form are set on line 60 -->
 <script setup lang="ts">
 import { useAuthStore } from '@/@core/stores'
+import { reportFrontendError } from '@/utils/frontendErrorLogger'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
 import authV2LoginIllustrationBorderedLight from '@images/pages/auth-v2-login-illustration-bordered-light.png'
@@ -54,9 +55,17 @@ const login = async () => {
         password: credentials.value.password,
         remember: rememberMe.value,
       },
-      onResponseError({ response }) {        
+      onResponseError({ response, options }) {
         errors.value = response._data.errors
         loading.value = false
+        reportFrontendError({
+          type: 'api_error',
+          message: response._data?.message || response.statusText || 'API request failed',
+          api_url: response.url,
+          api_method: options?.method?.toString().toUpperCase(),
+          api_status: response.status,
+          api_response: response._data,
+        })
       },
     })
     const { data } = res

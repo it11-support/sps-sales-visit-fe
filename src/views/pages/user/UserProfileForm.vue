@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useCustomerStore } from '@/@core/stores/customer';
 import { useRoleStore } from '@/@core/stores/role';
+import { reportFrontendError } from '@/utils/frontendErrorLogger';
 import { useConfigStore } from '@core/stores/config';
 import avatar1 from '@images/avatars/user-default.png';
 import { VForm } from 'vuetify/components/VForm';
@@ -68,8 +69,16 @@ const submitUserHandler = async () => {
         ...userData.value,
         ...(password.value ? { password: password.value } : {}),
       })),
-      onResponseError({ response }) {
+      onResponseError({ response, options }) {
         errors.value = response._data.errors
+        reportFrontendError({
+          type: 'api_error',
+          message: response._data?.message || response.statusText || 'API request failed',
+          api_url: response.url,
+          api_method: options?.method?.toString().toUpperCase(),
+          api_status: response.status,
+          api_response: response._data,
+        })
       },
     })
 
