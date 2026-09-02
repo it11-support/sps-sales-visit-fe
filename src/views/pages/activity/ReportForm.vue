@@ -102,6 +102,7 @@ watch(
   () => activityStore.activityReport,
   (newVal) => {
     if (!newVal || Object.keys(newVal).length === 0) return
+    if (!activityPurposeReport.value || !productReport.value || !notesReport.value) return
 
     initializing = true
 
@@ -471,7 +472,7 @@ const onSelect = (val: ICompetitorOption, index: number) => {
  }
 
 const showButton = computed(() => {
-  return activityPurposeReport?.value.activity_purposes && activityPurposeReport?.value.activity_purposes.length > 0
+  return activityPurposeReport.value?.activity_purposes && activityPurposeReport.value?.activity_purposes.length > 0
 })
 
 const handleRemoveCompetitor = (index: number) => {
@@ -687,7 +688,7 @@ const handleRemoveImage = () => {
               </VCol>
               </VRow>
               <VRow>
-                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment.status !== 'completed'">
+                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment?.status !== 'completed'">
                   <VBtn color="warning" type="button" @click="handleSaveAsDraft">
                     Save As Draft <VIcon end icon="tabler-pencil-check" />
                   </VBtn>
@@ -750,7 +751,7 @@ const handleRemoveImage = () => {
               </VCol>
               </VRow>
               <VRow>
-                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment.status !== 'completed'">
+                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment?.status !== 'completed'">
                   <VBtn color="warning" type="button" @click="handleSaveAsDraft">
                     Save As Draft <VIcon end icon="tabler-pencil-check" />
                   </VBtn>
