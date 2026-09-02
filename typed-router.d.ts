@@ -80,6 +80,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'admin-error-logs': RouteRecordInfo<
+      'admin-error-logs',
+      '/admin/error-logs',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'customers-list': RouteRecordInfo<
       'customers-list',
       '/customers/list',
@@ -207,6 +214,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/activity/list/index.vue': {
       routes:
         | 'activity-list'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/admin/error-logs/index.vue': {
+      routes:
+        | 'admin-error-logs'
       views:
         | never
       pathParamNames:

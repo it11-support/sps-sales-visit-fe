@@ -37,6 +37,17 @@ export const defaultNavItems =  [
         icon: { icon: 'tabler-trash' },
       }
     ]
+  },
+  {
+    title: 'Logs Viewer',
+    icon: { icon: 'tabler-logs' },
+    children: [
+      {
+        title: 'Error Logs',
+        to: { name: 'admin-error-logs' },
+        icon: { icon: 'tabler-bug' },
+      },
+    ]
   }
 ]
 
@@ -45,7 +56,10 @@ export const getNavItems = (isAdmin: boolean) => {
     return item
   })
 
-  return isAdmin ? [userMenu, ...items] : items
+  if (isAdmin) {
+    return [userMenu, ...items]
+  }
+  return items
 }
 
 export default getNavItems

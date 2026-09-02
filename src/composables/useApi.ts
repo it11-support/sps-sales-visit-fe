@@ -51,6 +51,11 @@ export const useApi = createFetch({
     },
     onFetchError(ctx) {
       configStore.loading = false
+
+      if (ctx.error?.name === 'AbortError') {
+        return ctx
+      }
+
       const status = ctx.response?.status
       const fetchLogContext = ctx as typeof ctx & FetchLogContext
 
