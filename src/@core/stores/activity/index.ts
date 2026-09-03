@@ -2,6 +2,37 @@ import { IActivity, IActivityReport, ICompetitor, ICompetitorOption, ICustomerDa
 import dayjs from "dayjs"
 import { useStatisticStore } from "../statistic"
 
+type NonActiveItemPayload = {
+  id?: unknown
+  product_id?: unknown
+  ItemCode?: unknown
+  ItemName?: unknown
+  ItemGroup?: unknown
+  last_purchased: unknown
+  volume_kg: number
+  product?: unknown
+}
+
+const normalizeNonActiveItems = (items?: unknown[]): NonActiveItemPayload[] => {
+  if (!Array.isArray(items)) return []
+
+  return items.map((item: any) => {
+    const product = item?.product ?? {}
+
+    return {
+      ...item,
+      id: item?.id ?? item?.product_id,
+      product_id: item?.product_id ?? item?.id,
+      ItemCode: item?.ItemCode ?? product?.ItemCode ?? item?.item_code,
+      ItemName: item?.ItemName ?? product?.ItemName ?? item?.description,
+      ItemGroup: item?.ItemGroup ?? product?.ItemGroup,
+      last_purchased: item?.last_purchased ?? item?.last_transaction_date ?? item?.last_invoice_date ?? null,
+      volume_kg: Number(item?.volume_kg ?? item?.last_transaction_volume ?? item?.volume ?? 0),
+      product: item?.product,
+    }
+  })
+}
+
 export interface Filters {
   search?: string
   sales_person_id?: number | null
@@ -431,7 +462,8 @@ export const useActivityStore = defineStore('activity', {
       const reportPayload = {
         ...this.activityReport,
         status: isDraft ? 'draft' : 'completed',
-        growth
+        growth,
+        nonActive: normalizeNonActiveItems(this.activityReport.nonActive ?? this.activityReport.missing_items),
       }
       
       const payload = JSON.stringify(reportPayload);
@@ -469,6 +501,7 @@ export const useActivityStore = defineStore('activity', {
       this.loading = true
       const reportPayload = {
         ...this.activityReport,
+        nonActive: normalizeNonActiveItems(this.activityReport.nonActive ?? this.activityReport.missing_items),
         status: final ? 'completed' : 'draft',
       }
       const payload = JSON.stringify(reportPayload);
