@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "release/v1" ]
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     name: Deploy to Production Server
