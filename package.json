@@ -19,13 +19,13 @@
     "@floating-ui/dom": "1.7.6",
     "@formkit/drag-and-drop": "0.6.1",
     "@sindresorhus/is": "7.2.0",
-    "@tiptap/extension-highlight": "^2.27.2",
-    "@tiptap/extension-image": "^2.27.2",
-    "@tiptap/extension-link": "^2.27.2",
-    "@tiptap/extension-text-align": "^2.27.2",
-    "@tiptap/pm": "^2.27.2",
-    "@tiptap/starter-kit": "^2.27.2",
-    "@tiptap/vue-3": "^2.27.2",
+    "@tiptap/extension-highlight": "^3.31.0",
+    "@tiptap/extension-image": "^3.31.0",
+    "@tiptap/extension-link": "^3.31.0",
+    "@tiptap/extension-text-align": "^3.31.0",
+    "@tiptap/pm": "^3.31.0",
+    "@tiptap/starter-kit": "^3.31.0",
+    "@tiptap/vue-3": "^3.31.0",
     "@vueuse/core": "^14.3.0",
     "@vueuse/math": "^14.3.0",
     "apexcharts": "3.54.1",
@@ -76,11 +76,11 @@
     "@intlify/unplugin-vue-i18n": "11.2.4",
     "@stylistic/stylelint-config": "5.0.0",
     "@stylistic/stylelint-plugin": "5.2.1",
-    "@tiptap/extension-character-count": "^2.27.2",
-    "@tiptap/extension-placeholder": "^2.27.2",
-    "@tiptap/extension-subscript": "^2.27.2",
-    "@tiptap/extension-superscript": "^2.27.2",
-    "@tiptap/extension-underline": "^2.27.2",
+    "@tiptap/extension-character-count": "^3.31.0",
+    "@tiptap/extension-placeholder": "^3.31.0",
+    "@tiptap/extension-subscript": "^3.31.0",
+    "@tiptap/extension-superscript": "^3.31.0",
+    "@tiptap/extension-underline": "^3.31.0",
     "@types/lodash.debounce": "^4.0.9",
     "@types/node": "22.20.0",
     "@types/webfontloader": "1.6.38",
@@ -122,11 +122,11 @@
   },
   "resolutions": {
     "postcss": "^8",
-    "@tiptap/core": "2.27.2"
+    "@tiptap/core": "3.31.0"
   },
   "overrides": {
     "postcss": "^8",
-    "@tiptap/core": "2.27.2"
+    "@tiptap/core": "3.31.0"
   },
   "msw": {
     "workerDirectory": "public"
