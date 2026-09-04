@@ -290,24 +290,21 @@ export const useActivityStore = defineStore('activity', {
         return;
       }
 
-      const payload = data.value.data ?? this.emptyActivityReport();
+      const payload = data.value.data ?? this.emptyActivityReport()
 
-      let reports = {} as IActivityReport
+      let reports = { ...payload } as IActivityReport
 
-      this.report = { ...payload };
-      this.activityReport = { ...payload };
-      this.tabs = data.value.data.customers.map((customer: any) => (
-        customer.CompanyId
-      ))
+      if (data.value.data.assignment_details?.length) {
+        const report = data.value.data.assignment_details[0]
 
-      data.value.data.assignment_details?.forEach((report: any) => {
-        return reports = {
+        reports = {
+          ...reports,
           assignment_id: report.assignment_id,
           assignment: this.activity,
           customer: report.customer,
           products: report.products ?? [],
           reason_qty_drop_ids: report.reason_qty_drops?.map((drop: any) => drop.id),
-          activity_purpose_ids: report.activity_purposes?.map((purpose: any) => purpose.id),
+          activity_purpose_ids: report.activity_purposes?.map((purpose: any) => purpose.id) ?? [],
           missing_items: JSON.parse(JSON.stringify(report.non_active_items ?? [])),
           sales_growth: report.assignment_detail_sales,
           reason_qty_drops: report.reason_qty_drops,
@@ -323,12 +320,16 @@ export const useActivityStore = defineStore('activity', {
           check_out: data.value.data.check_out,
           editable_until: data.value.data.editable_until,
           editable: data.value.data.editable,
-          lat: data.value.data.lat, 
-          lng: data.value.data.lng
+          lat: data.value.data.lat,
+          lng: data.value.data.lng,
         }
-      })
+      }
 
+      this.report = { ...reports }
       this.activityReport = reports
+      this.tabs = data.value.data.customers.map((customer: any) => (
+        customer.CompanyId
+      ))
       this.customers = data.value.data.customers
 
       this.loadingAssignment = false;
@@ -461,6 +462,8 @@ export const useActivityStore = defineStore('activity', {
 
       const reportPayload = {
         ...this.activityReport,
+        assignment_id: this.activityReport.assignment_id ?? 0,
+        activity_purpose_ids: this.activityReport.activity_purpose_ids ?? [],
         status: isDraft ? 'draft' : 'completed',
         growth,
         nonActive: normalizeNonActiveItems(this.activityReport.nonActive ?? this.activityReport.missing_items),

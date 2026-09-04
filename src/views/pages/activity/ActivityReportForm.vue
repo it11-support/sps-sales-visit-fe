@@ -328,7 +328,7 @@ const isCompleted = computed(() => activityStore.currentReport.assignment?.statu
     </VRow>
   </VCardText>
 </VCard>
-<ReportForm :assignment-id="props.assignmentId"/>
+<ReportForm v-if="!loading" :assignment-id="props.assignmentId"/>
 
 <CheckIn :show="showCheckIn" :assignmentId="Number(props.assignmentId)" @update:show="showCheckIn = $event" />
 </template>

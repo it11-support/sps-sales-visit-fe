@@ -77,12 +77,25 @@ const notesReport = ref({
   additional_note: '',
 })
 
+const normalizeIds = (value: unknown): number[] => {
+  if (!Array.isArray(value)) return []
+
+  return value
+    .map((item: any) => Number(item?.value ?? item?.id ?? item))
+    .filter(id => Number.isFinite(id))
+}
+
 
 // console.log(notesReport, productReport, activityPurposeReport)
 
 watch(activityPurposeReport, () => {
-  setLocalItem(props.assignmentId, 'activity_purposes', activityPurposeReport.value.activity_purposes)
-  setLocalItem(props.assignmentId, 'reason_qty_drops', activityPurposeReport.value.reason_qty_drops)
+  const activityPurposeIds = normalizeIds(activityPurposeReport.value.activity_purposes)
+  const reasonQtyDropIds = normalizeIds(activityPurposeReport.value.reason_qty_drops)
+
+  setLocalItem(props.assignmentId, 'activity_purposes', activityPurposeIds)
+  setLocalItem(props.assignmentId, 'activity_purpose_ids', activityPurposeIds)
+  setLocalItem(props.assignmentId, 'reason_qty_drops', reasonQtyDropIds)
+  setLocalItem(props.assignmentId, 'reason_qty_drop_ids', reasonQtyDropIds)
 }, { deep: true })
 
 watch(productReport, () => {
@@ -106,8 +119,8 @@ watch(
 
     initializing = true
 
-    const cachedActivityPurposes = getParsedItem(props.assignmentId, 'activity_purposes')
-    const cachedReasonQtyDrops = getParsedItem(props.assignmentId,'reason_qty_drops')
+    const cachedActivityPurposes = getParsedItem(props.assignmentId, 'activity_purpose_ids') ?? getParsedItem(props.assignmentId, 'activity_purposes')
+    const cachedReasonQtyDrops = getParsedItem(props.assignmentId, 'reason_qty_drop_ids') ?? getParsedItem(props.assignmentId,'reason_qty_drops')
     const cachedProducts = getParsedItem(props.assignmentId,'products')
     const cachedProductIssue = getParsedItem(props.assignmentId,'product_issue')
     const cachedNextAction = getParsedItem(props.assignmentId,'next_action')
@@ -166,7 +179,11 @@ watch(
       })));
     }
     
-    nextTick(() => (initializing = false))
+    nextTick(() => {
+      initializing = false
+      isCurrentStepValid.value = true
+      activityRef.value?.resetValidation()
+    })
   },
   { immediate: true, deep: true }
 )
@@ -239,8 +256,8 @@ watch(
   (newVal) => {
     if (initializing) return
     activityStore.updateForm({
-      activity_purpose_ids: newVal.activity_purposes,
-      reason_qty_drop_ids: newVal.reason_qty_drops,
+      activity_purpose_ids: normalizeIds(newVal.activity_purposes),
+      reason_qty_drop_ids: normalizeIds(newVal.reason_qty_drops),
       assignment_id: Number(props.assignmentId),
     })
   },
@@ -334,9 +351,31 @@ const showNotification = (message: string, color: string = 'error') => {
   snackbar.value = true
 }
 
+const syncReportState = () => {
+  const activityPurposeIds = normalizeIds(activityPurposeReport.value.activity_purposes)
+  const reasonQtyDropIds = normalizeIds(activityPurposeReport.value.reason_qty_drops)
+
+  setLocalItem(props.assignmentId, 'activity_purposes', activityPurposeIds)
+  setLocalItem(props.assignmentId, 'activity_purpose_ids', activityPurposeIds)
+  setLocalItem(props.assignmentId, 'reason_qty_drops', reasonQtyDropIds)
+  setLocalItem(props.assignmentId, 'reason_qty_drop_ids', reasonQtyDropIds)
+
+  activityStore.updateForm({
+    assignment_id: Number(props.assignmentId),
+    activity_purpose_ids: activityPurposeIds,
+    reason_qty_drop_ids: reasonQtyDropIds,
+    products: productReport.value.products ?? [],
+    product_issue: productReport.value.product_issue,
+    next_action: notesReport.value.next_action,
+    additional_note: notesReport.value.additional_note,
+    competitors,
+  })
+}
+
 const validateForm = (formRef: VForm | undefined) => {
   formRef?.validate().then(valid => {
     if (valid.valid) {
+      syncReportState()
       currentStep.value++
       isCurrentStepValid.value = true
       activityStore.updateForm({})
@@ -368,6 +407,14 @@ const validateAllSteps = async (requireAttachment = true): Promise<boolean> => {
         return false
       }
     }
+  }
+
+  syncReportState()
+
+  if (normalizeIds(activityPurposeReport.value.activity_purposes).length === 0) {
+    currentStep.value = 0
+    showNotification(`Validation error at step "${stepNames[0]}". Please check again.`)
+    return false
   }
 
   if (requireAttachment) {

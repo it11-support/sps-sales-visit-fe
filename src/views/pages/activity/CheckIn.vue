@@ -25,6 +25,16 @@ const isCameraAvailable = ref(false)
 const isCheckingCamera = ref(false)
 const cameraErrorMessage = ref('')
 
+const snackbar = ref(false)
+const snackbarMessage = ref('')
+const snackbarColor = ref('error')
+
+const showNotification = (message: string, color: string = 'error') => {
+  snackbarMessage.value = message
+  snackbarColor.value = color
+  snackbar.value = true
+}
+
 const camera = ref<HTMLVideoElement | null>(null)
 const canvas = ref<HTMLCanvasElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -162,6 +172,13 @@ const handleSubmit = async () => {
   configStore.overlay = true
 
   try {
+    if (!activityStore.activityReport.activity_purpose_ids?.length) {
+      toggleModal()
+      showNotification('Please select activity purposes before saving.', 'error')
+      configStore.overlay = false
+      return
+    }
+
     await activityStore.storeActivityReport(true)
     const blob = dataUrlToBlob(canvas.value.toDataURL('image/jpeg'))
     const file = new File([blob], `${Date.now()}.jpg`, { type: 'image/jpeg' })
@@ -342,6 +359,14 @@ watch(
           </div>
         </div>
       </VCardText>
+      <VSnackbar
+        v-model="snackbar"
+        :color="snackbarColor"
+        :timeout="5000"
+        location="top right"
+      >
+        {{ snackbarMessage }}
+      </VSnackbar>
     </VCard>
   </VDialog>
 </template>
