@@ -25,7 +25,7 @@
   },
   // Vue
   "[vue]": {
-    "editor.defaultFormatter": "stylelint.vscode-stylelint",
+    "editor.defaultFormatter": "Vue.volar",
   },
   "vetur.format.defaultFormatterOptions": {
     "scss": "none"

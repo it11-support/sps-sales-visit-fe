@@ -19,14 +19,14 @@ const filterDormantCustomer = ref(false)
 // Delayed search
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => {
-  if(user.value.role){
+  if (user.value.role) {
     return user.value.role.role === 'admin'
   } else {
     return false
   }
 })
 const isSpv = computed(() => {
-  if(user.value.role){
+  if (user.value.role) {
     return user.value.role.role === 'spv'
   } else {
     return false
@@ -79,47 +79,47 @@ const disabledCompanies = computed<string[]>(() => {
   return [COMPANIES.SPS, COMPANIES.BBS].filter(c => !userCompanies.value.includes(c))
 })
 
-onMounted(async() => {
+onMounted(async () => {
   customerStore.$reset()
   salesStore.$reset()
 
   // For non-admin users (including spv), set companyIds based on their accessible companies
   if (!isAdmin.value && userCompanies.value.length > 0) {
     const hasBoth = userCompanies.value.includes(COMPANIES.SPS) && userCompanies.value.includes(COMPANIES.BBS)
-    customerStore.updateFilters({ 
-      companyIds: hasBoth ? [COMPANIES.SPS] : userCompanies.value 
+    customerStore.updateFilters({
+      companyIds: hasBoth ? [COMPANIES.SPS] : userCompanies.value
     }, false)
   }
 
   // Use userCompanies directly since it's computed from cookie and already available
   const userCompanyIds = userCompanies.value
   const ids = !isAdmin.value ? user.value.sales_person
-      .filter((sp: ISalesPerson) => userCompanyIds.includes(sp.CompanyId))
-      .map((sp: ISalesPerson) => sp.id) : []
+    .filter((sp: ISalesPerson) => userCompanyIds.includes(sp.CompanyId))
+    .map((sp: ISalesPerson) => sp.id) : []
 
-  if(isAdmin.value) {
+  if (isAdmin.value) {
     await customerStore.initialize()
-  } else if(isSpv.value) {   
+  } else if (isSpv.value) {
     await customerStore.initialize(ids, user.value.team_id)
-  } else {    
+  } else {
     await customerStore.initialize(ids)
   }
   salesStore.updateQuery({ per_page: -1, page: 1 })
 })
 
 watch(showFilter, (newVal) => {
-  if(newVal){
+  if (newVal) {
     salesStore.fetchSalesPersons()
     customerStore.fetchFilters()
   }
 })
 
 watch([salesStore, customerStore], ([sales, customer]) => {
-  if(sales.salesPersonOptions.length > 0) loadingSalesPerson.value = false
-  if(customer.groupNameOptions.length > 0) loadingGroupName.value = false
-  if(customerStore.paymentTermOptions.length > 0) loadingPaymentOptions.value = false
-  if(customerStore.priceListOptions.length > 0) loadingPriceListOptions.value = false
-  if(customerStore.cityOptions.length > 0) loadingCityOptions.value = false
+  if (sales.salesPersonOptions.length > 0) loadingSalesPerson.value = false
+  if (customer.groupNameOptions.length > 0) loadingGroupName.value = false
+  if (customerStore.paymentTermOptions.length > 0) loadingPaymentOptions.value = false
+  if (customerStore.priceListOptions.length > 0) loadingPriceListOptions.value = false
+  if (customerStore.cityOptions.length > 0) loadingCityOptions.value = false
 })
 // 👉 search filters
 const status = [
@@ -128,13 +128,16 @@ const status = [
 ]
 
 const filteredSalesPersonOptions = computed(() => {
-  const seen = new Set<number>();
+  // A sales person can have a separate record for each company. Keep both
+  // entries available by deduplicating on the company as well as the ID.
+  const seen = new Set<string>();
   return salesStore.salesPersonOptions
     .filter(item => item.user.length > 0)
     .filter(item => selectedCompanies.value.includes(item.type))
     .filter(item => {
-      if (seen.has(Number(item.value))) return false;
-      seen.add(Number(item.value));
+     const key = `${item.type}:${item.value}`
+     if (seen.has(key)) return false;
+     seen.add(key)
       return true;
     });
 });
@@ -161,7 +164,7 @@ const deleteCustomer = async (id: string) => {
   const index = selectedRows.findIndex(row => row.CardCode === id)
   if (index !== -1) selectedRows.splice(index, 1)
   // Refetch customers
-  customerStore.fetchCustomers()
+  customerStore.fetchCustomers({ omitMyCustomersOnly: isAdmin.value })
 }
 
 const updateSelected = (val: string) => {
@@ -189,22 +192,31 @@ const selectedCompanies = computed<string[]>({
   }
 })
 
+const myCustomer = computed<boolean>({
+  get() {
+    return customerStore.filters.myCustomersOnly ?? false
+  },
+  set(val) {
+    customerStore.updateFilters({ myCustomersOnly: val })
+  }
+})
+
 watch(
   filters,
   (newVal) => {
     const isNotAdmin = !isAdmin.value && !isSpv.value
     const finalSalesPersonIds = isNotAdmin
       ? user.value.sales_person
-          .filter((sp: ISalesPerson) =>
-            selectedCompanies.value.includes(sp.CompanyId)
-          )
-          .map((sp: ISalesPerson) => Number(sp.id))
+        .filter((sp: ISalesPerson) =>
+          selectedCompanies.value.includes(sp.CompanyId)
+        )
+        .map((sp: ISalesPerson) => Number(sp.id))
       : Array.isArray(newVal.sales_person_id)
         ? newVal.sales_person_id.map(Number)
         : newVal.sales_person_id
           ? [Number(newVal.sales_person_id)]
           : []
-    
+
     customerStore.updateFilters({
       ...newVal,
       sales_person_id: finalSalesPersonIds,
@@ -212,9 +224,9 @@ watch(
   },
   { deep: true }
 )
-watch(selectedCompanies, 
+watch(selectedCompanies,
   (val, val1) => {
-    if(val.length !== val1.length) {
+    if (val.length !== val1.length) {
       filters.value = {
         ...filters.value,
         sales_person_id: [],
@@ -230,10 +242,8 @@ watch(selectedCompanies,
 
 <template>
   <section>
-    <VBreadcrumbs
-      class="px-0 pb-2 pt-0 help-center-breadcrumbs"
-      :items="[{title: 'Home', to: '/', class: 'text-primary' },{ title: 'Customers', to: { name: 'customers-list' }}]"
-      >
+    <VBreadcrumbs class="px-0 pb-2 pt-0 help-center-breadcrumbs"
+      :items="[{ title: 'Home', to: '/', class: 'text-primary' }, { title: 'Customers', to: { name: 'customers-list' } }]">
       <template v-slot:prepend>
         <v-icon icon='tabler-home' size="small"></v-icon>
       </template>
@@ -241,117 +251,60 @@ watch(selectedCompanies,
     <VCard class="mb-6">
       <VCardItem class="pb-4">
         <VRow class="d-flex align-center">
-<VCol cols="12" class="d-flex flex-wrap align-center">
-             <!-- Show Filters -->
-             <VCheckbox 
-               v-model="showFilter" 
-               label="Show Filters"
-               hide-details
-               class="mr-6"             
-             />
-<!-- Company - Show for admin or if user has access to multiple companies -->
-              <template v-if="isAdmin || userCompanies.length > 1">
-                <label class="mr-4 pl-4">Company: </label>
-                <div class="d-flex flex-wrap">
-                  <VCheckbox
-                    v-model="selectedCompanies"
-                    :label="COMPANIES.SPS"
-                    :value="COMPANIES.SPS"
-                    hide-details          
-                    class="mr-4"
-                  />
-                  <VCheckbox
-                    v-model="selectedCompanies"
-                    :label="COMPANIES.BBS"
-                    :value="COMPANIES.BBS"
-                    hide-details
-                  />
-                </div>
-              </template>
-           </VCol>
+          <VCol cols="12" class="d-flex flex-wrap align-center">
+            <!-- Show Filters -->
+            <VCheckbox v-model="showFilter" label="Show Filters" hide-details class="mr-6" />
+            <!-- Company - Show for admin or if user has access to multiple companies -->
+            <template v-if="isAdmin || userCompanies.length > 1">
+              <label class="mr-4 pl-4">Company: </label>
+              <div class="d-flex flex-wrap">
+                <VCheckbox v-model="selectedCompanies" :label="COMPANIES.SPS" :value="COMPANIES.SPS" hide-details
+                  class="mr-4" />
+                <VCheckbox v-model="selectedCompanies" :label="COMPANIES.BBS" :value="COMPANIES.BBS" hide-details />
+              </div>
+            </template>
+            <template v-if="!isAdmin">
+              <div class="d-flex flex-wrap ml-6">
+                <VCheckbox v-model="myCustomer" label="My Customers Only" hide-details class="mr-6" />
+              </div>
+            </template>
+          </VCol>
         </VRow>
       </VCardItem>
       <VCardText v-if="showFilter">
         <VRow>
           <!-- 👉 Select Role -->
           <VCol cols="12" sm="4" v-if="isAdmin || isSpv">
-            <AppCombobox 
-              multiple
-              v-model="filters.sales_person_id"          
-              placeholder="Filter by sales person" 
-              :items="filteredSalesPersonOptions"
-              clearable
-              clear-icon="tabler-x" 
-              :loading="loadingSalesPerson"
-              :return-object="false"
-              autocomplete="off"
-              autocorrect="off"
-              spellcheck="false"
-            />
+            <AppCombobox multiple v-model="filters.sales_person_id" placeholder="Filter by sales person"
+              :items="filteredSalesPersonOptions" clearable clear-icon="tabler-x" :loading="loadingSalesPerson"
+              :return-object="false" autocomplete="off" autocorrect="off" spellcheck="false" />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppCombobox 
-              v-model="filters.group_name"
-              placeholder="Filter by group name" 
-              :items="customerStore.groupNameOptions"
-              clearable
-              clear-icon="tabler-x" 
-              :loading="loadingGroupName"
-              :return-object="false"
-              autocomplete="off"
-              autocorrect="off"
-              spellcheck="false"
-            />
+            <AppCombobox v-model="filters.group_name" placeholder="Filter by group name"
+              :items="customerStore.groupNameOptions" clearable clear-icon="tabler-x" :loading="loadingGroupName"
+              :return-object="false" autocomplete="off" autocorrect="off" spellcheck="false" />
           </VCol>
 
           <VCol cols="12" md="4" sm="4">
-            <AppSelect
-              v-model="customerStore.filters.status"
-              @update:model-value="customerStore.updateFilters({ status: $event })" 
-              placeholder="Filter by status"
-              :items="status" 
-              clearable 
-              clear-icon="tabler-x" 
-            />
+            <AppSelect v-model="customerStore.filters.status"
+              @update:model-value="customerStore.updateFilters({ status: $event })" placeholder="Filter by status"
+              :items="status" clearable clear-icon="tabler-x" />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppCombobox
-              v-model="filters.payment_term"
-              placeholder="Filter by Payment Term"
-              :items="customerStore.paymentTermOptions"
-              clearable
-              clear-icon="tabler-x" 
-              :loading="loadingPaymentOptions"
-              :return-object="false"
-              autocomplete="off"
-              autocorrect="off"
-              spellcheck="false"
-            />
+            <AppCombobox v-model="filters.payment_term" placeholder="Filter by Payment Term"
+              :items="customerStore.paymentTermOptions" clearable clear-icon="tabler-x" :loading="loadingPaymentOptions"
+              :return-object="false" autocomplete="off" autocorrect="off" spellcheck="false" />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppSelect
-              v-model="customerStore.filters.price_list"
+            <AppSelect v-model="customerStore.filters.price_list"
               @update:model-value="customerStore.updateFilters({ price_list: $event })"
-              placeholder="Filter by Price List" 
-              :items="customerStore.priceListOptions" 
-              clearable 
-              clear-icon="tabler-x" 
-              :loading="loadingPriceListOptions"
-            />
+              placeholder="Filter by Price List" :items="customerStore.priceListOptions" clearable clear-icon="tabler-x"
+              :loading="loadingPriceListOptions" />
           </VCol>
           <VCol cols="12" md="4" sm="4">
-            <AppCombobox
-              v-model="filters.city"
-              placeholder="Filter by City / Area"
-              :items="customerStore.cityOptions" 
-              clearable 
-              clear-icon="tabler-x" 
-              :loading="loadingCityOptions"
-              :return-object="false"
-              autocomplete="off"
-              autocorrect="off"
-              spellcheck="false"
-            />
+            <AppCombobox v-model="filters.city" placeholder="Filter by City / Area" :items="customerStore.cityOptions"
+              clearable clear-icon="tabler-x" :loading="loadingCityOptions" :return-object="false" autocomplete="off"
+              autocorrect="off" spellcheck="false" />
           </VCol>
         </VRow>
         <VRow class="d-flex justify-start">
@@ -377,17 +330,10 @@ watch(selectedCompanies,
       <VCardText class="d-flex flex-wrap gap-4">
         <!-- Wrapper untuk AppSelect dan Checkbox -->
         <div class="d-flex gap-3 flex-column flex-sm-row me-4">
-          <AppSelect
-            :model-value="customerStore.filters.per_page"
-            :items="PAGINATION_ITEMS"
-            style="inline-size: 6.25rem;"
-            @update:model-value="customerStore.setPerpage(parseInt($event, 10))"
-          />
-          <VCheckbox
-            label="Hide Zero Invoice"
-            v-model="customerStore.filters.hideZeroInvoice"
-            @update:model-value="customerStore.updateFilters({ hideZeroInvoice: $event as boolean })"
-          />
+          <AppSelect :model-value="customerStore.filters.per_page" :items="PAGINATION_ITEMS"
+            style="inline-size: 6.25rem;" @update:model-value="customerStore.setPerpage(parseInt($event, 10))" />
+          <VCheckbox label="Hide Zero Invoice" v-model="customerStore.filters.hideZeroInvoice"
+            @update:model-value="customerStore.updateFilters({ hideZeroInvoice: $event as boolean })" />
         </div>
 
         <VSpacer />
@@ -395,12 +341,7 @@ watch(selectedCompanies,
         <!-- Search field -->
         <div class="app-user-search-filter d-flex align-center gap-4 flex-column flex-sm-row">
           <div style="inline-size: 15.625rem;">
-            <AppTextField
-              v-model="searchQuery"
-              placeholder="Search ..."
-              clearable
-              clear-icon="tabler-x"
-            />
+            <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
           </div>
         </div>
       </VCardText>
@@ -408,23 +349,12 @@ watch(selectedCompanies,
       <VDivider />
 
       <!-- SECTION datatable -->
-      <VDataTableServer
-        :loading="customerStore.loadingList"
-        v-model:items-per-page="customerStore.filters.per_page"
-        v-model:model-value="customerStore.selectedRows"        
-        :items="customerStore.customers"
-        item-value="CardCode"
-        :items-length="customerStore.pagination.total"
-        :headers="headers"
-        class="text-no-wrap"
-        show-select
-        :select-strategy="'all'"
-        :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
-        return-object
-        @update:options="customerStore.updateSortOptions"
-        @update:model-value="customerStore.setSelectedRows"
-        multi-sort
-      >
+      <VDataTableServer :loading="customerStore.loadingList" v-model:items-per-page="customerStore.filters.per_page"
+        v-model:model-value="customerStore.selectedRows" :items="customerStore.customers" item-value="CardCode"
+        :items-length="customerStore.pagination.total" :headers="headers" class="text-no-wrap" show-select
+        :select-strategy="'all'" :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)" return-object
+        @update:options="customerStore.updateSortOptions" @update:model-value="customerStore.setSelectedRows"
+        multi-sort>
         <template #item.actions="{ item }">
           <a :href="`${'view/' + item.id}`">
             <VIcon small class="mr-1">tabler-eye</VIcon>

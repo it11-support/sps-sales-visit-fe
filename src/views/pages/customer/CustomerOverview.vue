@@ -28,6 +28,17 @@ const customerStore = useCustomerStore()
 const showAddSlpCode = ref(false)
 const linkSalesPersonLoading = ref(false)
 
+// Admins may create activities for any customer. Other users may only do so
+// when the customer belongs to their linked salesperson.
+const canCreateActivity = computed(() => {
+  const role = String(userData.value?.role.role ?? '').toLowerCase()
+
+  if (['admin', 'administrator', 'spv', 'supervisor'].includes(role)) return true
+  const ownIds = [userData.value?.sales_person_id, userData.value?.sps_sales_person_id, userData.value?.bbs_sales_person_id]
+    .filter(Boolean).map(Number)
+  return ownIds.includes(Number(data.value.sales_person?.id))
+})
+
 const formData = ref<any>({
   assigned_by: userData.value.id,
   assigned_to: data.value.sales_person?.id ?? 0,
@@ -225,7 +236,7 @@ const handleLinkSalesPersonToCustomer = async () => {
             <VDivider class="my-4" />
               <VRow class="d-flex justify-start">
                 <VCol cols="12" lg="3" md="6" sm="12" class="d-flex justify-start">
-                  <VBtn color="warning" @click="handleShowScheduleForm">
+                  <VBtn v-if="canCreateActivity" color="warning" @click="handleShowScheduleForm">
                     Create Activity <VIcon end icon="tabler-calendar-check" />
                   </VBtn>
                 </VCol>
@@ -238,7 +249,7 @@ const handleLinkSalesPersonToCustomer = async () => {
   <VCol cols="12" v-if="!appCardOpen">
     <VRow class="d-flex justify-start">
       <VCol cols="12" lg="3" md="6" sm="12">
-        <VBtn color="warning" @click="handleShowScheduleForm">
+        <VBtn v-if="canCreateActivity" color="warning" @click="handleShowScheduleForm">
           Create Activity <VIcon end icon="tabler-calendar-check" />
         </VBtn>
       </VCol>

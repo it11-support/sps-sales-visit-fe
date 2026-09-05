@@ -24,6 +24,7 @@ export interface CustomerFilters {
   hideZeroInvoice: boolean
   dormantMonth?: number,
   companyIds: string[]
+  myCustomersOnly?: boolean
 }
 
 export const useCustomerStore = defineStore('customer', {
@@ -68,7 +69,8 @@ export const useCustomerStore = defineStore('customer', {
       sort_options: [],
       hideZeroInvoice: false,
       dormantMonth: undefined,
-      companyIds: [COMPANIES.SPS] as string[]
+      companyIds: [COMPANIES.SPS] as string[],
+      myCustomersOnly: false
     } as CustomerFilters,
   }),
 
@@ -97,10 +99,16 @@ export const useCustomerStore = defineStore('customer', {
      }
     },
 
-    async fetchCustomers() {
+    async fetchCustomers(options: { omitMyCustomersOnly?: boolean } = {}) {
       this.loadingList = true
-     
-      const url = createUrl('customer', { query: this.filters })
+
+      // The API treats this filter as a user-scoping flag. Admin requests
+      // must omit it entirely (sending `false` has a different meaning).
+      const query = { ...this.filters } as Partial<CustomerFilters>
+      if (options.omitMyCustomersOnly)
+        delete query.myCustomersOnly
+
+      const url = createUrl('customer', { query })
       const { data, error } = await useApi<any>(url)
 
       if (error.value) {
