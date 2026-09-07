@@ -14,6 +14,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   isSubItem: false,
 })
+const getIconProps = (icon: unknown) => (icon && typeof icon === 'object' ? icon : icon ? { icon } : layoutConfig.verticalNav.defaultNavItemIconProps) as Record<string, unknown>
 
 </script>
 
@@ -34,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
       <Component
         :is="layoutConfig.app.iconRenderer || 'div'"
         class="nav-item-icon"
-        v-bind="item.icon || layoutConfig.verticalNav.defaultNavItemIconProps"
+        v-bind="getIconProps(item.icon)"
       />
       <Component
         :is="layoutConfig.app.i18n.enable ? 'i18n-t' : 'span'"

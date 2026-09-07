@@ -19,6 +19,7 @@ const props = defineProps<{
 const route = useRoute()
 const router = useRouter()
 const configStore = useLayoutConfigStore()
+const getIconProps = (icon: unknown) => (icon && typeof icon === 'object' ? icon : icon ? { icon } : layoutConfig.verticalNav.defaultNavItemIconProps) as Record<string, unknown>
 const hideTitleAndBadge = configStore.isVerticalNavMini()
 
 /*
@@ -159,7 +160,7 @@ watch(
     >
       <Component
         :is="layoutConfig.app.iconRenderer || 'div'"
-        v-bind="item.icon || layoutConfig.verticalNav.defaultNavItemIconProps"
+        v-bind="getIconProps(item.icon)"
         class="nav-item-icon"
       />
 

@@ -26,6 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
 const route = useRoute()
 const router = useRouter()
 const configStore = useLayoutConfigStore()
+const getIconProps = (icon: unknown) => (icon && typeof icon === 'object' ? icon : icon ? { icon } : layoutConfig.verticalNav.defaultNavItemIconProps) as Record<string, unknown>
 
 const isGroupActive = ref(false)
 
@@ -60,7 +61,7 @@ watch(() => route.path, () => {
       <Component
         :is="layoutConfig.app.iconRenderer || 'div'"
         class="nav-item-icon"
-        v-bind="item.icon || layoutConfig.verticalNav.defaultNavItemIconProps"
+        v-bind="getIconProps(item.icon)"
       />
       <Component
         :is="layoutConfig.app.i18n.enable ? 'i18n-t' : 'span'"
