@@ -34,9 +34,12 @@ const canCreateActivity = computed(() => {
   const role = String(userData.value?.role.role ?? '').toLowerCase()
 
   if (['admin', 'administrator', 'spv', 'supervisor'].includes(role)) return true
-  const ownIds = [userData.value?.sales_person_id, userData.value?.sps_sales_person_id, userData.value?.bbs_sales_person_id]
-    .filter(Boolean).map(Number)
-  return ownIds.includes(Number(data.value.sales_person?.id))
+  const ownSalesPersons = Array.isArray(userData.value?.sales_person) ? userData.value.sales_person : []
+  const customerSlpCode = Number(data.value.SlpCode ?? data.value.sales_person?.SlpCode)
+  const customerCompany = String(data.value.CompanyId ?? '').toUpperCase()
+  return ownSalesPersons.some((sp: any) =>
+    Number(sp?.SlpCode) === customerSlpCode && String(sp?.CompanyId ?? '').toUpperCase() === customerCompany
+  )
 })
 
 const formData = ref<any>({
