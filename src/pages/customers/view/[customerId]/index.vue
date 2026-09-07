@@ -101,7 +101,7 @@ watch(searchQuery, (newVal) => {
                   <td>{{ item.product }} ({{ item.code }})</td>
                   <td>{{ item.lastPurchase ? formatDate(item.lastPurchase) : '-' }}</td>
                   <td>{{ formatMoney(item.totalRevenue) }}</td>
-                  <td>{{ item.quantity }}{{ item.unit ? ` ${item.unit}` : '' }}</td>
+                <td>{{ Number(item.quantity).toFixed(2) }}{{ item.unit ? ` ${item.unit}` : ' Kg' }}</td>
                 </tr>
               </tbody>
             </VTable>
