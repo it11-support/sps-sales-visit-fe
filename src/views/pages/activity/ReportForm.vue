@@ -523,7 +523,7 @@ const showButton = computed(() => {
 })
 
 const handleRemoveCompetitor = (index: number) => {
-  competitors.splice(index, 1)
+  competitors[index] = { name: '', address: '', product: '', price: undefined, qty: undefined, value: undefined, title: '' }
 }
 
 const handleAddCompetitor = () => {
@@ -749,19 +749,19 @@ const handleRemoveImage = () => {
                   <VCol>
                     <VRow>
                       <VCol cols="12" lg="4" md="4" sm="12">
-                        <VAutocomplete v-model="competitors[index]" :items="computedItems" :item-value="item => item.id"
-                          :item-title="item => item.name" :return-object="true" label="Competitors"
-                          placeholder="Competitors" @update:model-value="val => {
+                        <VAutocomplete :model-value="competitors[index]" :items="computedItems"
+                          :item-value="item => item.id" :item-title="item => item.name" :return-object="true"
+                          label="Competitors" placeholder="Competitors" @update:model-value="val => {
                             if (!val) {
-                              competitors[index].name = ''
+                              competitors[index] = { name: '', address: '', product: '', price: undefined, qty: undefined, value: undefined, title: '' }
                             } else {
                               onSelect(val as unknown as ICompetitorOption, index)
                               isSelecting = true
                             }
                           }" @update:search="val => {
-                              search = val
-                              isSelecting = false
-                            }" clearable :rules="[v => !!(v && v.name) || 'Competitor is required']" />
+                            search = val
+                            isSelecting = false
+                          }" clearable :rules="[v => !!(v && v.name) || 'Competitor is required']" />
                       </VCol>
                       <VCol cols="12" lg="4" md="4" sm="12">
                         <VTextField v-model="competitors[index].address" label="Address" placeholder="Address"
