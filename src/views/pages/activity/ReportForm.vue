@@ -34,7 +34,7 @@ const steps = [
 ]
 
 interface Props {
-  assignmentId: string  
+  assignmentId: string
 }
 const baseDomain = import.meta.env.VITE_BASE_DOMAIN
 
@@ -101,16 +101,16 @@ watch(activityPurposeReport, () => {
 watch(productReport, () => {
   setLocalItem(props.assignmentId, 'products', productReport.value.products)
   setLocalItem(props.assignmentId, 'product_issue', productReport.value.product_issue)
-}, {deep: true})
+}, { deep: true })
 
 watch(competitors, () => {
   setLocalItem(props.assignmentId, 'competitors', competitors)
-}, {deep: true})
+}, { deep: true })
 
 watch(notesReport, () => {
   setLocalItem(props.assignmentId, 'next_action', notesReport.value.next_action)
   setLocalItem(props.assignmentId, 'additional_note', notesReport.value.additional_note)
-}, {deep: true})
+}, { deep: true })
 watch(
   () => activityStore.activityReport,
   (newVal) => {
@@ -120,51 +120,51 @@ watch(
     initializing = true
 
     const cachedActivityPurposes = getParsedItem(props.assignmentId, 'activity_purpose_ids') ?? getParsedItem(props.assignmentId, 'activity_purposes')
-    const cachedReasonQtyDrops = getParsedItem(props.assignmentId, 'reason_qty_drop_ids') ?? getParsedItem(props.assignmentId,'reason_qty_drops')
-    const cachedProducts = getParsedItem(props.assignmentId,'products')
-    const cachedProductIssue = getParsedItem(props.assignmentId,'product_issue')
-    const cachedNextAction = getParsedItem(props.assignmentId,'next_action')
-    const cachedAdditionalNote = getParsedItem(props.assignmentId,'additional_note')
-    const cachedCompetitors = getParsedItem(props.assignmentId,'competitors')
-    
+    const cachedReasonQtyDrops = getParsedItem(props.assignmentId, 'reason_qty_drop_ids') ?? getParsedItem(props.assignmentId, 'reason_qty_drops')
+    const cachedProducts = getParsedItem(props.assignmentId, 'products')
+    const cachedProductIssue = getParsedItem(props.assignmentId, 'product_issue')
+    const cachedNextAction = getParsedItem(props.assignmentId, 'next_action')
+    const cachedAdditionalNote = getParsedItem(props.assignmentId, 'additional_note')
+    const cachedCompetitors = getParsedItem(props.assignmentId, 'competitors')
+
     if (cachedActivityPurposes) {
       activityPurposeReport.value.activity_purposes = cachedActivityPurposes
     } else {
       activityPurposeReport.value.activity_purposes = newVal.activity_purpose_ids ?? undefined
     }
 
-    if(cachedReasonQtyDrops) {
+    if (cachedReasonQtyDrops) {
       activityPurposeReport.value.reason_qty_drops = cachedReasonQtyDrops
     } else {
       activityPurposeReport.value.reason_qty_drops = newVal.reason_qty_drop_ids ?? undefined
     }
 
-    if(cachedProducts) {
+    if (cachedProducts) {
       productReport.value.products = cachedProducts
     } else {
       productReport.value.products = newVal.products ?? undefined
     }
 
-    if(cachedProductIssue) {
+    if (cachedProductIssue) {
       productReport.value.product_issue = cachedProductIssue
     } else {
       productReport.value.product_issue = newVal.product_issue ?? ''
     }
 
-    if(cachedNextAction) {
+    if (cachedNextAction) {
       notesReport.value.next_action = cachedNextAction
     } else {
       notesReport.value.next_action = newVal.next_action ?? ''
     }
 
-    if(cachedAdditionalNote) {
+    if (cachedAdditionalNote) {
       notesReport.value.additional_note = cachedAdditionalNote
     } else {
       notesReport.value.additional_note = newVal.additional_note ?? ''
     }
 
     if (cachedCompetitors && cachedCompetitors.length > 0) {
-      competitors.length = 0; 
+      competitors.length = 0;
       competitors.push(...cachedCompetitors.map((c: any) => ({
         ...c,
         value: c.value ?? c.id,
@@ -178,7 +178,7 @@ watch(
         title: c.title ?? c.name,
       })));
     }
-    
+
     nextTick(() => {
       initializing = false
       isCurrentStepValid.value = true
@@ -194,7 +194,7 @@ watch(
     let missing: MissingProduct[] = []
     let sales_details: any = {}
 
-    if(!activityStore.activityReport.missing_items?.length) {
+    if (!activityStore.activityReport.missing_items?.length) {
       for (const [key, value] of Object.entries(statStore.monthly_sales)) {
         if (Array.isArray(value.missing_items)) {
           missing.push(...value.missing_items)
@@ -202,7 +202,7 @@ watch(
       }
     } else {
       missing = activityStore.activityReport.missing_items.map((m: any) => {
-      return {
+        return {
           id: m.product_id,
           ItemCode: m.product.ItemCode,
           ItemGroup: m.product.ItemGroup,
@@ -217,7 +217,7 @@ watch(
     })
 
     if (!activityStore.activityReport.sales_growth?.length) {
-      for (const [companyKey, months] of Object.entries(statStore.monthly_sales)) {      
+      for (const [companyKey, months] of Object.entries(statStore.monthly_sales)) {
         sales_details[companyKey] ??= {}
         for (const [month, value] of Object.entries(months)) {
           if (month === 'growth' || month === 'missing_items') continue
@@ -298,34 +298,34 @@ watch(
 )
 
 const computedItems = computed<ICompetitorOption[]>(() => {
-   const baseItems = activityStore.allCompetitorOptions
-   const items = unref(baseItems) ?? []
+  const baseItems = activityStore.allCompetitorOptions
+  const items = unref(baseItems) ?? []
 
-   const trimmed = search.value.trim()
+  const trimmed = search.value.trim()
 
-   if (!trimmed || isSelecting.value) return items
+  if (!trimmed || isSelecting.value) return items
 
-   const exists = items.some(item =>
-     item.name.toLowerCase() === trimmed.toLowerCase()
-   )
+  const exists = items.some(item =>
+    item.name.toLowerCase() === trimmed.toLowerCase()
+  )
 
-   if (!exists) {
-     return [
-       ...items,
-       {
-         id: `new-${trimmed}`,
-         value: `new-${trimmed}`,
-         title: `+ Add "${trimmed}"`,
-         name: `+ Add "${trimmed}"`,
-         address: '',
-         isNew: true,
-         rawName: trimmed,
-       }
-     ]
-   }
+  if (!exists) {
+    return [
+      ...items,
+      {
+        id: `new-${trimmed}`,
+        value: `new-${trimmed}`,
+        title: `+ Add "${trimmed}"`,
+        name: `+ Add "${trimmed}"`,
+        address: '',
+        isNew: true,
+        rawName: trimmed,
+      }
+    ]
+  }
 
-   return items
- })
+  return items
+})
 
 const onProductSearch = (val: string) => {
   searchProduct.value = val
@@ -453,7 +453,7 @@ const handleSaveAsDraft = async () => {
   configStore.overlay = false
 }
 
-const handleCheckOut = async() => {
+const handleCheckOut = async () => {
   isDraft.value = true
   configStore.overlay = true
   try {
@@ -490,33 +490,33 @@ const handleCheckOut = async() => {
 
 const onSelect = (val: ICompetitorOption, index: number) => {
 
-   isSelecting.value = true
-   const newName = val.name.split(' - ')[0]
+  isSelecting.value = true
+  const newName = val.name.split(' - ')[0]
 
-   if (val?.isNew) {
-     const newItem: ICompetitorOption = {
-       id: Date.now(),
-       value: Date.now(),
-       title: val.rawName || val.name,
-       name: val.rawName || val.name,
-       address: '',
-       product: '',
-       price: undefined,
-       qty: undefined,
-       isNew: true,
-     }
+  if (val?.isNew) {
+    const newItem: ICompetitorOption = {
+      id: Date.now(),
+      value: Date.now(),
+      title: val.rawName || val.name,
+      name: val.rawName || val.name,
+      address: '',
+      product: '',
+      price: undefined,
+      qty: undefined,
+      isNew: true,
+    }
 
-     activityStore.competitorOptions.push(newItem)
-     competitors[index] = { ...newItem, product: '', qty: undefined, price: undefined }
-   } else {
-     competitors[index] = { ...val, name: newName,  product: '', qty: undefined, price: undefined }
-   }
+    activityStore.competitorOptions.push(newItem)
+    competitors[index] = { ...newItem, product: '', qty: undefined, price: undefined }
+  } else {
+    competitors[index] = { ...val, name: newName, product: '', qty: undefined, price: undefined }
+  }
 
-   nextTick(() => {
-     search.value = ''
-     isSelecting.value = false
-   })
- }
+  nextTick(() => {
+    search.value = ''
+    isSelecting.value = false
+  })
+}
 
 const showButton = computed(() => {
   return activityPurposeReport.value?.activity_purposes && activityPurposeReport.value?.activity_purposes.length > 0
@@ -538,7 +538,7 @@ const handleSubmit = async () => {
       configStore.overlay = false
       return
     }
-    
+
     await activityStore.storeActivityReport(false)
     showNotification('Report saved successfully!', 'success')
     router.push({ path: createUrl(`/activity/list`).value })
@@ -550,11 +550,11 @@ const handleSubmit = async () => {
 }
 
 const viewMap = computed(() => {
-  if(!activityStore.activity) return
+  if (!activityStore.activity) return
 
-  const {lat, lng} = activityStore.activity
-  
-  if(!lat || !lng) return
+  const { lat, lng } = activityStore.activity
+
+  if (!lat || !lng) return
 
   return `https://www.google.com/maps?q=${lat},${lng}`
 })
@@ -566,7 +566,7 @@ const handleViewOnMap = () => {
 const customers = computed(() => activityStore.customers)
 const activity = computed(() => activityStore.activity)
 
-const handleExportReport = async() => {
+const handleExportReport = async () => {
   activityStore.exportReport(props.assignmentId, customers.value[0].CardName, activity.value.check_in)
 }
 const handleRemoveImage = () => {
@@ -598,99 +598,52 @@ const handleRemoveImage = () => {
       ACTIVITY REPORT
     </VCardTitle>
     <VCardText style="padding: 5px !important;">
-      <AppStepper
-        v-model:current-step="currentStep"
-        :items="steps"
-        :is-active-step-valid="isCurrentStepValid"
-      />
+      <AppStepper v-model:current-step="currentStep" :items="steps" :is-active-step-valid="isCurrentStepValid" />
     </VCardText>
     <VDivider />
-    <VCardText >
-      <VWindow
-        v-model="currentStep"
-        class="disable-tab-transition"
-        :touch="false"
-      >
+    <VCardText>
+      <VWindow v-model="currentStep" class="disable-tab-transition" :touch="false">
         <VWindowItem>
-          <VForm 
-            ref="activityRef" 
-            @submit.prevent="() => validateForm(activityRef)"
-          >
+          <VForm ref="activityRef" @submit.prevent="() => validateForm(activityRef)">
             <VRow>
               <VCol cols="12" md="6">
-                <AppAutocomplete
-                  chips
-                  closable-chips
-                  multiple
-                  v-model="activityPurposeReport.activity_purposes"
-                  :items="activityStore.activityPuposesOptions"
-                  label="Activity Purposes"
-                  placeholder="Activity Purposes"
-                  clearable
-                  clear-icon="tabler-x"
-                  item-title="title"
-                  item-value="value"
-                  autocorrect="off"
-                  spellcheck="false"
-                  autocomplete="off"
-                  :rules="[requiredValidator]"
-                /> 
+                <AppAutocomplete chips closable-chips multiple v-model="activityPurposeReport.activity_purposes"
+                  :items="activityStore.activityPuposesOptions" label="Activity Purposes"
+                  placeholder="Activity Purposes" clearable clear-icon="tabler-x" item-title="title" item-value="value"
+                  autocorrect="off" spellcheck="false" autocomplete="off" :rules="[requiredValidator]" />
               </VCol>
               <VCol cols="12" md="6">
-              <AppAutocomplete
-                  chips
-                  closable-chips
-                  multiple
-                  v-model="activityPurposeReport.reason_qty_drops"
-                  :items="activityStore.reasonQtyDropOptions"
-                  label="Reason Quantity Drop"
-                  placeholder="Reason Quantity Drop"
-                  clearable
-                  clear-icon="tabler-x"
-                  item-title="title"
-                  item-value="value"
-                  autocorrect="off"
-                  spellcheck="false"
-                  autocomplete="off"
-                  :rules="[]"
-                />
+                <AppAutocomplete chips closable-chips multiple v-model="activityPurposeReport.reason_qty_drops"
+                  :items="activityStore.reasonQtyDropOptions" label="Reason Quantity Drop"
+                  placeholder="Reason Quantity Drop" clearable clear-icon="tabler-x" item-title="title"
+                  item-value="value" autocorrect="off" spellcheck="false" autocomplete="off" :rules="[]" />
               </VCol>
             </VRow>
             <VRow>
               <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="showButton">
                 <VBtn color="warning" type="button" @click="handleSaveAsDraft">
-                  Save As Draft <VIcon end icon="tabler-pencil-check" />
+                  Save As Draft
+                  <VIcon end icon="tabler-pencil-check" />
                 </VBtn>
               </VCol>
-              <VCol cols="12" md="6" v-if=" showButton && activityStore.activity.image_path === null">
+              <VCol cols="12" md="6" v-if="showButton && activityStore.activity.image_path === null">
                 <VBtn color="warning" type="button" @click="showCheckIn = true">
-                  Take Photo <VIcon end icon="tabler-camera" />
-                </VBtn>              
+                  Take Photo
+                  <VIcon end icon="tabler-camera" />
+                </VBtn>
               </VCol>
             </VRow>
             <VRow>
               <VCol cols="12">
                 <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
-                  <VBtn
-                    color="secondary"
-                    variant="tonal"
-                    disabled
-                  >
-                    <VIcon
-                      icon="tabler-arrow-left"
-                      start
-                      class="flip-in-rtl"
-                    />
+                  <VBtn color="secondary" variant="tonal" disabled>
+                    <VIcon icon="tabler-arrow-left" start class="flip-in-rtl" />
                     Previous
                   </VBtn>
 
                   <VBtn type="submit">
                     Next
-                    <VIcon
-                      icon="tabler-arrow-right"
-                      end
-                      class="flip-in-rtl"
-                    />
+                    <VIcon icon="tabler-arrow-right" end class="flip-in-rtl" />
                   </VBtn>
                 </div>
               </VCol>
@@ -698,75 +651,46 @@ const handleRemoveImage = () => {
           </VForm>
         </VWindowItem>
         <VWindowItem>
-          <VForm ref="productRef"
-           @submit.prevent="() => validateForm(productRef)"
-          >
-             <VRow>
+          <VForm ref="productRef" @submit.prevent="() => validateForm(productRef)">
+            <VRow>
               <VCol cols="12" md="6">
-                <AppAutocomplete
-                  chips
-                  closable-chips
-                  multiple
-                  v-model="productReport.products"
-                  :items="productStore.products"
-                  label="Product Offering"
-                  placeholder="Product Offering"
-                  clearable
-                  clear-icon="tabler-x"
-                  item-title="ItemName"
-                  item-value="ItemCode"
-                  return-object
-                  autocorrect="off"
-                  spellcheck="false"
-                  autocomplete="off"
-                  v-model:search="searchProduct"
-                  @update:model-value="onProductSelect"
-                  @update:search="onProductSearch"
-                />
+                <AppAutocomplete chips closable-chips multiple v-model="productReport.products"
+                  :items="productStore.products" label="Product Offering" placeholder="Product Offering" clearable
+                  clear-icon="tabler-x" item-title="ItemName" item-value="ItemCode" return-object autocorrect="off"
+                  spellcheck="false" autocomplete="off" v-model:search="searchProduct"
+                  @update:model-value="onProductSelect" @update:search="onProductSearch" />
               </VCol>
               <VCol cols="12" md="6">
-                <AppTextarea              
-                  v-model="productReport.product_issue"                  
-                  label="Product Issues"
-                  placeholder="Product Issues"
-                  clearable
-                  clear-icon="tabler-x"
-                />
+                <AppTextarea v-model="productReport.product_issue" label="Product Issues" placeholder="Product Issues"
+                  clearable clear-icon="tabler-x" />
               </VCol>
-              </VRow>
-              <VRow>
-                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment?.status !== 'completed'">
-                  <VBtn color="warning" type="button" @click="handleSaveAsDraft">
-                    Save As Draft <VIcon end icon="tabler-pencil-check" />
-                  </VBtn>
-                </VCol>
-                <VCol cols="12" md="6" v-if=" activityStore.activity.image_path === null">
-                  <VBtn color="warning" type="button" @click="showCheckIn = true">
-                    Take Photo <VIcon end icon="tabler-camera" />
-                  </VBtn>
-                </VCol>
-              </VRow>
-              <VRow>
+            </VRow>
+            <VRow>
+              <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start"
+                v-if="activityStore.currentReport.assignment?.status !== 'completed'">
+                <VBtn color="warning" type="button" @click="handleSaveAsDraft">
+                  Save As Draft
+                  <VIcon end icon="tabler-pencil-check" />
+                </VBtn>
+              </VCol>
+              <VCol cols="12" md="6" v-if="activityStore.activity.image_path === null">
+                <VBtn color="warning" type="button" @click="showCheckIn = true">
+                  Take Photo
+                  <VIcon end icon="tabler-camera" />
+                </VBtn>
+              </VCol>
+            </VRow>
+            <VRow>
               <VCol cols="12">
                 <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
-                  <VBtn                  
-                    @click="currentStep--"
-                  >
-                    <VIcon
-                      icon="tabler-arrow-left"
-                      start
-                      class="flip-in-rtl"
-                    />
+                  <VBtn @click="currentStep--">
+                    <VIcon icon="tabler-arrow-left" start class="flip-in-rtl" />
                     Previous
                   </VBtn>
 
                   <VBtn type="submit">
                     Next
-                    <VIcon
-                      icon="tabler-arrow-right"
-                      end
-                      class="flip-in-rtl"
-                    />
+                    <VIcon icon="tabler-arrow-right" end class="flip-in-rtl" />
                   </VBtn>
                 </div>
               </VCol>
@@ -774,63 +698,43 @@ const handleRemoveImage = () => {
           </VForm>
         </VWindowItem>
         <VWindowItem>
-          <VForm ref="notesRef"
-           @submit.prevent="() => validateForm(notesRef)"
-          >
-             <VRow>
+          <VForm ref="notesRef" @submit.prevent="() => validateForm(notesRef)">
+            <VRow>
               <VCol cols="12" md="6">
-                <AppTextarea              
-                  v-model="notesReport.next_action"
-                  label="Next actions"
-                  placeholder="Next actions"
-                  clearable
-                  clear-icon="tabler-x"
-                />
+                <AppTextarea v-model="notesReport.next_action" label="Next actions" placeholder="Next actions" clearable
+                  clear-icon="tabler-x" />
               </VCol>
               <VCol cols="12" md="6">
-                <AppTextarea             
-                  label="Additional notes"
-                  v-model="notesReport.additional_note"
-                  placeholder="Additional notes"
-                  clearable
-                  clear-icon="tabler-x"
-                />
+                <AppTextarea label="Additional notes" v-model="notesReport.additional_note"
+                  placeholder="Additional notes" clearable clear-icon="tabler-x" />
               </VCol>
-              </VRow>
-              <VRow>
-                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment?.status !== 'completed'">
-                  <VBtn color="warning" type="button" @click="handleSaveAsDraft">
-                    Save As Draft <VIcon end icon="tabler-pencil-check" />
-                  </VBtn>
-                </VCol>
-                <VCol cols="12" md="6" v-if=" activityStore.activity.image_path === null">
-                  <VBtn color="warning" type="button" @click="showCheckIn = true">
-                    Take Photo <VIcon end icon="tabler-camera" />
-                  </VBtn>
-                </VCol>
-              </VRow>
-              <VRow>
+            </VRow>
+            <VRow>
+              <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start"
+                v-if="activityStore.currentReport.assignment?.status !== 'completed'">
+                <VBtn color="warning" type="button" @click="handleSaveAsDraft">
+                  Save As Draft
+                  <VIcon end icon="tabler-pencil-check" />
+                </VBtn>
+              </VCol>
+              <VCol cols="12" md="6" v-if="activityStore.activity.image_path === null">
+                <VBtn color="warning" type="button" @click="showCheckIn = true">
+                  Take Photo
+                  <VIcon end icon="tabler-camera" />
+                </VBtn>
+              </VCol>
+            </VRow>
+            <VRow>
               <VCol cols="12">
                 <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
-                  <VBtn
-                   
-                    @click="currentStep--"
-                  >
-                    <VIcon
-                      icon="tabler-arrow-left"
-                      start
-                      class="flip-in-rtl"
-                    />
+                  <VBtn @click="currentStep--">
+                    <VIcon icon="tabler-arrow-left" start class="flip-in-rtl" />
                     Previous
                   </VBtn>
 
                   <VBtn type="submit">
                     Next
-                    <VIcon
-                      icon="tabler-arrow-right"
-                      end
-                      class="flip-in-rtl"
-                    />
+                    <VIcon icon="tabler-arrow-right" end class="flip-in-rtl" />
                   </VBtn>
                 </div>
               </VCol>
@@ -838,91 +742,58 @@ const handleRemoveImage = () => {
           </VForm>
         </VWindowItem>
         <VWindowItem>
-          <VForm ref="competitorsRef"
-           @submit.prevent="() => validateForm(competitorsRef)"
-          >
-             <VRow>
+          <VForm ref="competitorsRef" @submit.prevent="() => validateForm(competitorsRef)">
+            <VRow>
               <VCol cols="12" md="6">
-                 <VRow v-for="(item, index) in competitors" :key="index">
+                <VRow v-for="(item, index) in competitors" :key="index">
                   <VCol>
                     <VRow>
-                      <VCol cols="12" lg="4" md="4" sm="12">           
-                        <VAutocomplete
-                          v-model="competitors[index]"
-                          :items="computedItems"
-                          :item-value="item => item.id"
-                          :item-title="item => item.name "
-                          :return-object="true"
-                          label="Competitors"
-                          placeholder="Competitors"
-                          @update:model-value="val => {
-                             if(!val) {
-                               activityStore.currentReport.competitors[index] = {name: '', address: '', product: '', price: undefined, qty: undefined}
-                             } else { 
-                               onSelect(val as unknown as ICompetitorOption, index)
-                               isSelecting = true
-                             }               
-                           }"
-                          @update:search="val => {
-                            search = val
-                            isSelecting = false
-                          }"
-                          clearable
-                          :rules="[v => !!(v && v.name) || 'Competitor is required']"
-                        />
+                      <VCol cols="12" lg="4" md="4" sm="12">
+                        <VAutocomplete v-model="competitors[index]" :items="computedItems" :item-value="item => item.id"
+                          :item-title="item => item.name" :return-object="true" label="Competitors"
+                          placeholder="Competitors" @update:model-value="val => {
+                            if (!val) {
+                              competitors[index].name = ''
+                            } else {
+                              onSelect(val as unknown as ICompetitorOption, index)
+                              isSelecting = true
+                            }
+                          }" @update:search="val => {
+                              search = val
+                              isSelecting = false
+                            }" clearable :rules="[v => !!(v && v.name) || 'Competitor is required']" />
                       </VCol>
                       <VCol cols="12" lg="4" md="4" sm="12">
-                        <VTextField
-                            v-model="competitors[index].address"
-                            label="Address"
-                            placeholder="Address"
-                            @update:model-value="val => {
-                              competitors[index].address = val
-                            }"
-                            :rules="[requiredValidator]"
-                          />
+                        <VTextField v-model="competitors[index].address" label="Address" placeholder="Address"
+                          @update:model-value="val => {
+                            competitors[index].address = val
+                          }" :rules="[requiredValidator]" />
                       </VCol>
                       <VCol cols="12" lg="3" md="4" sm="12">
-                          <VTextField
-                            v-model="competitors[index].product"
-                            label="Product"
-                            placeholder="Product"
-                            @update:model-value="val => {
-                              competitors[index].product = val
-                            }"
-                          />
-                      </VCol>                    
-                      <VCol cols="12" lg="4" md="4" sm="12">              
-                        <CurrencyInput
-                          :model-value="Number(competitors[index].price) ?? undefined"
-                          label="Price"
-                          placeholder="Price"
-                          :options="{ locale: 'id-ID', currency: 'IDR'}"
-                          @update:model-value="(val: number) => {
-                            competitors[index].price = val
-                          }"
-                          :rules="[(val:number) => regexValidator(val, /^Rp\s?\d{1,3}(\.\d{3})*$/)]"
-
-                        />
+                        <VTextField v-model="competitors[index].product" label="Product" placeholder="Product"
+                          @update:model-value="val => {
+                            competitors[index].product = val
+                          }" />
                       </VCol>
                       <VCol cols="12" lg="4" md="4" sm="12">
-                        <VTextField
-                          :model-value="competitors[index].qty ?? undefined"
-                          hide-details="auto"
-                          label="Quantity (Kg)"
-                          type="number"
-                          placeholder="Quantity (Kg)"          
-                          @update:model-value="(val) => competitors[index].qty = Number(val)"
-                        />
+                        <CurrencyInput :model-value="Number(competitors[index].price) ?? undefined" label="Price"
+                          placeholder="Price" :options="{ locale: 'id-ID', currency: 'IDR' }" @update:model-value="(val: number) => {
+                            competitors[index].price = val
+                          }" :rules="[(val: number) => regexValidator(val, /^Rp\s?\d{1,3}(\.\d{3})*$/)]" />
+                      </VCol>
+                      <VCol cols="12" lg="4" md="4" sm="12">
+                        <VTextField :model-value="competitors[index].qty ?? undefined" hide-details="auto"
+                          label="Quantity (Kg)" type="number" placeholder="Quantity (Kg)"
+                          @update:model-value="(val) => competitors[index].qty = Number(val)" />
                       </VCol>
                     </VRow>
                     <VRow>
                       <VCol cols="12" lg="6" md="6" sm="12" class="d-flex gap-2">
-                        <VBtn icon color="error" @click="handleRemoveCompetitor(index)" v-if="competitors?.length > 0" >
+                        <VBtn icon color="error" @click="handleRemoveCompetitor(index)" v-if="competitors?.length > 0">
                           <VIcon icon="tabler-trash" />
                         </VBtn>
                         <VBtn icon color="success" @click="handleAddCompetitor" v-if="index === competitors.length - 1">
-                          <VIcon icon="tabler-plus" /> 
+                          <VIcon icon="tabler-plus" />
                         </VBtn>
                       </VCol>
                     </VRow>
@@ -936,82 +807,78 @@ const handleRemoveImage = () => {
                   </VCol>
                 </VRow>
               </VCol>
-              </VRow>
-              <VRow>
-                <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment.status !== 'completed'">
-                  <VBtn color="warning" type="button" @click="handleSaveAsDraft">
-                    Save As Draft <VIcon end icon="tabler-pencil-check" />
+            </VRow>
+            <VRow>
+              <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start"
+                v-if="activityStore.currentReport.assignment.status !== 'completed'">
+                <VBtn color="warning" type="button" @click="handleSaveAsDraft">
+                  Save As Draft
+                  <VIcon end icon="tabler-pencil-check" />
+                </VBtn>
+              </VCol>
+              <VCol cols="12" md="6" v-if="activityStore.activity.image_path === null">
+                <VBtn color="warning" type="button" @click="showCheckIn = true">
+                  Take Photo
+                  <VIcon end icon="tabler-camera" />
+                </VBtn>
+              </VCol>
+            </VRow>
+            <VRow>
+              <VCol cols="12">
+                <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
+                  <VBtn @click="currentStep--">
+                    <VIcon icon="tabler-arrow-left" start class="flip-in-rtl" />
+                    Previous
                   </VBtn>
-                </VCol>
-                <VCol cols="12" md="6" v-if=" activityStore.activity.image_path === null">
-                  <VBtn color="warning" type="button" @click="showCheckIn = true">
-                    Take Photo <VIcon end icon="tabler-camera" />
-                  </VBtn>
-                </VCol>
-              </VRow>
-              <VRow>
-                <VCol cols="12">
-                  <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
-                    <VBtn
-                     
-                      @click="currentStep--"
-                    >
-                      <VIcon
-                        icon="tabler-arrow-left"
-                        start
-                        class="flip-in-rtl"
-                      />
-                      Previous
-                    </VBtn>
 
-                    <VBtn type="submit">
-                      Next
-                      <VIcon
-                        icon="tabler-arrow-right"
-                        end
-                        class="flip-in-rtl"
-                      />
-                    </VBtn>
-                  </div>
-                </VCol>
-              </VRow>
-            </VForm>
+                  <VBtn type="submit">
+                    Next
+                    <VIcon icon="tabler-arrow-right" end class="flip-in-rtl" />
+                  </VBtn>
+                </div>
+              </VCol>
+            </VRow>
+          </VForm>
         </VWindowItem>
         <VWindowItem>
           <template v-if="activityStore.activity.image_path !== null">
             <VRow>
               <VCol class="text-no-wrap" cols="12">
-                <VImg
-                  :width="$vuetify.display.smAndDown ? 200 : 400"
-                  aspect-ratio="4/3"
-                  cover
-                  :src="`${baseDomain}/storage/${activityStore.activity.image_path}`"
-                />
+                <VImg :width="$vuetify.display.smAndDown ? 200 : 400" aspect-ratio="4/3" cover
+                  :src="`${baseDomain}/storage/${activityStore.activity.image_path}`" />
               </VCol>
               <VCol cols="12" v-if="activityStore.activity.image_path !== null">
                 <VBtn color="error" variant="tonal" type="button" @click="handleRemoveImage">
-                  Remove Image <VIcon end icon="tabler-trash" />
+                  Remove Image
+                  <VIcon end icon="tabler-trash" />
                 </VBtn>
               </VCol>
-              <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.check_in !== undefined">
+              <VCol class="text-no-wrap" cols="12"
+                v-if="activityStore.currentReport.assignment?.check_in !== undefined">
                 <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
-                <span>{{ formatDate(activityStore.currentReport.assignment?.check_in as unknown as  string, true ) }}</span>
+                <span>{{ formatDate(activityStore.currentReport.assignment?.check_in as unknown as string, true)
+                  }}</span>
               </VCol>
-              <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.check_out !== undefined">
+              <VCol class="text-no-wrap" cols="12"
+                v-if="activityStore.currentReport.assignment?.check_out !== undefined">
                 <span class="me-2" style="min-inline-size: 120px;">Check Out Date</span>
-                <span>{{ formatDate(activityStore.currentReport.assignment?.check_out as unknown as  string, true ) }}</span>
+                <span>{{ formatDate(activityStore.currentReport.assignment?.check_out as unknown as string, true)
+                  }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.dwh_created_at">
                 <span class="me-2" style="min-inline-size: 120px;">Created At</span>
-                <span>{{ formatDate(activityStore.currentReport.assignment?.dwh_created_at as unknown as  string, true ) }}</span>
+                <span>{{ formatDate(activityStore.currentReport.assignment?.dwh_created_at as unknown as string, true)
+                  }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.draft_saved_at">
                 <span class="me-2" style="min-inline-size: 120px;">Draft Saved At</span>
-                <span>{{ formatDate(activityStore.currentReport.assignment?.draft_saved_at as unknown as  string, true ) }}</span>
+                <span>{{ formatDate(activityStore.currentReport.assignment?.draft_saved_at as unknown as string, true)
+                  }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.submitted_at">
                 <span class="me-2" style="min-inline-size: 120px;">Submitted At</span>
-                <span>{{ formatDate(activityStore.currentReport.assignment?.submitted_at as unknown as  string, true ) }}</span>
+                <span>{{ formatDate(activityStore.currentReport.assignment?.submitted_at as unknown as string, true)
+                  }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
                 <VBtn color="success" size="small" @click="handleViewOnMap">
@@ -1019,54 +886,53 @@ const handleRemoveImage = () => {
                 </VBtn>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment.status === 'completed'">
-                <VBtn
-                  color="success"
-                  size="small"
+                <VBtn color="success" size="small"
                   :loading="activityStore.loadingReport === `loading${props.assignmentId}`"
-                  prepend-icon="tabler-file-export"
-                  @click="handleExportReport"
-                >
+                  prepend-icon="tabler-file-export" @click="handleExportReport">
                   Export Report
                 </VBtn>
               </VCol>
             </VRow>
-          </template> 
+          </template>
           <VRow>
-            <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" v-if="activityStore.currentReport.assignment.status !== 'completed'">
+            <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start"
+              v-if="activityStore.currentReport.assignment.status !== 'completed'">
               <VBtn color="warning" type="button" @click="handleSaveAsDraft">
-                Save As Draft <VIcon end icon="tabler-pencil-check" />
+                Save As Draft
+                <VIcon end icon="tabler-pencil-check" />
               </VBtn>
             </VCol>
             <VCol cols="12" md="6" v-if="activityStore.activity.image_path === null">
               <VBtn color="warning" type="button" @click="showCheckIn = true">
-                Take Photo <VIcon end icon="tabler-camera" />
-              </VBtn>              
-            </VCol>
-             <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start" :loading="activityStore.loadingId === Number(props.assignmentId)" v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out === null">
-              <VBtn color="success" type="button" @click="handleCheckOut">
-                Check Out <VIcon end icon="tabler-home-check" />
+                Take Photo
+                <VIcon end icon="tabler-camera" />
               </VBtn>
-            </VCol>            
+            </VCol>
+            <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start"
+              :loading="activityStore.loadingId === Number(props.assignmentId)"
+              v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out === null">
+              <VBtn color="success" type="button" @click="handleCheckOut">
+                Check Out
+                <VIcon end icon="tabler-home-check" />
+              </VBtn>
+            </VCol>
           </VRow>
           <VRow>
             <VCol cols="12">
               <div class="d-flex flex-wrap gap-4 justify-sm-space-between justify-center mt-8">
-                <VBtn
-                  @click="currentStep--"
-                >
-                  <VIcon
-                    icon="tabler-arrow-left"
-                    start
-                    class="flip-in-rtl"
-                  />
+                <VBtn @click="currentStep--">
+                  <VIcon icon="tabler-arrow-left" start class="flip-in-rtl" />
                   Previous
                 </VBtn>
 
-                <VBtn v-if="activityStore.activity.image_path !== null  && activityStore.activity.check_out !== null" @click="handleSubmit">
-                  Submit<VIcon end icon="tabler-device-floppy" class="flip-in-rtl" />                  
+                <VBtn v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out !== null"
+                  @click="handleSubmit">
+                  Submit
+                  <VIcon end icon="tabler-device-floppy" class="flip-in-rtl" />
                 </VBtn>
                 <VBtn v-else disabled>
-                  Submit<VIcon end icon="tabler-device-floppy" class="flip-in-rtl" />                  
+                  Submit
+                  <VIcon end icon="tabler-device-floppy" class="flip-in-rtl" />
                 </VBtn>
               </div>
             </VCol>
@@ -1076,20 +942,11 @@ const handleRemoveImage = () => {
     </VCardText>
   </VCard>
   <CheckIn :show="showCheckIn" :assignmentId="Number(props.assignmentId)" @update:show="showCheckIn = $event" />
-  
-  <VSnackbar
-    v-model="snackbar"
-    :color="snackbarColor"
-    :timeout="5000"
-    location="top right"
-  >
+
+  <VSnackbar v-model="snackbar" :color="snackbarColor" :timeout="5000" location="top right">
     {{ snackbarMessage }}
     <template #actions>
-      <VBtn
-        icon="tabler-x"
-        variant="text"
-        @click="snackbar = false"
-      />
+      <VBtn icon="tabler-x" variant="text" @click="snackbar = false" />
     </template>
   </VSnackbar>
 </template>
