@@ -32,6 +32,13 @@ const isSpv = computed(() => {
     return false
   }
 })
+const isSales = computed(() => {
+  if (user.value.role) {
+    return user.value.role.role === 'sales'
+  } else {
+    return false
+  }
+})
 const showFilter = ref(false)
 const loadingSalesPerson = ref(true)
 const loadingGroupName = ref(true)
@@ -201,6 +208,15 @@ const myCustomer = computed<boolean>({
   }
 })
 
+const showOtherSlpCustomers = computed<boolean>({
+  get() {
+    return customerStore.filters.showOtherSlpCustomers ?? false
+  },
+  set(val) {
+    customerStore.updateFilters({ showOtherSlpCustomers: val })
+  }
+})
+
 watch(
   filters,
   (newVal) => {
@@ -266,6 +282,7 @@ watch(selectedCompanies,
             <template v-if="!isAdmin">
               <div class="d-flex flex-wrap ml-6">
                 <VCheckbox v-model="myCustomer" label="My Customers Only" hide-details class="mr-6" />
+                <VCheckbox v-if="isSales" v-model="showOtherSlpCustomers" label="Show Other SLP Customers" hide-details class="mr-6" />
               </div>
             </template>
           </VCol>

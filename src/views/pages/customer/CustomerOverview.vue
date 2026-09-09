@@ -73,7 +73,7 @@ onMounted(async () => {
   await activityStore.fetchActivityTypes()
   const company = data.value.CompanyId === COMPANIES.SPS ? COMPANIES.BBS : COMPANIES.SPS
   const salesPersonId = data.value.sales_person?.id ?? null
-  await customerStore.fetchCustomerOptions(company, salesPersonId!)
+  await customerStore.fetchCustomerOptions(company, salesPersonId!, customerStore.filters.showOtherSlpCustomers)
 })
 
 watch(showScheduleForm, (val) => {

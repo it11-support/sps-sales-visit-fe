@@ -25,6 +25,7 @@ export interface CustomerFilters {
   dormantMonth?: number,
   companyIds: string[]
   myCustomersOnly?: boolean
+  showOtherSlpCustomers?: boolean
 }
 
 export const useCustomerStore = defineStore('customer', {
@@ -70,16 +71,17 @@ export const useCustomerStore = defineStore('customer', {
       hideZeroInvoice: false,
       dormantMonth: undefined,
       companyIds: [COMPANIES.SPS] as string[],
-      myCustomersOnly: false
+      myCustomersOnly: false,
+      showOtherSlpCustomers: false
     } as CustomerFilters,
   }),
 
   actions: {
 
-    async fetchCustomerOptions(companyId: string | null = null, salesPersonId: string | null = null) {
+    async fetchCustomerOptions(companyId: string | null = null, salesPersonId: string | null = null, showAllSlpCustomers: boolean = false) {
      try {
       this.loadingList = true
-      const url = createUrl(`customer/get-options`, {query: { companyId, salesPersonId }})
+      const url = createUrl(`customer/get-options`, {query: { companyId, salesPersonId, showAllSlpCustomers }})
       const { data } = await useApi<any>(url)
 
       this.customerOptions = data.value.data.map((company: any) => ({
@@ -99,7 +101,7 @@ export const useCustomerStore = defineStore('customer', {
      }
     },
 
-    async fetchCustomers(options: { omitMyCustomersOnly?: boolean } = {}) {
+    async fetchCustomers(options: { omitMyCustomersOnly?: boolean, omitShowOtherSlpCustomers?: boolean } = {}) {
       this.loadingList = true
 
       // The API treats this filter as a user-scoping flag. Admin requests
@@ -107,6 +109,8 @@ export const useCustomerStore = defineStore('customer', {
       const query = { ...this.filters } as Partial<CustomerFilters>
       if (options.omitMyCustomersOnly)
         delete query.myCustomersOnly
+      if (options.omitShowOtherSlpCustomers)
+        delete query.showOtherSlpCustomers
 
       const url = createUrl('customer', { query })
       const { data, error } = await useApi<any>(url)
@@ -139,7 +143,7 @@ export const useCustomerStore = defineStore('customer', {
     },
     async fetchFilters() {
       this.loadingList = true
-      const { data, error } = await useApi<any>(createUrl('customer/get-filters'))
+      const { data, error } = await useApi<any>(createUrl('customer/get-filters', { query: { showOtherSlpCustomers: this.filters.showOtherSlpCustomers } }))
       if (error.value) {
         console.error('Error fetching filters:', error.value)
         this.loadingList = false

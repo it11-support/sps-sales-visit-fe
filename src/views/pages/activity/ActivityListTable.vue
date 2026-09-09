@@ -186,7 +186,7 @@ onMounted(loadActivity)
 
 watch(filters.value, val => {
   if (val)
-    customerStore.fetchCustomerOptions(null, val.sales_person_id?.toString())
+    customerStore.fetchCustomerOptions(null, val.sales_person_id?.toString(), customerStore.filters.showOtherSlpCustomers)
 })
 
 watch(
@@ -375,7 +375,7 @@ const handelUpdateActivity = async () => {
 } 
 const handleEdit = async (item: IActivity) => {
   setFormValue(item)
-  await customerStore.fetchCustomerOptions(null, salesPersonId.value.id)
+  await customerStore.fetchCustomerOptions(null, salesPersonId.value.id, customerStore.filters.showOtherSlpCustomers)
   await nextTick()
 
   showScheduleForm.value = true
