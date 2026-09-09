@@ -1001,6 +1001,18 @@ const handleRemoveImage = () => {
                 <span class="me-2" style="min-inline-size: 120px;">Check Out Date</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.check_out as unknown as  string, true ) }}</span>
               </VCol>
+              <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.dwh_created_at">
+                <span class="me-2" style="min-inline-size: 120px;">Created At</span>
+                <span>{{ formatDate(activityStore.currentReport.assignment?.dwh_created_at as unknown as  string, true ) }}</span>
+              </VCol>
+              <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.draft_saved_at">
+                <span class="me-2" style="min-inline-size: 120px;">Draft Saved At</span>
+                <span>{{ formatDate(activityStore.currentReport.assignment?.draft_saved_at as unknown as  string, true ) }}</span>
+              </VCol>
+              <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.submitted_at">
+                <span class="me-2" style="min-inline-size: 120px;">Submitted At</span>
+                <span>{{ formatDate(activityStore.currentReport.assignment?.submitted_at as unknown as  string, true ) }}</span>
+              </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
                 <VBtn color="success" size="small" @click="handleViewOnMap">
                   <VIcon icon="tabler-map-2 mr-2" /> View Location

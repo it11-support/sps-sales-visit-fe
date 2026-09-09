@@ -259,6 +259,14 @@ export const useActivityStore = defineStore('activity', {
         }
       }
 
+      this.activity = {
+        ...this.activity,
+        dwh_created_at: data.value.data.dwh_created_at,
+        dwh_updated_at: data.value.data.dwh_updated_at,
+        submitted_at: data.value.data.submitted_at,
+        draft_saved_at: data.value.data.draft_saved_at,
+      }
+
       await nextTick()      
       this.loadingAssignment = false
     },
@@ -322,6 +330,10 @@ export const useActivityStore = defineStore('activity', {
           editable: data.value.data.editable,
           lat: data.value.data.lat,
           lng: data.value.data.lng,
+          dwh_created_at: data.value.data.dwh_created_at,
+          dwh_updated_at: data.value.data.dwh_updated_at,
+          submitted_at: data.value.data.submitted_at,
+          draft_saved_at: data.value.data.draft_saved_at,
         }
       }
 

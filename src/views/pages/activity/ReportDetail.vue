@@ -533,6 +533,18 @@ const handleExportReport = async() => {
               <span class="me-2" style="min-inline-size: 120px;">Check Out Date</span>
               <span>{{ formatDate(details.check_out, true ) }}</span>
             </VCol>
+            <VCol class="text-no-wrap" cols="12" v-if="details.dwh_created_at">
+              <span class="me-2" style="min-inline-size: 120px;">Created At</span>
+              <span>{{ formatDate(details.dwh_created_at, true ) }}</span>
+            </VCol>
+            <VCol class="text-no-wrap" cols="12" v-if="details.draft_saved_at">
+              <span class="me-2" style="min-inline-size: 120px;">Draft Saved At</span>
+              <span>{{ formatDate(details.draft_saved_at, true ) }}</span>
+            </VCol>
+            <VCol class="text-no-wrap" cols="12" v-if="details.submitted_at">
+              <span class="me-2" style="min-inline-size: 120px;">Submitted At</span>
+              <span>{{ formatDate(details.submitted_at, true ) }}</span>
+            </VCol>
             <VCol class="text-no-wrap" cols="12" v-if="viewMap">
               <VBtn color="success" size="small" @click="handleViewOnMap">
                 <VIcon icon="tabler-map-2 mr-2" /> View Location

@@ -40,6 +40,10 @@ export interface IActivity extends FormData {
   editable_until?: string
   editable?: boolean
   activity_details?: IActivityReport[]
+  dwh_created_at?: string
+  dwh_updated_at?: string
+  submitted_at?: string
+  draft_saved_at?: string
 }
 
 export interface IActivityDetails {
@@ -108,6 +112,10 @@ export interface IActivityReport {
   status?: string
   editable_until?: string,
   editable?: boolean
+  dwh_created_at?: string
+  dwh_updated_at?: string
+  submitted_at?: string
+  draft_saved_at?: string
 }
 
 export interface ISupplierProduct {

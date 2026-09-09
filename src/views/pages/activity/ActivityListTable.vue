@@ -110,19 +110,20 @@ const STATUS = {
   DRAFT: 'draft'
 }
 
-const headers = computed(() => {
-  const headers = [
-    { title: 'Editable', key: 'editable', sortable: false },
-    { title: 'Actions', key: 'actions', sortable: false },
-    { title: 'Schedule', key: 'scheduled_date', sortable: true },
-    { title: 'Assignee', key: 'assigned_to', sortable: true },
-    { title: 'Customer', key: 'customer', sortable: true },
-    { title: 'Type', key: 'activity', sortable: true },
-    { title: 'Note', key: 'notes', sortable: true },
-    { title: 'Status', key: 'status', sortable: true },
-  ]
-  return headers
-})
+  const headers = computed(() => {
+    const headers = [
+      { title: 'Editable', key: 'editable', sortable: false },
+      { title: 'Actions', key: 'actions', sortable: false },
+      { title: 'Schedule', key: 'scheduled_date', sortable: true },
+      { title: 'Assignee', key: 'assigned_to', sortable: true },
+      { title: 'Customer', key: 'customer', sortable: true },
+      { title: 'Type', key: 'activity', sortable: true },
+      { title: 'Note', key: 'notes', sortable: true },
+      { title: 'Status', key: 'status', sortable: true },
+      { title: 'Last Action', key: 'last_action', sortable: true },
+    ]
+    return headers
+  })
 
 const tableHeaders = computed(() => {
   if (isAdmin.value) return headers.value
@@ -714,6 +715,25 @@ const customFilter = (item: any, queryText: string, itemText: string) => {
                 :content="getStatus(item.status)?.content" 
               />
             </div>
+          </div>
+        </div>
+      </template>
+      <template #item.last_action="{ item }">
+        <div class="d-flex flex-column">
+          <div class="text-sm" v-if="item.status === STATUS.DRAFT && item.draft_saved_at">
+            Draft saved<br>
+            <span class="text-caption text-medium-emphasis">{{ formatDate(item.draft_saved_at, true) }}</span>
+          </div>
+          <div class="text-sm" v-else-if="(item.status === STATUS.SUBMITTED || item.status === STATUS.COMPLETED) && item.submitted_at">
+            Submitted<br>
+            <span class="text-caption text-medium-emphasis">{{ formatDate(item.submitted_at, true) }}</span>
+          </div>
+          <div class="text-sm" v-else-if="item.dwh_updated_at">
+            Updated<br>
+            <span class="text-caption text-medium-emphasis">{{ formatDate(item.dwh_updated_at, true) }}</span>
+          </div>
+          <div class="text-sm" v-else>
+            <span class="text-caption text-medium-emphasis">-</span>
           </div>
         </div>
       </template>      
