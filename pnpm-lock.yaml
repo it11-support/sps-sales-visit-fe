@@ -314,8 +314,8 @@ importers:
         specifier: 2.1.3
         version: 2.1.3(vite@6.4.3(@types/node@22.20.0)(sass@1.101.0)(tsx@4.23.0)(yaml@2.9.0))(vue@3.5.39(typescript@5.9.3))(vuetify@3.12.9)
       vite-svg-loader:
-        specifier: 5.1.1
-        version: 5.1.1(vue@3.5.39(typescript@5.9.3))
+        specifier: 5.1.3
+        version: 5.1.3(vue@3.5.39(typescript@5.9.3))
       vue-tsc:
         specifier: 3.3.8
         version: 3.3.8(typescript@5.9.3)
@@ -4467,10 +4467,6 @@ packages:
     engines: {node: '>=20.19.0'}
     hasBin: true
 
-  sax@1.6.0:
-    resolution: {integrity: sha512-6R3J5M4AcbtLUdZmRv2SygeVaM7IhrLXu9BmnOGmmACak8fiUtOsYNWUS4uK7upbmHIBbLBeFeI//477BKLBzA==}
-    engines: {node: '>=11.0.0'}
-
   sax@1.6.1:
     resolution: {integrity: sha512-42tBVwLWnaQvW5zc4HbZrTuWccECCZfBi92FDuwtqxasH+JbPB3/FOKb1m222K42R4WxuxzzMsTswfzgtSu64Q==}
     engines: {node: '>=11.0.0'}
@@ -4744,8 +4740,8 @@ packages:
     resolution: {integrity: sha512-h5IS/hKkuVCbKSieR9uQCj9w+zLHoPh+ce19bBYyqF53g6mnPB8sAtIbe1s9dh2S2fCmYX2xel1Ln3PJBbK4kw==}
     engines: {node: '>= 0.8.0'}
 
-  svgo@3.3.4:
-    resolution: {integrity: sha512-GsNRis4e8jxn2Y9ENz/8lbJ93CstG8svtMnuRaHbiF2LTJ5tK0/q3t/URPq9Zc7zVWBJnNnJMIp6bevK7bSmNg==}
+  svgo@3.3.5:
+    resolution: {integrity: sha512-8SQMzdrvWaD8deUmrnYB+ASyxBVgWUOilg+A75nE/76WdLpj6LopCwiAVvkzkcqy/9b7t2Mg7faFLjg0ZRcZ3w==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -5053,8 +5049,8 @@ packages:
       vue: ^3.0.0
       vuetify: '>=3'
 
-  vite-svg-loader@5.1.1:
-    resolution: {integrity: sha512-RPzcXA/EpKJA0585x58DBgs7my2VfeJ+j2j1EoHY4Zh82Y7hV4cR1fElgy2aZi85+QSrcLLoTStQ5uZjD68u+Q==}
+  vite-svg-loader@5.1.3:
+    resolution: {integrity: sha512-JLROmqf5lrg2EXqQf6uXHiXoY1ea8xt3+i5nI/cjXgEmEZL4P7rrQZczi/aWF+V9JTK6pyfMmhWmVW2FAYji1g==}
     peerDependencies:
       vue: '>=3.2.13'
 
@@ -9851,8 +9847,6 @@ snapshots:
     optionalDependencies:
       '@parcel/watcher': 2.5.6
 
-  sax@1.6.0: {}
-
   sax@1.6.1: {}
 
   scslre@0.3.0:
@@ -10182,7 +10176,7 @@ snapshots:
     dependencies:
       svg.js: 2.7.1
 
-  svgo@3.3.4:
+  svgo@3.3.5:
     dependencies:
       commander: 7.2.0
       css-select: 5.1.0
@@ -10190,7 +10184,7 @@ snapshots:
       css-what: 6.1.0
       csso: 5.0.5
       picocolors: 1.1.1
-      sax: 1.6.0
+      sax: 1.6.1
 
   svgo@4.1.0:
     dependencies:
@@ -10585,10 +10579,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  vite-svg-loader@5.1.1(vue@3.5.39(typescript@5.9.3)):
+  vite-svg-loader@5.1.3(vue@3.5.39(typescript@5.9.3)):
     dependencies:
       debug: 4.4.3
-      svgo: 3.3.4
+      svgo: 3.3.5
       vue: 3.5.39(typescript@5.9.3)
     transitivePeerDependencies:
       - supports-color
