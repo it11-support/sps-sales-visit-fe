@@ -179,6 +179,20 @@ const handleSubmit = async () => {
       return
     }
 
+    const pos = await getLocation().catch(() => null as GeolocationPosition | null)
+    if (!pos) {
+      showNotification('Location access is required. Please enable GPS/location permission and try again.', 'error')
+      configStore.overlay = false
+      return
+    }
+
+    location.value = pos
+    activityStore.updateForm({
+      lat: pos.coords.latitude?.toString() ?? '',
+      lng: pos.coords.longitude?.toString() ?? '',
+      accuracy: pos.coords.accuracy?.toString() ?? '',
+    })
+
     await activityStore.storeActivityReport(true)
     const blob = dataUrlToBlob(canvas.value.toDataURL('image/jpeg'))
     const file = new File([blob], `${Date.now()}.jpg`, { type: 'image/jpeg' })

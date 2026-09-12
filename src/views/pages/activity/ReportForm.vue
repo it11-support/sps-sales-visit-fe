@@ -443,6 +443,13 @@ const handleSaveAsDraft = async () => {
       configStore.overlay = false
       return
     }
+
+    if (!activityStore.activity.lat || !activityStore.activity.lng || !activityStore.activity.accuracy) {
+      showNotification('Please take a photo with location before saving a draft.', 'error')
+      configStore.overlay = false
+      return
+    }
+
     await activityStore.storeActivityReport(true)
     showNotification('Draft saved successfully!', 'success')
     router.push({ path: createUrl(`/activity/${props.assignmentId}/report`).value })

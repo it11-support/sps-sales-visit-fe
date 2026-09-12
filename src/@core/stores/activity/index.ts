@@ -479,6 +479,9 @@ export const useActivityStore = defineStore('activity', {
         status: isDraft ? 'draft' : 'completed',
         growth,
         nonActive: normalizeNonActiveItems(this.activityReport.nonActive ?? this.activityReport.missing_items),
+        lat: this.activityReport.lat ?? this.activity.lat ?? null,
+        lng: this.activityReport.lng ?? this.activity.lng ?? null,
+        accuracy: this.activityReport.accuracy ?? this.activity.accuracy ?? null,
       }
       
       const payload = JSON.stringify(reportPayload);
