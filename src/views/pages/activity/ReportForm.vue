@@ -2,10 +2,10 @@
 import AppAutocomplete from '@/@core/components/app-form-elements/AppAutocomplete.vue'
 import AppStepper from '@/@core/components/AppStepper.vue'
 import { MissingProduct, useActivityStore, useConfigStore, useProductStore, useStatisticStore } from '@/@core/stores'
-import { ICompetitor, ICompetitorOption } from '@/@core/typedefs'
+import { ICompetitorOption } from '@/@core/typedefs'
+import { unref } from 'vue'
 import { VWindow } from 'vuetify/components'
 import { VForm } from 'vuetify/components/VForm'
-import { unref } from 'vue'
 import CheckIn from './CheckIn.vue'
 
 const statStore = useStatisticStore()
@@ -59,6 +59,7 @@ const searchProduct = ref('')
 const snackbar = ref(false)
 const snackbarMessage = ref('')
 const snackbarColor = ref('error')
+const shouldValidateCompetitors = ref(false)
 
 let initializing = true
 
@@ -372,21 +373,32 @@ const syncReportState = () => {
   })
 }
 
-const validateForm = (formRef: VForm | undefined) => {
-  formRef?.validate().then(valid => {
-    if (valid.valid) {
-      syncReportState()
-      currentStep.value++
-      isCurrentStepValid.value = true
-      activityStore.updateForm({})
-    } else {
-      isCurrentStepValid.value = false
-      showNotification(`Validation error at step "${stepNames[currentStep.value]}". Please check again.`)
-    }
-  })
+const validateForm = async (formRef: VForm | undefined) => {
+  if (formRef === competitorsRef.value) {
+    shouldValidateCompetitors.value = true
+    await nextTick()
+  }
+
+  const valid = await formRef?.validate()
+
+  if (valid?.valid) {
+    syncReportState()
+    currentStep.value++
+    isCurrentStepValid.value = true
+    activityStore.updateForm({})
+  } else {
+    isCurrentStepValid.value = false
+    showNotification(
+      `Validation error at step "${stepNames[currentStep.value]}". Please check again.`
+    )
+  }
 }
 
 const validateAllSteps = async (requireAttachment = true): Promise<boolean> => {
+
+  shouldValidateCompetitors.value = true
+  await nextTick()
+
   const forms = [
     { ref: activityRef, name: stepNames[0], index: 0 },
     { ref: productRef, name: stepNames[1], index: 1 },
@@ -529,12 +541,30 @@ const showButton = computed(() => {
   return activityPurposeReport.value?.activity_purposes && activityPurposeReport.value?.activity_purposes.length > 0
 })
 
-const handleRemoveCompetitor = (index: number) => {
-  competitors[index] = { name: '', address: '', product: '', price: undefined, qty: undefined, value: undefined, title: '' }
+const handleRemoveCompetitor = async (index: number) => {
+  competitors.splice(index, 1)
+
+  shouldValidateCompetitors.value = false
+
+  await nextTick()
+  competitorsRef.value?.resetValidation()
 }
 
-const handleAddCompetitor = () => {
-  competitors.push({ name: '', address: '', product: '', price: undefined, qty: undefined, value: undefined, title: '' })
+const handleAddCompetitor = async () => {
+  shouldValidateCompetitors.value = false
+
+  competitors.push({
+    name: '',
+    address: '',
+    product: '',
+    price: undefined,
+    qty: undefined,
+    value: undefined,
+    title: '',
+  })
+
+  await nextTick()
+  competitorsRef.value?.resetValidation()
 }
 
 const handleSubmit = async () => {
@@ -611,7 +641,7 @@ const handleRemoveImage = () => {
     <VCardText>
       <VWindow v-model="currentStep" class="disable-tab-transition" :touch="false">
         <VWindowItem>
-          <VForm ref="activityRef" @submit.prevent="() => validateForm(activityRef)">
+          <VForm ref="activityRef" @submit.prevent="() => validateForm(activityRef)" validate-on="submit">
             <VRow>
               <VCol cols="12" md="6">
                 <AppAutocomplete chips closable-chips multiple v-model="activityPurposeReport.activity_purposes"
@@ -768,13 +798,15 @@ const handleRemoveImage = () => {
                           }" @update:search="val => {
                             search = val
                             isSelecting = false
-                          }" clearable :rules="[v => !!(v && v.name) || 'Competitor is required']" />
+                          }" clearable :rules="shouldValidateCompetitors
+                            ? [v => !!(v && v.name) || 'Competitor is required']
+                            : []" />
                       </VCol>
                       <VCol cols="12" lg="4" md="4" sm="12">
                         <VTextField v-model="competitors[index].address" label="Address" placeholder="Address"
                           @update:model-value="val => {
                             competitors[index].address = val
-                          }" :rules="[requiredValidator]" />
+                          }" :rules="shouldValidateCompetitors ? [requiredValidator] : []" />
                       </VCol>
                       <VCol cols="12" lg="3" md="4" sm="12">
                         <VTextField v-model="competitors[index].product" label="Product" placeholder="Product"
@@ -796,10 +828,12 @@ const handleRemoveImage = () => {
                     </VRow>
                     <VRow>
                       <VCol cols="12" lg="6" md="6" sm="12" class="d-flex gap-2">
-                        <VBtn icon color="error" @click="handleRemoveCompetitor(index)" v-if="competitors?.length > 0">
+                        <VBtn icon color="error" @click="handleRemoveCompetitor(index)" v-if="competitors?.length > 0"
+                          type="button">
                           <VIcon icon="tabler-trash" />
                         </VBtn>
-                        <VBtn icon color="success" @click="handleAddCompetitor" v-if="index === competitors.length - 1">
+                        <VBtn icon color="success" @click="handleAddCompetitor" v-if="index === competitors.length - 1"
+                          type="button">
                           <VIcon icon="tabler-plus" />
                         </VBtn>
                       </VCol>
@@ -808,7 +842,7 @@ const handleRemoveImage = () => {
                 </VRow>
                 <VRow v-if="competitors?.length === 0">
                   <VCol>
-                    <VBtn icon color="success" @click="handleAddCompetitor">
+                    <VBtn icon color="success" @click="handleAddCompetitor" type="button">
                       <VIcon icon="tabler-plus" />
                     </VBtn>
                   </VCol>
@@ -864,28 +898,28 @@ const handleRemoveImage = () => {
                 v-if="activityStore.currentReport.assignment?.check_in !== undefined">
                 <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.check_in as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12"
                 v-if="activityStore.currentReport.assignment?.check_out !== undefined">
                 <span class="me-2" style="min-inline-size: 120px;">Check Out Date</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.check_out as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.dwh_created_at">
                 <span class="me-2" style="min-inline-size: 120px;">Created At</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.dwh_created_at as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.draft_saved_at">
                 <span class="me-2" style="min-inline-size: 120px;">Draft Saved At</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.draft_saved_at as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.submitted_at">
                 <span class="me-2" style="min-inline-size: 120px;">Submitted At</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.submitted_at as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
                 <VBtn color="success" size="small" @click="handleViewOnMap">
