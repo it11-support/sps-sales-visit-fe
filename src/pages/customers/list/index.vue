@@ -142,9 +142,9 @@ const filteredSalesPersonOptions = computed(() => {
     .filter(item => item.user.length > 0)
     .filter(item => selectedCompanies.value.includes(item.type))
     .filter(item => {
-     const key = `${item.type}:${item.value}`
-     if (seen.has(key)) return false;
-     seen.add(key)
+      const key = `${item.type}:${item.value}`
+      if (seen.has(key)) return false;
+      seen.add(key)
       return true;
     });
 });
@@ -254,6 +254,8 @@ watch(selectedCompanies,
   },
   { deep: true }
 )
+
+console.log(customerStore)
 </script>
 
 <template>
@@ -282,7 +284,8 @@ watch(selectedCompanies,
             <template v-if="!isAdmin">
               <div class="d-flex flex-wrap ml-6">
                 <VCheckbox v-model="myCustomer" label="My Customers Only" hide-details class="mr-6" />
-                <VCheckbox v-if="isSales" v-model="showOtherSlpCustomers" label="Show Other SLP Customers" hide-details class="mr-6" />
+                <VCheckbox v-if="isSales" v-model="showOtherSlpCustomers" label="Show Other SLP Customers" hide-details
+                  class="mr-6" />
               </div>
             </template>
           </VCol>
@@ -400,7 +403,7 @@ watch(selectedCompanies,
           <div class="d-flex align-center gap-x-4">
             <div class="d-flex flex-column">
               <div class="text-sm">
-                {{ item.SlpName }}
+                {{ item.sales_person?.SlpName }}
               </div>
             </div>
           </div>
