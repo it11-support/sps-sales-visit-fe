@@ -21,45 +21,45 @@ const numberFormatter = (val: number) => {
 
 const percentFormatter = (val: number) =>
   val !== null && val !== undefined ? `${val.toFixed(2)} %` : '-'
-  
+
 const getCompanyField = (
   type: 'mom' | 'yoy',
   company: 'SPS' | 'BBS',
   field: keyof ISalesSummary
 ) =>
   computed(() =>
-    (Array.isArray(salesSummaryStore.summary?.[type]?.[company]) 
-    ? salesSummaryStore.summary[type][company] : [])
-    .map((item, index, arr) => {
-      if (field === 'month') {
-        return item[field];
-      }
-
-      const fieldName = field.toString();
-
-      if (fieldName.startsWith('mom_') || fieldName.startsWith('yoy_')) {
-        const baseField = fieldName.replace(/^mom_/, '').replace(/^yoy_/, '');
-
-        const current = (item[baseField as keyof ISalesSummary] ?? 0) as number;
-
-        if (index === 0) {
-          return 0; 
+    (Array.isArray(salesSummaryStore.summary?.[type]?.[company])
+      ? salesSummaryStore.summary[type][company] : [])
+      .map((item, index, arr) => {
+        if (field === 'month') {
+          return item[field];
         }
 
-        const prev =
-          index > 0
-            ? Number((arr[index - 1]?.[baseField as keyof ISalesSummary] ?? 0))
-            : 0;
+        const fieldName = field.toString();
 
-        if (index === 0 || prev === 0) {
-          return 0;
+        if (fieldName.startsWith('mom_') || fieldName.startsWith('yoy_')) {
+          const baseField = fieldName.replace(/^mom_/, '').replace(/^yoy_/, '');
+
+          const current = (item[baseField as keyof ISalesSummary] ?? 0) as number;
+
+          if (index === 0) {
+            return 0;
+          }
+
+          const prev =
+            index > 0
+              ? Number((arr[index - 1]?.[baseField as keyof ISalesSummary] ?? 0))
+              : 0;
+
+          if (index === 0 || prev === 0) {
+            return 0;
+          }
+
+          return ((current - prev) / Math.abs(prev)) * 100;
         }
 
-        return ((current - prev) / Math.abs(prev)) * 100;
-      }
-
-      return Number(item[field] ?? 0);
-    })
+        return Number(item[field] ?? 0);
+      })
   );
 
 
@@ -67,7 +67,7 @@ const generateChartData = (
   fieldName: "revenue" | "volume" | "active_customers",
   type: 'mom' | 'yoy',
   company: 'SPS' | 'BBS'
-) =>  getCompanyField(type, company, fieldName).value.map(Number)
+) => getCompanyField(type, company, fieldName).value.map(Number)
 
 const generateLineChartData = (
   fieldName: "revenue" | "volume" | "active_customers",
@@ -107,7 +107,7 @@ const buildColumnChart = (
       text: `${labelType} ${metricLabel} Summary`,
       align: "left",
       offsetX: 110,
-      style: { color:  isDark ? '#fff' : '#111' },
+      style: { color: isDark ? '#fff' : '#111' },
     },
     xaxis: {
       categories: months,
@@ -120,11 +120,11 @@ const buildColumnChart = (
         seriesName: `${metricLabel}`,
         min: 0,
         max: maxVal,
-        labels: { 
-          formatter: numberFormatter, 
+        labels: {
+          formatter: numberFormatter,
           style: {
             colors: '#008FFB',
-          }, 
+          },
         },
         title: { text: `SPS - BBS ${metricLabel}`, style: { color: '#008FFB' } },
       },
@@ -142,12 +142,12 @@ const buildColumnChart = (
           return numberFormatter(value);
         },
       },
-      custom: function({ series, seriesIndex, dataPointIndex, w }: any) {
+      custom: function ({ series, seriesIndex, dataPointIndex, w }: any) {
         const labels = w.config.series.map((s: any) => s.name);
         const values = series.map((s: any) => s[dataPointIndex] || 0);
         const total = values.reduce((a: number, b: number) => a + b, 0);
-        const xLabel = w.globals.categoryLabels[dataPointIndex]; 
-        
+        const xLabel = w.globals.categoryLabels[dataPointIndex];
+
         let html = `<div style="padding:8px; width:200px;">`;
         html += `<div style="font-weight:bold; margin-bottom:4px;">${xLabel}</div>`;
 
@@ -164,7 +164,7 @@ const buildColumnChart = (
             </div>`;
         });
 
-        if(metricLabel !== 'Customer'){
+        if (metricLabel !== 'Customer') {
           html += `<hr style="margin:4px 0;"/>`;
           html += `
             <div style="display:flex;justify-content:space-between;font-weight:bold;">
@@ -189,7 +189,7 @@ const buildColumnChart = (
       type: "column",
       data: generateChartData(fieldName, type, 'SPS'),
       yAxisIndex: 0,
-    },   
+    },
     {
       name: `BBS ${metricLabel}`,
       type: "column",
@@ -197,7 +197,7 @@ const buildColumnChart = (
       yAxisIndex: 0,
     }
   ];
-  return {options, series}
+  return { options, series }
 }
 
 const buildLineChart = (
@@ -300,6 +300,26 @@ const yoyRevenueLineChartConfig = buildLineChart('Revenue', 'revenue', getCompan
 const yoyVolumeLineChartConfig = buildLineChart('Volume', 'volume', getCompanyField('yoy', 'SPS', 'month').value as string[], 'yoy')
 const yoyCustomerLineChartConfig = buildLineChart('Customer', 'active_customers', getCompanyField('yoy', 'SPS', 'month').value as string[], 'yoy');
 
+const getChartOptions = (options: any, key: string) => {
+  const isGrowth = key === 'momLine' || key === 'yoyLine'
+
+  return {
+    ...options,
+
+    yaxis: options.yaxis?.map((axis: any) => ({
+      ...axis,
+
+      labels: {
+        ...axis.labels,
+
+        formatter: (value: number) =>
+          isGrowth
+            ? percentFormatter(Number(value))
+            : numberFormatter(Number(value)),
+      },
+    })),
+  }
+}
 
 const chartConfigs = computed(() => {
   const isDark = vuetifyTheme.global.name.value === 'dark'
@@ -308,7 +328,7 @@ const chartConfigs = computed(() => {
     ...config,
     options: {
       ...config.options,
-   
+
       title: {
         ...config.options.title,
         style: { color: isDark ? '#fff' : '#2f2b3de6' },
@@ -362,8 +382,8 @@ const chartConfigs = computed(() => {
       yoyBarSeries: yoyVolumeChartConfig.series,
       momLineSeries: momVolumeLineChartConfig.series,
       yoyLineSeries: yoyVolumeLineChartConfig.series,
-      },
-      {
+    },
+    {
       title: 'Customers',
       icon: 'tabler-users',
       momBarOptions: withTheme(momCustomerChartConfig).options,
@@ -380,55 +400,31 @@ const chartConfigs = computed(() => {
 
 </script>
 <template>
-   <VSlideGroup
-      v-model="currentTab"
-      show-arrows
-      mandatory
-      class="mb-10"
-    >    
-      <VSlideGroupItem
-        v-for="(report, index) in chartConfigs"
-        :key="report.title"
-        v-slot="{ isSelected, toggle }"
-        :value="index"
-      >
-        <div
-          style="block-size: 120px; inline-size: 140px;"
-          :style="isSelected ? 'border-color:rgb(var(--v-theme-primary)) !important' : ''"
-          :class="isSelected ? 'border' : 'border border-dashed'"
-          class="d-flex flex-column justify-center align-center cursor-pointer rounded py-4 px-5 me-4"
-          @click="toggle"
-        >
-          <VAvatar
-            rounded
-            size="38"
-            :color="isSelected ? 'primary' : ''"
-            variant="tonal"
-            class="mb-2"
-          >
-            <VIcon
-              size="22"
-              :icon="report.icon"
-            />
-          </VAvatar>
-          <h6 class="text-base font-weight-medium mb-0">
-            {{ report.title }}
-          </h6>
-        </div>
-      </VSlideGroupItem>
-    </VSlideGroup>
-    <div class="chart-scroll-wrapper">
-      <div class="chart-column" v-for="key in ['momBar', 'momLine', 'yoyBar', 'yoyLine']">
-       <VueApexCharts
-        :key="configStore.theme + key"
-        :ref="key + 'RefVueApexChart'"
-        :options="(chartConfigs[Number(currentTab)] as any)[`${key}Options`]"
-        :series="(chartConfigs[Number(currentTab)] as any)[`${key}Series`]"
-        height="400"
-        :width=" key === 'yoyBar' || key === 'yoyLine' ? 600 : 800"
-      />
+  <VSlideGroup v-model="currentTab" show-arrows mandatory class="mb-10">
+    <VSlideGroupItem v-for="(report, index) in chartConfigs" :key="report.title" v-slot="{ isSelected, toggle }"
+      :value="index">
+      <div style="block-size: 120px; inline-size: 140px;"
+        :style="isSelected ? 'border-color:rgb(var(--v-theme-primary)) !important' : ''"
+        :class="isSelected ? 'border' : 'border border-dashed'"
+        class="d-flex flex-column justify-center align-center cursor-pointer rounded py-4 px-5 me-4" @click="toggle">
+        <VAvatar rounded size="38" :color="isSelected ? 'primary' : ''" variant="tonal" class="mb-2">
+          <VIcon size="22" :icon="report.icon" />
+        </VAvatar>
+        <h6 class="text-base font-weight-medium mb-0">
+          {{ report.title }}
+        </h6>
       </div>
+    </VSlideGroupItem>
+  </VSlideGroup>
+  <div class="chart-scroll-wrapper">
+    <div class="chart-column" v-for="key in ['momBar', 'momLine', 'yoyBar', 'yoyLine']">
+      <VueApexCharts :key="`${currentTab}-${configStore.theme}-${key}`" :ref="key + 'RefVueApexChart'" :options="getChartOptions(
+        (chartConfigs[Number(currentTab)] as any)[`${key}Options`],
+        key
+      )" :series="(chartConfigs[Number(currentTab)] as any)[`${key}Series`]" height="400"
+        :width="key === 'yoyBar' || key === 'yoyLine' ? 600 : 800" />
     </div>
+  </div>
 </template>
 
 
