@@ -256,8 +256,8 @@ importers:
         specifier: 65.0.1
         version: 65.0.1(eslint@10.6.0(supports-color@10.2.2))
       eslint-plugin-vue:
-        specifier: 10.9.2
-        version: 10.9.2(@stylistic/eslint-plugin@5.10.0(eslint@10.6.0(supports-color@10.2.2)))(@typescript-eslint/parser@8.63.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2))
+        specifier: 10.11.1
+        version: 10.11.1(@stylistic/eslint-plugin@5.10.0(eslint@10.6.0(supports-color@10.2.2)))(@typescript-eslint/parser@8.63.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2))
       msw:
         specifier: 2.14.6
         version: 2.14.6(@types/node@22.20.0)(typescript@5.9.3)
@@ -3123,22 +3123,8 @@ packages:
       '@typescript-eslint/eslint-plugin':
         optional: true
 
-  eslint-plugin-vue@10.10.0:
-    resolution: {integrity: sha512-dL9x9rBHqqNcByWiLOHK6L0SB97V82/NC0cZRn9cXPjM7pCuWlpQQP9bFH4vjBv80ej1ZpzAkuD8zWH1o9bZbA==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-    peerDependencies:
-      '@stylistic/eslint-plugin': ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
-      '@typescript-eslint/parser': ^7.0.0 || ^8.0.0
-      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
-      vue-eslint-parser: ^10.3.0
-    peerDependenciesMeta:
-      '@stylistic/eslint-plugin':
-        optional: true
-      '@typescript-eslint/parser':
-        optional: true
-
-  eslint-plugin-vue@10.9.2:
-    resolution: {integrity: sha512-4g7ZP3pYcuqd7Zp0pzUKcos0W+RkjBz4EGdhJ92FcYk6v03Ti/GK5NwjgsjxHK+98eXDbHeK7VtX1az7/8doZA==}
+  eslint-plugin-vue@10.11.1:
+    resolution: {integrity: sha512-pasVXhl7wUmIvhujoqs/m0mJ9r59QW1IR9XXYKGR0FETzSM+Hhlf4qKIYgWiDDP+9YKv4YfbwskD7LqIdVcgQw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       '@stylistic/eslint-plugin': ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
@@ -5296,10 +5282,6 @@ packages:
     resolution: {integrity: sha512-Hl0ZOAs672vg+06kfujwRhoS6/jehvULrlFkuF2dRu6pHgA8U06h3xqNIqNNU1LTXPcedxByAR4GS6pwQK0mgA==}
     engines: {node: '>=20'}
 
-  xml-name-validator@4.0.0:
-    resolution: {integrity: sha512-ICP2e+jsHvAj2E2lIHxa5tjXRlKDJo4IdvPvCXbXQGdzSfmSpNVyIKMvoZHjDY9DP0zV17iI85o90vRFXNccRw==}
-    engines: {node: '>=12'}
-
   xml-name-validator@5.0.0:
     resolution: {integrity: sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==}
     engines: {node: '>=18'}
@@ -5371,7 +5353,7 @@ snapshots:
       eslint-plugin-toml: 1.5.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)
       eslint-plugin-unicorn: 74.0.0(eslint@10.6.0(supports-color@10.2.2))
       eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.69.0(@typescript-eslint/parser@8.69.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))
-      eslint-plugin-vue: 10.10.0(@stylistic/eslint-plugin@5.10.0(eslint@10.6.0(supports-color@10.2.2)))(@typescript-eslint/parser@8.69.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2))
+      eslint-plugin-vue: 10.11.1(@stylistic/eslint-plugin@5.10.0(eslint@10.6.0(supports-color@10.2.2)))(@typescript-eslint/parser@8.69.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2))
       eslint-plugin-yml: 3.8.1(eslint@10.6.0(supports-color@10.2.2))
       eslint-processor-vue-blocks: 2.0.0(@vue/compiler-sfc@3.5.44)(eslint@10.6.0(supports-color@10.2.2))
       globals: 17.12.0
@@ -6423,7 +6405,7 @@ snapshots:
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
       estraverse: 5.3.0
-      picomatch: 4.0.4
+      picomatch: 4.0.7
 
   '@stylistic/stylelint-config@5.0.0(stylelint@17.14.0(supports-color@10.2.2)(typescript@5.9.3))':
     dependencies:
@@ -8277,9 +8259,23 @@ snapshots:
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.69.0(@typescript-eslint/parser@8.69.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3)
 
-  eslint-plugin-vue@10.10.0(@stylistic/eslint-plugin@5.10.0(eslint@10.6.0(supports-color@10.2.2)))(@typescript-eslint/parser@8.69.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)):
+  eslint-plugin-vue@10.11.1(@stylistic/eslint-plugin@5.10.0(eslint@10.6.0(supports-color@10.2.2)))(@typescript-eslint/parser@8.63.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)):
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@10.6.0(supports-color@10.2.2))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.6.0(supports-color@10.2.2))
+      eslint: 10.6.0(supports-color@10.2.2)
+      natural-compare: 1.4.0
+      nth-check: 2.1.1
+      postcss-selector-parser: 7.1.4
+      semver: 7.8.5
+      vue-eslint-parser: 10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)
+      xml-name-validator: 5.0.0
+    optionalDependencies:
+      '@stylistic/eslint-plugin': 5.10.0(eslint@10.6.0(supports-color@10.2.2))
+      '@typescript-eslint/parser': 8.63.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3)
+
+  eslint-plugin-vue@10.11.1(@stylistic/eslint-plugin@5.10.0(eslint@10.6.0(supports-color@10.2.2)))(@typescript-eslint/parser@8.69.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)):
+    dependencies:
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.6.0(supports-color@10.2.2))
       eslint: 10.6.0(supports-color@10.2.2)
       natural-compare: 1.4.0
       nth-check: 2.1.1
@@ -8290,20 +8286,6 @@ snapshots:
     optionalDependencies:
       '@stylistic/eslint-plugin': 5.10.0(eslint@10.6.0(supports-color@10.2.2))
       '@typescript-eslint/parser': 8.69.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3)
-
-  eslint-plugin-vue@10.9.2(@stylistic/eslint-plugin@5.10.0(eslint@10.6.0(supports-color@10.2.2)))(@typescript-eslint/parser@8.63.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint@10.6.0(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)):
-    dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@10.6.0(supports-color@10.2.2))
-      eslint: 10.6.0(supports-color@10.2.2)
-      natural-compare: 1.4.0
-      nth-check: 2.1.1
-      postcss-selector-parser: 7.1.4
-      semver: 7.8.4
-      vue-eslint-parser: 10.4.1(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)
-      xml-name-validator: 4.0.0
-    optionalDependencies:
-      '@stylistic/eslint-plugin': 5.10.0(eslint@10.6.0(supports-color@10.2.2))
-      '@typescript-eslint/parser': 8.63.0(eslint@10.6.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3)
 
   eslint-plugin-yml@3.8.1(eslint@10.6.0(supports-color@10.2.2)):
     dependencies:
@@ -8448,6 +8430,10 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:
       picomatch: 4.0.4
+
+  fdir@6.5.0(picomatch@4.0.7):
+    optionalDependencies:
+      picomatch: 4.0.7
 
   fflate@0.8.3: {}
 
@@ -8970,7 +8956,7 @@ snapshots:
 
   magic-string@0.30.21:
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
 
   magic-string@1.4.3:
     dependencies:
@@ -10260,8 +10246,8 @@ snapshots:
 
   tinyglobby@0.2.17:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
+      fdir: 6.5.0(picomatch@4.0.7)
+      picomatch: 4.0.7
 
   tldts-core@7.4.2: {}
 
@@ -10837,8 +10823,6 @@ snapshots:
     dependencies:
       is-wsl: 3.1.1
       powershell-utils: 0.1.0
-
-  xml-name-validator@4.0.0: {}
 
   xml-name-validator@5.0.0: {}
 
