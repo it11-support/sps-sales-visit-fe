@@ -16,7 +16,7 @@
   "dependencies": {
     "@casl/ability": "7.0.2",
     "@casl/vue": "3.0.0",
-    "@floating-ui/dom": "1.7.6",
+    "@floating-ui/dom": "1.8.0",
     "@formkit/drag-and-drop": "0.6.1",
     "@sindresorhus/is": "7.2.0",
     "@tiptap/extension-highlight": "^3.32.0",
