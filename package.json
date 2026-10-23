@@ -107,7 +107,7 @@
     "stylelint": "17.14.0",
     "stylelint-config-prettier": "9.0.5",
     "stylelint-config-standard-scss": "17.0.0",
-    "tsx": "4.23.0",
+    "tsx": "4.23.15",
     "type-fest": "4.41.0",
     "typescript": "5.9.3",
     "unplugin-auto-import": "0.19.0",
