@@ -12,8 +12,8 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
       '@casl/vue':
-        specifier: 3.0.0
-        version: 3.0.0(@casl/ability@7.0.2)(vue@3.5.44(typescript@5.9.3))
+        specifier: 3.0.1
+        version: 3.0.1(@casl/ability@7.0.2)(vue@3.5.44(typescript@5.9.3))
       '@floating-ui/dom':
         specifier: 1.8.0
         version: 1.8.0
@@ -566,8 +566,8 @@ packages:
   '@casl/ability@7.0.2':
     resolution: {integrity: sha512-NOYbLTaw080a1Na4CpBtyGpL+i9NZhtGGt/tPrrNpLEv8EawFusHZCgc58ewyPBiZ0NER0iudB0et+IP8xJbLg==}
 
-  '@casl/vue@3.0.0':
-    resolution: {integrity: sha512-ZLJeVchZvmtz0VLTvHwsH4epE+CREBSbFQi0bIUmi0vZh4tF8B4Ylp6YiRWCP4Am7O5caJJqxARQGya2XUX4fw==}
+  '@casl/vue@3.0.1':
+    resolution: {integrity: sha512-iCNvKqQMAUmhmwkrhReVoshTyfDSWZS7Vda4HzyGadplG0tQK3WrYulkrdEeWlR7g5r2aAdez/0Fs30oLL4roA==}
     peerDependencies:
       '@casl/ability': ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.1.0 || ^6.0.0 || ^7.0.0
       vue: ^3.0.0
@@ -5408,7 +5408,7 @@ snapshots:
     dependencies:
       '@ucast/mongo2js': 2.0.0
 
-  '@casl/vue@3.0.0(@casl/ability@7.0.2)(vue@3.5.44(typescript@5.9.3))':
+  '@casl/vue@3.0.1(@casl/ability@7.0.2)(vue@3.5.44(typescript@5.9.3))':
     dependencies:
       '@casl/ability': 7.0.2
       vue: 3.5.44(typescript@5.9.3)
