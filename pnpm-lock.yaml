@@ -187,8 +187,8 @@ importers:
         specifier: 5.0.0
         version: 5.0.0(stylelint@17.16.0(supports-color@10.2.2)(typescript@5.9.3))
       '@stylistic/stylelint-plugin':
-        specifier: 5.2.1
-        version: 5.2.1(stylelint@17.16.0(supports-color@10.2.2)(typescript@5.9.3))
+        specifier: 5.3.1
+        version: 5.3.1(stylelint@17.16.0(supports-color@10.2.2)(typescript@5.9.3))
       '@tiptap/extension-character-count':
         specifier: ^3.32.0
         version: 3.32.0(@tiptap/extensions@3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0))
@@ -1573,8 +1573,8 @@ packages:
     peerDependencies:
       stylelint: ^17.6.0
 
-  '@stylistic/stylelint-plugin@5.2.1':
-    resolution: {integrity: sha512-BMRWJVtO16uADJmKcGi6mreei/QYdOviABXuaCeHEc3T3pxo4wFYYSvnxIoyiPVfDJqX+DxQdnGkuc6KxsRaSw==}
+  '@stylistic/stylelint-plugin@5.3.1':
+    resolution: {integrity: sha512-w6WFLYzQS6nhbcoq8pwYP+OJYYhsdGEiCxY+eINi2+ouDwRLXTucXZj6IrDzkY4di+vsGOPVvJ4/gXChSeOtlw==}
     peerDependencies:
       stylelint: ^17.6.0
 
@@ -6180,10 +6180,10 @@ snapshots:
 
   '@stylistic/stylelint-config@5.0.0(stylelint@17.16.0(supports-color@10.2.2)(typescript@5.9.3))':
     dependencies:
-      '@stylistic/stylelint-plugin': 5.2.1(stylelint@17.16.0(supports-color@10.2.2)(typescript@5.9.3))
+      '@stylistic/stylelint-plugin': 5.3.1(stylelint@17.16.0(supports-color@10.2.2)(typescript@5.9.3))
       stylelint: 17.16.0(supports-color@10.2.2)(typescript@5.9.3)
 
-  '@stylistic/stylelint-plugin@5.2.1(stylelint@17.16.0(supports-color@10.2.2)(typescript@5.9.3))':
+  '@stylistic/stylelint-plugin@5.3.1(stylelint@17.16.0(supports-color@10.2.2)(typescript@5.9.3))':
     dependencies:
       '@csstools/css-parser-algorithms': 4.0.2(@csstools/css-tokenizer@4.0.2)
       '@csstools/css-tokenizer': 4.0.2
