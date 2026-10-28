@@ -78,8 +78,8 @@ importers:
         specifier: ^4.0.8
         version: 4.0.8
       mapbox-gl:
-        specifier: 3.25.0
-        version: 3.25.0
+        specifier: 3.33.0
+        version: 3.33.0
       ofetch:
         specifier: 1.5.1
         version: 1.5.1
@@ -3668,8 +3668,8 @@ packages:
     resolution: {integrity: sha512-ayF7iT+44LXdxJLTrTd3TLQpFDDvPCBxXxbv+pMUSuHA5Q8zyAfwkRP6aHHwNVFBUFWtxAHqwNJxF8vMZLAbVg==}
     engines: {node: '>=18'}
 
-  mapbox-gl@3.25.0:
-    resolution: {integrity: sha512-I+9oSkJVFu51xIAAQcjKophFe6zVAGWROHsszeRhX9E1OXEizgPH+8BkF7GaxmmLd9FbADdEfvULF8NxEFcB5w==}
+  mapbox-gl@3.33.0:
+    resolution: {integrity: sha512-2HpIrVedccHedolZyMVG/7FXdpgmsLTENgEDsX71x3/gKDGfYMf1FCRY0prntknkn/JXcraUKXlBTv7vkr0EXg==}
 
   markdown-table@3.0.4:
     resolution: {integrity: sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==}
@@ -8572,7 +8572,7 @@ snapshots:
       type-fest: 4.41.0
       web-worker: 1.5.0
 
-  mapbox-gl@3.25.0: {}
+  mapbox-gl@3.33.0: {}
 
   markdown-table@3.0.4: {}
 
