@@ -424,28 +424,7 @@ export const useActivityStore = defineStore('activity', {
         console.error('Error fetching sales person options:', error.value)
         return
       }
-  
-      const uniqueCompetitors = new Map<string, ICompetitor>();
-      competitorsData.value.data.competitors.forEach((competitor: ICompetitor) => {
-        const key = `${competitor.name}-${competitor.address}`;
-        if (!uniqueCompetitors.has(key)) {
-          uniqueCompetitors.set(key, competitor);
-        }
-      });
-
-      this.allCompetitorOptions = Array.from(uniqueCompetitors.values()).map(
-        (competitor): ICompetitorOption => ({
-          value: competitor.id,
-          title: competitor.name,
-          name: `${competitor.name} - ${competitor.address}`,
-          address: competitor.address,
-          product: competitor.product,
-          price: competitor.price,
-          qty: competitor.qty,
-        })
-      );
-
-
+        
       this.reasonQtyDropOptions = competitorsData.value.data.reasonQtyDrops.map((reason: IReasonQtyDrop) => ({
         value: reason.id,
         title: `${reason.reason}`

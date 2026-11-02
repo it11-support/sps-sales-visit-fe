@@ -3,7 +3,6 @@ import AppAutocomplete from '@/@core/components/app-form-elements/AppAutocomplet
 import AppStepper from '@/@core/components/AppStepper.vue'
 import { MissingProduct, useActivityStore, useConfigStore, useProductStore, useStatisticStore } from '@/@core/stores'
 import { ICompetitorOption } from '@/@core/typedefs'
-import { unref } from 'vue'
 import { VWindow } from 'vuetify/components'
 import { VForm } from 'vuetify/components/VForm'
 import CheckIn from './CheckIn.vue'
@@ -46,6 +45,11 @@ const productRef = ref<VForm>()
 const notesRef = ref<VForm>()
 const competitorsRef = ref<VForm>()
 const competitors = reactive<ICompetitorOption[]>([])
+const competitorSearchResults = ref<ICompetitorOption[]>([])
+const searchingCompetitors = ref(false)
+let competitorSearchTimeout: ReturnType<typeof setTimeout> | undefined
+let competitorSearchRequestId = 0
+
 const isSelecting = ref(false)
 const isCurrentStepValid = ref(true)
 const activityStore = useActivityStore()
@@ -55,13 +59,105 @@ const router = useRouter()
 const props = defineProps<Props>()
 const configStore = useConfigStore()
 const searchProduct = ref('')
-
+const competitorQtyInputs = ref<Record<number, string>>({})
 const snackbar = ref(false)
 const snackbarMessage = ref('')
 const snackbarColor = ref('error')
 const shouldValidateCompetitors = ref(false)
 
 let initializing = true
+
+const fetchCompetitors = (keyword: string) => {
+  search.value = keyword
+
+  if (competitorSearchTimeout) {
+    clearTimeout(competitorSearchTimeout)
+  }
+
+  const trimmed = keyword.trim()
+
+  // Abaikan jika input kurang dari 2 karakter
+  if (trimmed.length < 2) {
+    competitorSearchResults.value = []
+    searchingCompetitors.value = false
+    return
+  }
+
+  // Jangan melakukan pencarian jika nama tersebut sedang dipilih
+  const alreadySelected = competitors.some(
+    item => item?.name?.toLowerCase() === trimmed.toLowerCase()
+  )
+
+  if (alreadySelected) return
+
+  competitorSearchTimeout = setTimeout(async () => {
+    const requestId = ++competitorSearchRequestId
+
+    try {
+      searchingCompetitors.value = true
+
+      const url = createUrl(
+        `activity/get-options?search=${encodeURIComponent(trimmed)}`
+      )
+
+      const { data, error } = await useApi<any>(url)
+
+      // Abaikan hasil request lama
+      if (requestId !== competitorSearchRequestId) return
+
+      if (error.value) {
+        console.error('Error searching competitors:', error.value)
+        competitorSearchResults.value = []
+        return
+      }
+
+      competitorSearchResults.value =
+        data.value?.data?.competitors ?? []
+
+    } catch (error) {
+      console.error('Failed to search competitors:', error)
+      competitorSearchResults.value = []
+    } finally {
+      if (requestId === competitorSearchRequestId) {
+        searchingCompetitors.value = false
+      }
+    }
+  }, 400)
+}
+
+const updateCompetitorQty = (index: number, val: string | number) => {
+  const value = String(val).replace(',', '.')
+
+  if (!/^\d*\.?\d{0,2}$/.test(value)) {
+    return
+  }
+
+  competitorQtyInputs.value[index] = value
+
+  competitors[index].qty =
+    value === '' || value === '.'
+      ? undefined
+      : Number(value)
+}
+
+const preventExtraDecimals = (event: InputEvent) => {
+  const input = event.target as HTMLInputElement
+  const char = event.data
+
+  if (!char || !/[0-9.,]/.test(char)) return
+
+  const start = input.selectionStart ?? input.value.length
+  const end = input.selectionEnd ?? start
+
+  const nextValue =
+    input.value.slice(0, start) +
+    char +
+    input.value.slice(end)
+
+  if (!/^\d*[.,]?\d{0,2}$/.test(nextValue)) {
+    event.preventDefault()
+  }
+}
 
 const activityPurposeReport = ref({
   activity_purposes: [] as number[] | undefined,
@@ -299,21 +395,36 @@ watch(
 )
 
 const computedItems = computed<ICompetitorOption[]>(() => {
-  const baseItems = activityStore.allCompetitorOptions
-  const items = unref(baseItems) ?? []
+  // Competitor yang sudah tersimpan di report
+  const selectedItems = competitors.filter(item => item?.name)
 
+  // Hasil pencarian dari API
+  const searchItems = competitorSearchResults.value
+
+  // Gabungkan tanpa duplikasi
+  const uniqueItems = new Map<string, ICompetitorOption>()
+
+    ;[...selectedItems, ...searchItems].forEach(item => {
+      const key = item.id != null
+        ? `id-${item.id}`
+        : `${item.name}-${item.address}`
+
+      if (!uniqueItems.has(key)) {
+        uniqueItems.set(key, item)
+      }
+    })
+
+  const items = Array.from(uniqueItems.values())
   const trimmed = search.value.trim()
 
-  if (!trimmed || isSelecting.value) return items
+  // Tambahkan opsi untuk competitor baru
+  if (trimmed.length >= 2) {
+    const exists = items.some(
+      item => item.name?.toLowerCase() === trimmed.toLowerCase()
+    )
 
-  const exists = items.some(item =>
-    item.name.toLowerCase() === trimmed.toLowerCase()
-  )
-
-  if (!exists) {
-    return [
-      ...items,
-      {
+    if (!exists) {
+      items.push({
         id: `new-${trimmed}`,
         value: `new-${trimmed}`,
         title: `+ Add "${trimmed}"`,
@@ -321,8 +432,8 @@ const computedItems = computed<ICompetitorOption[]>(() => {
         address: '',
         isNew: true,
         rawName: trimmed,
-      }
-    ]
+      } as ICompetitorOption)
+    }
   }
 
   return items
@@ -788,17 +899,27 @@ const handleRemoveImage = () => {
                       <VCol cols="12" lg="4" md="4" sm="12">
                         <VAutocomplete :model-value="competitors[index]" :items="computedItems"
                           :item-value="item => item.id" :item-title="item => item.name" :return-object="true"
-                          label="Competitors" placeholder="Competitors" @update:model-value="val => {
+                          label="Competitors" placeholder="Ketik minimal 2 karakter..." :loading="searchingCompetitors"
+                          no-filter clearable @update:model-value="val => {
                             if (!val) {
-                              competitors[index] = { name: '', address: '', product: '', price: undefined, qty: undefined, value: undefined, title: '' }
-                            } else {
-                              onSelect(val as unknown as ICompetitorOption, index)
-                              isSelecting = true
+                              competitors[index] = {
+                                name: '',
+                                address: '',
+                                product: '',
+                                price: undefined,
+                                qty: undefined,
+                                value: undefined,
+                                title: ''
+                              }
+
+                              return
                             }
-                          }" @update:search="val => {
-                            search = val
-                            isSelecting = false
-                          }" clearable :rules="shouldValidateCompetitors
+
+                            onSelect(val as unknown as ICompetitorOption, index)
+
+                            search = ''
+                            competitorSearchResults = []
+                          }" @update:search="fetchCompetitors" :rules="shouldValidateCompetitors
                             ? [v => !!(v && v.name) || 'Competitor is required']
                             : []" />
                       </VCol>
@@ -821,9 +942,10 @@ const handleRemoveImage = () => {
                           }" :rules="[(val: number) => regexValidator(val, /^Rp\s?\d{1,3}(\.\d{3})*$/)]" />
                       </VCol>
                       <VCol cols="12" lg="4" md="4" sm="12">
-                        <VTextField :model-value="competitors[index].qty ?? undefined" hide-details="auto"
-                          label="Quantity (Kg)" type="number" placeholder="Quantity (Kg)"
-                          @update:model-value="(val) => competitors[index].qty = Number(val)" />
+                        <VTextField :model-value="competitorQtyInputs[index] ?? String(competitors[index].qty ?? '')"
+                          hide-details="auto" label="Quantity (Kg)" type="text" inputmode="decimal"
+                          placeholder="Quantity (Kg)" @beforeinput="preventExtraDecimals"
+                          @update:model-value="(val) => updateCompetitorQty(index, val)" />
                       </VCol>
                     </VRow>
                     <VRow>
@@ -898,28 +1020,28 @@ const handleRemoveImage = () => {
                 v-if="activityStore.currentReport.assignment?.check_in !== undefined">
                 <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.check_in as unknown as string, true)
-                }}</span>
+                  }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12"
                 v-if="activityStore.currentReport.assignment?.check_out !== undefined">
                 <span class="me-2" style="min-inline-size: 120px;">Check Out Date</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.check_out as unknown as string, true)
-                }}</span>
+                  }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.dwh_created_at">
                 <span class="me-2" style="min-inline-size: 120px;">Created At</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.dwh_created_at as unknown as string, true)
-                }}</span>
+                  }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.draft_saved_at">
                 <span class="me-2" style="min-inline-size: 120px;">Draft Saved At</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.draft_saved_at as unknown as string, true)
-                }}</span>
+                  }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.submitted_at">
                 <span class="me-2" style="min-inline-size: 120px;">Submitted At</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.submitted_at as unknown as string, true)
-                }}</span>
+                  }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
                 <VBtn color="success" size="small" @click="handleViewOnMap">
