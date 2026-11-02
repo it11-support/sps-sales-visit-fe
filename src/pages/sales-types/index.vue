@@ -278,12 +278,12 @@ async function deleteSalesType() {
           <VForm @submit.prevent="saveSalesType">
             <VRow>
               <VCol cols="12">
-                <AppTextField v-model="form.code" label="Code" placeholder="DIRECT" :disabled="salesTypeStore.saving"
+                <AppTextField v-model="form.code" label="Code" placeholder="GENERAL" :disabled="salesTypeStore.saving"
                   required />
               </VCol>
 
               <VCol cols="12">
-                <AppTextField v-model="form.name" label="Name" placeholder="Direct" :disabled="salesTypeStore.saving"
+                <AppTextField v-model="form.name" label="Name" placeholder="General" :disabled="salesTypeStore.saving"
                   required />
               </VCol>
 
