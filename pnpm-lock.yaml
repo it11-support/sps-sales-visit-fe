@@ -316,6 +316,8 @@ importers:
         specifier: 3.3.13
         version: 3.3.13(typescript@5.9.3)
 
+  src/plugins/iconify: {}
+
 packages:
 
   '@antfu/eslint-config@10.0.0':
