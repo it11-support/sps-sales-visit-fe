@@ -11,12 +11,12 @@ import type { IUser } from '@core/types';
 const searchQuery = ref('')
 const selectedSalesPerson = ref()
 const salesPersonData = ref<any>({
-    bbs_sales_person_id: undefined,
-    sps_sales_person_id: undefined
-  }
+  bbs_sales_person_id: undefined,
+  sps_sales_person_id: undefined
+}
 )
 const salesPersonModal = ref({
-  type : 'link',
+  type: 'link',
   show: false
 })
 const loadingRoles = ref(true)
@@ -27,14 +27,14 @@ const isConfirmDialogVisible = ref(false)
 const configStore = useConfigStore()
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => {
-  if(user.value.role){
+  if (user.value.role) {
     return user.value.role.role === 'admin'
   } else {
     return false
   }
 })
 const isSpv = computed(() => {
-  if(user.value.role){
+  if (user.value.role) {
     return user.value.role.role === 'spv'
   } else {
     return false
@@ -44,15 +44,16 @@ const showFilter = ref(false)
 const userStore = useUserStore()
 const roleStore = useRoleStore()
 const salesPersonStore = useSalesPersonStore()
-const roleOptions = ref<{role: string, id: number}[]>([])
+const roleOptions = ref<{ role: string, id: number }[]>([])
 // Headers
 const headers = [
-  { title: 'User', key: 'name'},
+  { title: 'User', key: 'name' },
   { title: 'Email', key: 'email' },
   { title: 'Username', key: 'username' },
   { title: 'Role', key: 'role' },
   { title: 'Team', key: 'team' },
-  { title: 'Sales Person', key: 'sales_person' , sortable: false },
+  { title: 'Sales Type', key: 'sales_type' },
+  { title: 'Sales Person', key: 'sales_person', sortable: false },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
@@ -119,16 +120,16 @@ const localSalesPersons = computed(() => {
   return { sps, bbs }
 })
 
-onMounted(async() => {
+onMounted(async () => {
   salesPersonStore.updateSalesPersonOptions()
   await userStore.initialize(user.value.team_id)
 })
 
-watch(() => user.value, async(newVal) => {
-  if(newVal){
+watch(() => user.value, async (newVal) => {
+  if (newVal) {
     await userStore.initialize(newVal.team_id)
   }
-},{immediate: true})
+}, { immediate: true })
 
 // Delayed search
 watch(searchQuery, (newVal) => {
@@ -140,13 +141,13 @@ watch(searchQuery, (newVal) => {
 })
 
 watch(showFilter, (newVal) => {
-  if(newVal){
+  if (newVal) {
     roleStore.fetchRoles()
   }
 })
 
 watch(userStore, (newVal) => {
-  if(newVal.isAddNewUserDrawerVisible){
+  if (newVal.isAddNewUserDrawerVisible) {
     roleStore.fetchRoles()
     salesPersonStore.updateSalesPersonOptions()
     salesPersonStore.fetchTeamOptions()
@@ -154,9 +155,9 @@ watch(userStore, (newVal) => {
 })
 
 watch(roleStore, (newVal) => {
-  if(newVal.roleOptions.length > 0) loadingRoles.value = false
-  roleOptions.value =  newVal.roleOptions.filter(role => {
-    if(isSpv.value) {
+  if (newVal.roleOptions.length > 0) loadingRoles.value = false
+  roleOptions.value = newVal.roleOptions.filter(role => {
+    if (isSpv.value) {
       return role.role !== 'Admin' && role.role !== 'Spv'
     }
     return true
@@ -165,7 +166,7 @@ watch(roleStore, (newVal) => {
 })
 
 // Update sales person options
-watch(salesPersonModal, async(newVal) => {
+watch(salesPersonModal, async (newVal) => {
   newVal.show && newVal.type === 'link' && await salesPersonStore.updateSalesPersonOptions()
 }, { deep: true })
 
@@ -186,13 +187,13 @@ const showDeleteModal = (item: IUser) => {
 const handleSalesPersonLink = async () => {
   await handleUserBinding({
     type: salesPersonModal.value.type,
-    userId: userStore.selectedUser?.id, 
-    spsSalesPersonId: salesPersonData.value.sps_sales_person_id, 
+    userId: userStore.selectedUser?.id,
+    spsSalesPersonId: salesPersonData.value.sps_sales_person_id,
     bbsSalesPersonId: salesPersonData.value.bbs_sales_person_id,
-    callback: userStore.fetchUsers, 
+    callback: userStore.fetchUsers,
     onFinish: () => {
-      salesPersonModal.value = {...salesPersonModal.value, show: false}
-      userStore.setSelectedUser({username: '', role: undefined, id: 0, name: '', email: ''})
+      salesPersonModal.value = { ...salesPersonModal.value, show: false }
+      userStore.setSelectedUser({ username: '', role: undefined, id: 0, name: '', email: '' })
       selectedSalesPerson.value = null
     }
   })
@@ -201,7 +202,7 @@ const handleSalesPersonLink = async () => {
 // Delete user
 const deleteSelectedUser = async () => {
 
- if (!userStore.selectedUser) return
+  if (!userStore.selectedUser) return
 
   await userStore.destroyUser(userStore.selectedUser.id)
   isConfirmDialogVisible.value = false
@@ -210,9 +211,9 @@ const deleteSelectedUser = async () => {
 // Open link menu
 const handleClickLinkMenu = (item: IUser) => {
   if (item.sales_person?.length) {
-    salesPersonModal.value = {show: true, type: 'unlink'}
+    salesPersonModal.value = { show: true, type: 'unlink' }
   } else {
-    salesPersonModal.value = {show: true, type: 'link'}
+    salesPersonModal.value = { show: true, type: 'link' }
   }
   userStore.setSelectedUser(item)
 }
@@ -244,69 +245,44 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
 
 <template>
   <section>
-  <VBreadcrumbs
-    class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top"
-    :items="[
+    <VBreadcrumbs class="px-0 pb-2 pt-0 help-center-breadcrumbs sticky-top" :items="[
       {
         title: 'Home',
         to: '/',
-        class: 'text-primary' 
+        class: 'text-primary'
       },
-      { 
-        title: 'User List',  
+      {
+        title: 'User List',
       },
-    ]"
-    >
-    <template v-slot:prepend>
-      <v-icon icon='tabler-home' size="small"></v-icon>
-    </template>
-  </VBreadcrumbs>
+    ]">
+      <template v-slot:prepend>
+        <v-icon icon='tabler-home' size="small"></v-icon>
+      </template>
+    </VBreadcrumbs>
     <VCard class="mb-6">
       <VCardItem class="pb-4" v-if="isAdmin">
         <VCheckbox v-model="showFilter" label="Show Filters"></VCheckbox>
       </VCardItem>
       <VCardText v-if="showFilter">
         <VRow>
-          <VCol
-            cols="12"
-            sm="4"
-          >
-          <AppSelect
-            :loading="loadingRoles"
-            v-model="userStore.query.role"
-            @update:model-value="userStore.updateQuery({ role: $event, page: 1 })"
-            clearable
-            clear-icon="tabler-x"
-            :items="roleOptions"
-            item-title="role"
-            item-value="id"
-            label="Role"
-            persistent-hint
-            single-line
-          />
-          </VCol>  
+          <VCol cols="12" sm="4">
+            <AppSelect :loading="loadingRoles" v-model="userStore.query.role"
+              @update:model-value="userStore.updateQuery({ role: $event, page: 1 })" clearable clear-icon="tabler-x"
+              :items="roleOptions" item-title="role" item-value="id" label="Role" persistent-hint single-line />
+          </VCol>
         </VRow>
       </VCardText>
       <VDivider />
       <VCardText class="d-flex flex-wrap gap-4">
         <div class="me-3 d-flex gap-3">
-          <AppSelect
-            :model-value="userStore.query.per_page"
-            :items="PAGINATION_ITEMS"
-            style="inline-size: 6.25rem;"
-            @update:model-value="userStore.setPerpage(parseInt($event, 10))"
-          />
+          <AppSelect :model-value="userStore.query.per_page" :items="PAGINATION_ITEMS" style="inline-size: 6.25rem;"
+            @update:model-value="userStore.setPerpage(parseInt($event, 10))" />
         </div>
         <VSpacer />
         <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
           <!-- 👉 Search  -->
           <div style="inline-size: 15.625rem;">
-            <AppTextField
-              v-model="searchQuery"
-              placeholder="Search ..."
-              clearable
-              clear-icon="tabler-x"
-            />
+            <AppTextField v-model="searchQuery" placeholder="Search ..." clearable clear-icon="tabler-x" />
           </div>
 
           <!-- 👉 Export button -->
@@ -318,35 +294,20 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
             Export
           </VBtn> -->
 
-          <VBtn
-            prepend-icon="tabler-plus"
-            @click="handleSelectItem()"
-          >
+          <VBtn prepend-icon="tabler-plus" @click="handleSelectItem()">
             Add New User
           </VBtn>
         </div>
       </VCardText>
       <VDivider />
-      <VDataTableServer
-        :loading="configStore.loading && !salesPersonModal.show"
-        v-model:items-per-page="userStore.query.per_page"
-        v-model:model-value="userStore.selectedRows"
-        v-model:page="userStore.query.page"
-        :items="userStore.users"
-        item-value="id"
-        :items-length="userStore.pagination.total"
-        :headers="headers"
-        class="text-no-wrap"
-        show-select
-        :select-strategy="'all'"
-        return-object
-        :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
-        @update:options="userStore.updateSortOptions"
-        @update:model-value="userStore.setSelectedRows"
-        multi-sort
-      >
+      <VDataTableServer :loading="configStore.loading && !salesPersonModal.show"
+        v-model:items-per-page="userStore.query.per_page" v-model:model-value="userStore.selectedRows"
+        v-model:page="userStore.query.page" :items="userStore.users" item-value="id"
+        :items-length="userStore.pagination.total" :headers="headers" class="text-no-wrap" show-select
+        :select-strategy="'all'" return-object :items-per-page-options="PAGINATION_ITEMS.map((item) => item.value)"
+        @update:options="userStore.updateSortOptions" @update:model-value="userStore.setSelectedRows" multi-sort>
         <template #item.name="{ item }">
-          <div class="d-flex align-center gap-x-4">          
+          <div class="d-flex align-center gap-x-4">
             <div class="d-flex flex-column">
               <div class="text-sm">
                 {{ item.name }}
@@ -355,40 +316,48 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
           </div>
         </template>
         <template #item.role="{ item }">
-          <div class="d-flex align-center gap-x-4">          
+          <div class="d-flex align-center gap-x-4">
             <div class="d-flex flex-column">
               <div class="text-sm">
-                {{ item.role?.role  }}
+                {{ item.role?.role }}
               </div>
             </div>
           </div>
         </template>
         <template #item.team="{ item }">
-          <div class="d-flex align-center gap-x-4">          
+          <div class="d-flex align-center gap-x-4">
             <div class="d-flex flex-column">
               <div class="text-sm">
-                {{ item.team?.name  }}
+                {{ item.team?.name }}
               </div>
             </div>
           </div>
         </template>
+        <template #item.sales_type="{ item }">
+          <VChip v-if="item.sales_type" color="primary" variant="tonal" size="small" label>
+            {{ item.sales_type.code }} - {{ item.sales_type.name }}
+          </VChip>
+
+          <span v-else class="text-disabled">
+            -
+          </span>
+        </template>
         <template #item.sales_person="{ item }">
-          <div class="d-flex align-center gap-x-4">          
+          <div class="d-flex align-center gap-x-4">
             <div class="d-flex flex-column">
-              <div class="text-sm">               
-                <VChip class="mr-3" v-for="slp in item.sales_person" v-if ="item.role?.role !== 'admin' && item.sales_person" label size="small" color="success">{{ slp.SlpName }} - {{ slp.CompanyId }}</VChip>
-                <VChip v-else-if="item.role?.role !== 'admin' && !item.sales_person" label size="small" color="error">Not Linked</VChip>
+              <div class="text-sm">
+                <VChip class="mr-3" v-for="slp in item.sales_person"
+                  v-if="item.role?.role !== 'admin' && item.sales_person" label size="small" color="success">{{
+                    slp.SlpName }} - {{ slp.CompanyId }}</VChip>
+                <VChip v-else-if="item.role?.role !== 'admin' && !item.sales_person" label size="small" color="error">
+                  Not Linked</VChip>
               </div>
             </div>
           </div>
         </template>
         <template #item.actions="{ item }">
-          <VBtn
-            v-if="isAdmin || isSpv && (isSpv && item.role?.role !== 'admin')"
-            icon
-            variant="text"
-            color="medium-emphasis"
-          >
+          <VBtn v-if="isAdmin || isSpv && (isSpv && item.role?.role !== 'admin')" icon variant="text"
+            color="medium-emphasis">
             <VIcon icon="tabler-dots-vertical" />
             <VMenu activator="parent">
               <VList>
@@ -396,8 +365,8 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
                   <template #prepend>
                     <VIcon icon="tabler-eye" />
                   </template>
-                  <VListItemTitle>View</VListItemTitle>
-                </VListItem> -->
+    <VListItemTitle>View</VListItemTitle>
+    </VListItem> -->
                 <VListItem @click="handleSelectItem(item)">
                   <template #prepend>
                     <VIcon icon="tabler-edit" />
@@ -406,12 +375,13 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
                 </VListItem>
                 <template v-if="item.role?.role !== 'admin'">
                   <VListItem @click="handleClickLinkMenu(item)">
-                    <template #prepend >
+                    <template #prepend>
                       <VIcon :icon="!item.sales_person?.length ? 'tabler-link' : 'tabler-link-off'" />
                     </template>
-                    <VListItemTitle>{{ !item.sales_person?.length ? 'Link Sales Person' : 'Unlink Sales Person' }}</VListItemTitle>
+                    <VListItemTitle>{{ !item.sales_person?.length ? 'Link Sales Person' : 'Unlink Sales Person' }}
+                    </VListItemTitle>
                   </VListItem>
-                </template>                
+                </template>
                 <div>
                   <VListItem v-if="shouldShowDeleteButton(item)" @click="showDeleteModal(item)">
                     <template #prepend>
@@ -438,32 +408,14 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
         <div v-if="salesPersonModal.type === 'link'">
           <VCardTitle> Link User to Sales Person </VCardTitle>
           <VCardText>
-            <AppSelect
-              :disabled="configStore.loading"
-              :loading="configStore.loading"
-              v-model="salesPersonData.sps_sales_person_id"
-              clearable
-              clear-icon="tabler-x"
-              item-title="title"
-              item-value="value"
-              :items="localSalesPersons.sps"
-              label="Sales Person SPS"
-              retun-object
-            />
+            <AppSelect :disabled="configStore.loading" :loading="configStore.loading"
+              v-model="salesPersonData.sps_sales_person_id" clearable clear-icon="tabler-x" item-title="title"
+              item-value="value" :items="localSalesPersons.sps" label="Sales Person SPS" retun-object />
           </VCardText>
           <VCardText>
-            <AppSelect
-              :disabled="configStore.loading"
-              :loading="configStore.loading"
-              v-model="salesPersonData.bbs_sales_person_id"
-              clearable
-              clear-icon="tabler-x"
-              item-title="title"
-              item-value="value"
-              :items="localSalesPersons.bbs"
-              label="Sales Person BBS"
-              retun-object
-            />
+            <AppSelect :disabled="configStore.loading" :loading="configStore.loading"
+              v-model="salesPersonData.bbs_sales_person_id" clearable clear-icon="tabler-x" item-title="title"
+              item-value="value" :items="localSalesPersons.bbs" label="Sales Person BBS" retun-object />
           </VCardText>
         </div>
         <div v-else-if="salesPersonModal.type === 'unlink'">
@@ -475,32 +427,19 @@ const shouldShowDeleteButton = (item: IUser): boolean => {
         <VCardActions>
           <VSpacer />
           <VBtn @click="salesPersonModal.show = false"> Cancel </VBtn>
-          <VBtn 
-            :prepend-icon="salesPersonModal.type === 'unlink' ? 'tabler-link-off' : 'tabler-link'" 
-            :color="salesPersonModal.type === 'unlink' ? 'error' : 'success'" 
-            @click="handleSalesPersonLink"
-          > 
-            {{ salesPersonModal.type === 'unlink' ? 'Unlink' : 'Link' }} 
+          <VBtn :prepend-icon="salesPersonModal.type === 'unlink' ? 'tabler-link-off' : 'tabler-link'"
+            :color="salesPersonModal.type === 'unlink' ? 'error' : 'success'" @click="handleSalesPersonLink">
+            {{ salesPersonModal.type === 'unlink' ? 'Unlink' : 'Link' }}
           </VBtn>
         </VCardActions>
-      </VCard>      
+      </VCard>
     </VDialog>
-    <UserDrawer
-      :user="userStore.selectedUser"
-      :is-edit-mode="userStore.isEditMode"
-      v-model:is-drawer-open="userStore.isAddNewUserDrawerVisible"
-      :role-options="roleOptions"
-      :sales-persons-options="salesPersonStore.filteredSalesPersonOptions"
-      @user-data="userStore.storeUser"
-    />
-    <ConfirmDialog
-      v-model:is-dialog-visible="isConfirmDialogVisible"
-      cancel-title="Cancelled"
-      confirm-title="User Deleted!"
-      confirm-msg="User deleted successfully."
-      confirmation-question="Are you sure to delete this user?"
-      cancel-msg="Delete user cancelled!!"
-      v-on:confirm="deleteSelectedUser"
-    />
-  </section> 
+    <UserDrawer :user="userStore.selectedUser" :is-edit-mode="userStore.isEditMode"
+      v-model:is-drawer-open="userStore.isAddNewUserDrawerVisible" :role-options="roleOptions"
+      :sales-persons-options="salesPersonStore.filteredSalesPersonOptions" @user-data="userStore.storeUser" />
+    <ConfirmDialog v-model:is-dialog-visible="isConfirmDialogVisible" cancel-title="Cancelled"
+      confirm-title="User Deleted!" confirm-msg="User deleted successfully."
+      confirmation-question="Are you sure to delete this user?" cancel-msg="Delete user cancelled!!"
+      v-on:confirm="deleteSelectedUser" />
+  </section>
 </template>

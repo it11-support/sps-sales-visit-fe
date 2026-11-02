@@ -136,6 +136,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'sales-types': RouteRecordInfo<
+      'sales-types',
+      '/sales-types',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'second-page': RouteRecordInfo<
       'second-page',
       '/second-page',
@@ -278,6 +285,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/sales/list/index.vue': {
       routes:
         | 'sales-list'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/sales-types/index.vue': {
+      routes:
+        | 'sales-types'
       views:
         | never
       pathParamNames:

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useSalesTypeStore } from '@/@core/stores';
 import { useSalesPersonStore } from '@/@core/stores/sales-person';
 import { IUser } from '@core/typedefs';
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar';
@@ -25,6 +26,7 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<Emit>()
 const salesPersonStore = useSalesPersonStore()
+const salesTypeStore = useSalesTypeStore()
 const isFormValid = ref(false)
 const form = ref<VForm>()
 const formData = ref<any>({
@@ -36,12 +38,13 @@ const formData = ref<any>({
   bbs_sales_person_id: undefined,
   sps_sales_person_id: undefined,
   username: '',
+  sales_type_id: null as number | null,
   team_id: undefined
 })
 const localTeams = computed(() => [...salesPersonStore.teamOptions]);
 const user = useCookie<any>('userData')
 const isAdmin = computed(() => {
-  if(user.value.role){
+  if (user.value.role) {
     return user.value.role.role === 'admin'
   } else {
     return false
@@ -144,11 +147,13 @@ onMounted(() => {
   if (user.value?.role?.role !== 'admin') {
     formData.value.team_id = user.value.team_id
   }
+
+  salesTypeStore.fetchSalesTypeOptions()
 })
 
 watch(() => props.isDrawerOpen, async (isOpen) => {
   if (isOpen) {
-    formData.value = props.isEditMode ? {...props.user} : {
+    formData.value = props.isEditMode ? { ...props.user } : {
       name: '',
       email: '',
       password: '',
@@ -157,7 +162,8 @@ watch(() => props.isDrawerOpen, async (isOpen) => {
       bbs_sales_person_id: undefined,
       sps_sales_person_id: undefined,
       team_id: user.value.team_id,
-      username: ''
+      username: '',
+      sales_type_id: null,
     }
 
     if (props.isEditMode && props.user) {
@@ -176,7 +182,7 @@ watch(() => props.isDrawerOpen, async (isOpen) => {
 <template>
   <VNavigationDrawer data-allow-mismatch temporary :width="400" location="end" class="scrollable-content"
     :model-value="props.isDrawerOpen" @update:model-value="handleDrawerModelValueUpdate">
-    <AppDrawerHeaderSection title="Add User" @cancel="closeDrawer" />
+    <AppDrawerHeaderSection :title="props.isEditMode ? 'Edit User' : 'Add User'" @cancel="closeDrawer" />
     <VDivider />
     <PerfectScrollbar :options="{ wheelPropagation: false }">
       <VCard flat>
@@ -220,46 +226,25 @@ watch(() => props.isDrawerOpen, async (isOpen) => {
               <!-- </template> -->
               <!-- 👉 Role -->
               <VCol cols="12">
-                <AppSelect 
-                  v-model="formData.role_id"
-                  label="Select Role" 
-                  placeholder="Select Role" 
-                  item-title="role"
-                  item-value="id"
-                  :rules="[requiredValidator]" 
-                  :items="props.roleOptions" 
-                />
+                <AppSelect v-model="formData.role_id" label="Select Role" placeholder="Select Role" item-title="role"
+                  item-value="id" :rules="[requiredValidator]" :items="props.roleOptions" />
               </VCol>
               <VCol cols="12">
-                <AppSelect
-                  v-model="formData.sps_sales_person_id"
-                  label="Bind SPS Sales Person"
-                  :items="localSalesPersons.sps"
-                  item-title="title"
-                  item-value="value"
-                  clearable
-                />
+                <AppSelect v-model="formData.sales_type_id" :items="salesTypeStore.salesTypeOptions"
+                  :loading="salesTypeStore.loadingSalesTypeOptions" item-title="title" item-value="value"
+                  label="Sales Type" placeholder="Select Sales Type" clearable />
               </VCol>
               <VCol cols="12">
-                <AppSelect
-                  v-model="formData.bbs_sales_person_id"
-                  label="Bind BBS Sales Person"
-                  :items="localSalesPersons.bbs"
-                  item-title="title"
-                  item-value="value"
-                  clearable
-                />
+                <AppSelect v-model="formData.sps_sales_person_id" label="Bind SPS Sales Person"
+                  :items="localSalesPersons.sps" item-title="title" item-value="value" clearable />
+              </VCol>
+              <VCol cols="12">
+                <AppSelect v-model="formData.bbs_sales_person_id" label="Bind BBS Sales Person"
+                  :items="localSalesPersons.bbs" item-title="title" item-value="value" clearable />
               </VCol>
               <VCol cols="12" v-if="isAdmin">
-                <AppSelect 
-                  v-model="formData.team_id" 
-                  label="Select Team"
-                  placeholder="Select Team" 
-                  item-title="title" 
-                  item-value="value" 
-                  :rules="[]"
-                  :items="localTeams" 
-                />
+                <AppSelect v-model="formData.team_id" label="Select Team" placeholder="Select Team" item-title="title"
+                  item-value="value" :rules="[]" :items="localTeams" />
               </VCol>
               <!-- 👉 Submit and Cancel -->
               <VCol cols="12">

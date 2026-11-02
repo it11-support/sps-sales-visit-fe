@@ -7,6 +7,11 @@ export const userMenu = {
         to: { name: 'users-list' },
         icon: { icon: 'tabler-users' },
       },
+       {
+        title: 'Sales Types',        
+        to: { name: 'sales-types' },
+        icon: { icon: 'tabler-users-group' },
+      },
     ]
   }
 
