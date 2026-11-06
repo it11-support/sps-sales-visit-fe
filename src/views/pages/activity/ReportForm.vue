@@ -64,65 +64,145 @@ const snackbar = ref(false)
 const snackbarMessage = ref('')
 const snackbarColor = ref('error')
 const shouldValidateCompetitors = ref(false)
+const competitorSearches = ref<Record<number, string>>({})
+const competitorResults = ref<Record<number, ICompetitorOption[]>>({})
+const competitorLoading = ref<Record<number, boolean>>({})
+
+const searchTimers = new Map<number, ReturnType<typeof setTimeout>>()
+const searchVersions = new Map<number, number>()
 
 let initializing = true
 
-const fetchCompetitors = (keyword: string) => {
-  search.value = keyword
-
-  if (competitorSearchTimeout) {
-    clearTimeout(competitorSearchTimeout)
-  }
-
-  const trimmed = keyword.trim()
-
-  // Abaikan jika input kurang dari 2 karakter
-  if (trimmed.length < 2) {
-    competitorSearchResults.value = []
-    searchingCompetitors.value = false
+const handleCompetitorSearch = (
+  index: number,
+  keyword: string | null
+) => {
+  if (!keyword?.trim()) {
+    fetchCompetitors(index, '')
     return
   }
 
-  // Jangan melakukan pencarian jika nama tersebut sedang dipilih
-  const alreadySelected = competitors.some(
-    item => item?.name?.toLowerCase() === trimmed.toLowerCase()
-  )
+  fetchCompetitors(index, keyword)
+}
 
-  if (alreadySelected) return
+const handleCompetitorChange = (
+  val: ICompetitorOption | null,
+  index: number
+) => {
+  if (!val) {
+    competitors[index] = {
+      name: '',
+      address: '',
+      product: '',
+      price: undefined,
+      qty: undefined,
+      value: undefined,
+      title: '',
+    }
 
-  competitorSearchTimeout = setTimeout(async () => {
-    const requestId = ++competitorSearchRequestId
+    competitorSearches.value[index] = ''
+    competitorResults.value[index] = []
+    competitorLoading.value[index] = false
 
+    const timer = searchTimers.get(index)
+    if (timer) clearTimeout(timer)
+
+    searchVersions.set(
+      index,
+      (searchVersions.get(index) ?? 0) + 1
+    )
+
+    delete competitorQtyInputs.value[index]
+
+    return
+  }
+
+  onSelect(val, index)
+}
+
+const getCompetitorItems = (index: number): ICompetitorOption[] => {
+  const keyword = (competitorSearches.value[index] ?? '').trim()
+
+  if (keyword.length < 2) return []
+
+  const results = competitorResults.value[index] ?? []
+  const unique = new Map<string, ICompetitorOption>()
+
+  for (const item of results) {
+    const key = item.id != null
+      ? `id:${item.id}`
+      : `${item.name?.trim().toLowerCase()}|${item.address?.trim().toLowerCase()}`
+
+    if (!unique.has(key)) unique.set(key, item)
+  }
+
+  return [
+    ...unique.values(),
+    {
+      id: `new-${index}-${keyword}`,
+      value: `new-${index}-${keyword}`,
+      name: keyword,
+      title: `+ Add "${keyword}"`,
+      address: '',
+      isNew: true,
+      rawName: keyword,
+    } as ICompetitorOption,
+  ]
+}
+
+const fetchCompetitors = (index: number, keyword: string | null) => {
+  const trimmed = (keyword ?? '').trim()
+
+  competitorSearches.value[index] = keyword ?? ''
+
+  const timer = searchTimers.get(index)
+  if (timer) {
+    clearTimeout(timer)
+    searchTimers.delete(index)
+  }
+
+  const version = (searchVersions.get(index) ?? 0) + 1
+  searchVersions.set(index, version)
+
+  if (trimmed.length < 2) {
+    competitorResults.value[index] = []
+    competitorLoading.value[index] = false
+    return
+  }
+
+  competitorLoading.value[index] = true
+
+  const newTimer = setTimeout(async () => {
     try {
-      searchingCompetitors.value = true
-
       const url = createUrl(
         `activity/get-options?search=${encodeURIComponent(trimmed)}`
       )
 
       const { data, error } = await useApi<any>(url)
 
-      // Abaikan hasil request lama
-      if (requestId !== competitorSearchRequestId) return
+      if (searchVersions.get(index) !== version) return
 
       if (error.value) {
-        console.error('Error searching competitors:', error.value)
-        competitorSearchResults.value = []
+        competitorResults.value[index] = []
         return
       }
 
-      competitorSearchResults.value =
+      competitorResults.value[index] =
         data.value?.data?.competitors ?? []
 
     } catch (error) {
-      console.error('Failed to search competitors:', error)
-      competitorSearchResults.value = []
+      if (searchVersions.get(index) === version) {
+        console.error('Competitor search failed:', error)
+        competitorResults.value[index] = []
+      }
     } finally {
-      if (requestId === competitorSearchRequestId) {
-        searchingCompetitors.value = false
+      if (searchVersions.get(index) === version) {
+        competitorLoading.value[index] = false
       }
     }
   }, 400)
+
+  searchTimers.set(index, newTimer)
 }
 
 const updateCompetitorQty = (index: number, val: string | number) => {
@@ -395,45 +475,31 @@ watch(
 )
 
 const computedItems = computed<ICompetitorOption[]>(() => {
-  // Competitor yang sudah tersimpan di report
-  const selectedItems = competitors.filter(item => item?.name)
-
-  // Hasil pencarian dari API
-  const searchItems = competitorSearchResults.value
-
-  // Gabungkan tanpa duplikasi
   const uniqueItems = new Map<string, ICompetitorOption>()
 
-    ;[...selectedItems, ...searchItems].forEach(item => {
-      const key = item.id != null
-        ? `id-${item.id}`
-        : `${item.name}-${item.address}`
+  for (const item of competitorSearchResults.value) {
+    const key = item.id != null
+      ? `id-${item.id}`
+      : `${item.name?.trim().toLowerCase()}|${item.address?.trim().toLowerCase()}`
 
-      if (!uniqueItems.has(key)) {
-        uniqueItems.set(key, item)
-      }
-    })
+    if (!uniqueItems.has(key)) {
+      uniqueItems.set(key, item)
+    }
+  }
 
   const items = Array.from(uniqueItems.values())
   const trimmed = search.value.trim()
 
-  // Tambahkan opsi untuk competitor baru
   if (trimmed.length >= 2) {
-    const exists = items.some(
-      item => item.name?.toLowerCase() === trimmed.toLowerCase()
-    )
-
-    if (!exists) {
-      items.push({
-        id: `new-${trimmed}`,
-        value: `new-${trimmed}`,
-        title: `+ Add "${trimmed}"`,
-        name: `+ Add "${trimmed}"`,
-        address: '',
-        isNew: true,
-        rawName: trimmed,
-      } as ICompetitorOption)
-    }
+    items.push({
+      id: `new-${trimmed}`,
+      value: `new-${trimmed}`,
+      title: `+ Add "${trimmed}"`,
+      name: trimmed,
+      address: '',
+      isNew: true,
+      rawName: trimmed,
+    } as ICompetitorOption)
   }
 
   return items
@@ -643,8 +709,8 @@ const onSelect = (val: ICompetitorOption, index: number) => {
   }
 
   nextTick(() => {
-    search.value = ''
-    isSelecting.value = false
+    competitorSearches.value[index] = ''
+    competitorResults.value[index] = []
   })
 }
 
@@ -897,31 +963,18 @@ const handleRemoveImage = () => {
                   <VCol>
                     <VRow>
                       <VCol cols="12" lg="4" md="4" sm="12">
-                        <VAutocomplete :model-value="competitors[index]" :items="computedItems"
-                          :item-value="item => item.id" :item-title="item => item.name" :return-object="true"
-                          label="Competitors" placeholder="Ketik minimal 2 karakter..." :loading="searchingCompetitors"
-                          no-filter clearable @update:model-value="val => {
-                            if (!val) {
-                              competitors[index] = {
-                                name: '',
-                                address: '',
-                                product: '',
-                                price: undefined,
-                                qty: undefined,
-                                value: undefined,
-                                title: ''
-                              }
-
-                              return
-                            }
-
-                            onSelect(val as unknown as ICompetitorOption, index)
-
-                            search = ''
-                            competitorSearchResults = []
-                          }" @update:search="fetchCompetitors" :rules="shouldValidateCompetitors
-                            ? [v => !!(v && v.name) || 'Competitor is required']
-                            : []" />
+                        <VAutocomplete :model-value="competitors[index]?.name ? competitors[index] : null"
+                          :items="getCompetitorItems(index)" :item-title="item => item.isNew
+                            ? `+ Add ${item.rawName || item.name}`
+                            : [item.name, item.address?.trim() === '-' ? '' : item.address]
+                              .filter(Boolean).join(' - ')" item-value="id" return-object no-filter clearable
+                          :loading="competitorLoading[index] ?? false"
+                          @update:search="val => handleCompetitorSearch(index, val)"
+                          @update:model-value="val => handleCompetitorChange(val as ICompetitorOption | null, index)">
+                          <template #selection="{ item }">
+                            {{ item.raw.name }}
+                          </template>
+                        </VAutocomplete>
                       </VCol>
                       <VCol cols="12" lg="4" md="4" sm="12">
                         <VTextField v-model="competitors[index].address" label="Address" placeholder="Address"
@@ -1020,28 +1073,28 @@ const handleRemoveImage = () => {
                 v-if="activityStore.currentReport.assignment?.check_in !== undefined">
                 <span class="me-2" style="min-inline-size: 120px;">Check In Date</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.check_in as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12"
                 v-if="activityStore.currentReport.assignment?.check_out !== undefined">
                 <span class="me-2" style="min-inline-size: 120px;">Check Out Date</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.check_out as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.dwh_created_at">
                 <span class="me-2" style="min-inline-size: 120px;">Created At</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.dwh_created_at as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.draft_saved_at">
                 <span class="me-2" style="min-inline-size: 120px;">Draft Saved At</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.draft_saved_at as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="activityStore.currentReport.assignment?.submitted_at">
                 <span class="me-2" style="min-inline-size: 120px;">Submitted At</span>
                 <span>{{ formatDate(activityStore.currentReport.assignment?.submitted_at as unknown as string, true)
-                  }}</span>
+                }}</span>
               </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
                 <VBtn color="success" size="small" @click="handleViewOnMap">
