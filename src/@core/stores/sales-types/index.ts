@@ -56,7 +56,6 @@ export const useSalesTypeStore = defineStore("salesTypesStore", {
 
         if (error.value) throw error.value;
 
-        console.log(data.value?.data);
         this.salesTypeOptions = (data.value?.data ?? [])
           .filter((item) => item.is_active)
           .map((item) => ({
@@ -64,7 +63,6 @@ export const useSalesTypeStore = defineStore("salesTypesStore", {
             value: item.id,
           }));
 
-        console.log(this.salesTypeOptions);
         return this.salesTypeOptions;
       } catch (error) {
         console.error("Failed to fetch sales type options:", error);

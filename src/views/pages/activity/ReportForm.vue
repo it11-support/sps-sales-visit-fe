@@ -6,6 +6,7 @@ import { ICompetitorOption } from '@/@core/typedefs'
 import { VWindow } from 'vuetify/components'
 import { VForm } from 'vuetify/components/VForm'
 import CheckIn from './CheckIn.vue'
+import ProductDisplay from './ProductDisplay.vue'
 
 const statStore = useStatisticStore()
 
@@ -46,9 +47,6 @@ const notesRef = ref<VForm>()
 const competitorsRef = ref<VForm>()
 const competitors = reactive<ICompetitorOption[]>([])
 const competitorSearchResults = ref<ICompetitorOption[]>([])
-const searchingCompetitors = ref(false)
-let competitorSearchTimeout: ReturnType<typeof setTimeout> | undefined
-let competitorSearchRequestId = 0
 
 const isSelecting = ref(false)
 const isCurrentStepValid = ref(true)
@@ -67,6 +65,7 @@ const shouldValidateCompetitors = ref(false)
 const competitorSearches = ref<Record<number, string>>({})
 const competitorResults = ref<Record<number, ICompetitorOption[]>>({})
 const competitorLoading = ref<Record<number, boolean>>({})
+const user = useCookie<any>('userData')
 
 const searchTimers = new Map<number, ReturnType<typeof setTimeout>>()
 const searchVersions = new Map<number, number>()
@@ -84,6 +83,11 @@ const handleCompetitorSearch = (
 
   fetchCompetitors(index, keyword)
 }
+
+const isMt = computed(() => {
+  const salesType = user.value?.sales_type
+  return salesType.code.toUpperCase() === 'MT'
+})
 
 const handleCompetitorChange = (
   val: ICompetitorOption | null,
@@ -220,6 +224,18 @@ const updateCompetitorQty = (index: number, val: string | number) => {
       : Number(value)
 }
 
+const refreshReport = async () => {
+  try {
+    await activityStore.fetchActivityReport(
+      String(props.assignmentId),
+    )
+  }
+  catch (error) {
+    console.error('Failed to refresh report:', error)
+  }
+}
+
+
 const preventExtraDecimals = (event: InputEvent) => {
   const input = event.target as HTMLInputElement
   const char = event.data
@@ -262,8 +278,6 @@ const normalizeIds = (value: unknown): number[] => {
     .filter(id => Number.isFinite(id))
 }
 
-
-// console.log(notesReport, productReport, activityPurposeReport)
 
 watch(activityPurposeReport, () => {
   const activityPurposeIds = normalizeIds(activityPurposeReport.value.activity_purposes)
@@ -1096,6 +1110,18 @@ const handleRemoveImage = () => {
                 <span>{{ formatDate(activityStore.currentReport.assignment?.submitted_at as unknown as string, true)
                 }}</span>
               </VCol>
+              <VCol v-if="isMt" class="text-no-wrap" cols="12">
+                <div class="d-flex align-center justify-space-between my-4">
+                  <div class="text">PRODUCT DISPLAY</div>
+                </div>
+                <ProductDisplay :assignment-id="String(props.assignmentId)" type="own_product"
+                  :existing-images="activityStore.activityReport.assignment_details?.own_product_displays ?? []"
+                  @uploaded="refreshReport" @delete="activityStore.deleteProductDisplay" />
+
+                <ProductDisplay :assignment-id="String(props.assignmentId)" type="competitor"
+                  :existing-images="activityStore.activityReport.assignment_details?.competitor_product_displays ?? []"
+                  @uploaded="refreshReport" @delete="activityStore.deleteProductDisplay" />
+              </VCol>
               <VCol class="text-no-wrap" cols="12" v-if="!activityStore.loadingAssignment && viewMap">
                 <VBtn color="success" size="small" @click="handleViewOnMap">
                   <VIcon icon="tabler-map-2 mr-2" /> View Location
@@ -1124,6 +1150,7 @@ const handleRemoveImage = () => {
                 <VIcon end icon="tabler-camera" />
               </VBtn>
             </VCol>
+
             <VCol cols="12" lg="2" md="2" sm="12" class="d-flex justify-start"
               :loading="activityStore.loadingId === Number(props.assignmentId)"
               v-if="activityStore.activity.image_path !== null && activityStore.activity.check_out === null">
