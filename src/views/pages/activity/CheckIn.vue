@@ -4,7 +4,7 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 const modalProps = defineProps<{
   show: boolean
-  assignmentId: number 
+  assignmentId: number
 }>()
 
 const emit = defineEmits<{
@@ -74,7 +74,7 @@ const createCameraElement = async () => {
       camera.value.srcObject = stream
       camera.value.muted = true
       camera.value.setAttribute('playsinline', 'true')
-      await camera.value.play().catch(() => {})
+      await camera.value.play().catch(() => { })
     }
   } catch (error) {
     console.warn('Failed to open camera:', error)
@@ -161,7 +161,7 @@ const dataUrlToBlob = (dataUrl: string) => {
 }
 
 const currentDate = computed(() => {
- const now = new Date()
+  const now = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
   const localDateTime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
   return localDateTime
@@ -193,7 +193,7 @@ const handleSubmit = async () => {
       accuracy: pos.coords.accuracy?.toString() ?? '',
     })
 
-    await activityStore.storeActivityReport(true)
+    await activityStore.storeActivityReport(true, true)
     const blob = dataUrlToBlob(canvas.value.toDataURL('image/jpeg'))
     const file = new File([blob], `${Date.now()}.jpg`, { type: 'image/jpeg' })
     const body = new FormData()
@@ -280,7 +280,7 @@ watch(
       isCheckingCamera.value = true
       cameraErrorMessage.value = ''
       await nextTick()
-      void getLocation().catch(() => {})
+      void getLocation().catch(() => { })
 
       try {
         if (isCameraSupported.value) {
@@ -314,13 +314,7 @@ watch(
 
 
 <template>
-  <input
-    ref="fileInput"
-    type="file"
-    accept="image/*"
-    @change="handlePhoto"
-    hidden
-  />
+  <input ref="fileInput" type="file" accept="image/*" @change="handlePhoto" hidden />
 
   <VDialog :model-value="modalProps.show" @click:outside="toggleModal" max-width="500">
     <VCard>
@@ -332,29 +326,19 @@ watch(
             <video v-show="!isPhotoTaken && isCameraAvailable" ref="camera" autoplay playsinline muted></video>
             <canvas v-show="isPhotoTaken" ref="canvas" />
           </div>
-          <VAlert
-            v-if="isCameraOpen && !isCheckingCamera && !isCameraAvailable && !isPhotoTaken"
-            type="warning"
-            variant="tonal"
-            class="mb-4"
-          >
+          <VAlert v-if="isCameraOpen && !isCheckingCamera && !isCameraAvailable && !isPhotoTaken" type="warning"
+            variant="tonal" class="mb-4">
             {{ cameraErrorMessage || 'Camera is not available, please try to upload an image' }}
           </VAlert>
 
           <div v-if="isCameraOpen" class="camera-shoot d-flex gap-2">
-            <VBtn
-              @click="triggerFileInput"
+            <VBtn @click="triggerFileInput"
               v-if="!isPhotoTaken && (isMobileDevice || (!isCheckingCamera && !isCameraAvailable))"
-              title="Upload Image"
-            >
+              title="Upload Image">
               <VIcon icon="tabler-photo-up" />
             </VBtn>
-            <VBtn
-              v-if="isCameraAvailable && hasMultipleCameras && !isPhotoTaken"
-              icon
-              @click="toggleCameraFacing"
-              title="Switch Camera"
-            >
+            <VBtn v-if="isCameraAvailable && hasMultipleCameras && !isPhotoTaken" icon @click="toggleCameraFacing"
+              title="Switch Camera">
               <VIcon icon="tabler-refresh" />
             </VBtn>
 
@@ -373,12 +357,7 @@ watch(
           </div>
         </div>
       </VCardText>
-      <VSnackbar
-        v-model="snackbar"
-        :color="snackbarColor"
-        :timeout="5000"
-        location="top right"
-      >
+      <VSnackbar v-model="snackbar" :color="snackbarColor" :timeout="5000" location="top right">
         {{ snackbarMessage }}
       </VSnackbar>
     </VCard>
@@ -386,7 +365,7 @@ watch(
 </template>
 
 
-<style scoped >
+<style scoped>
 .web-camera-container {
   display: flex;
   flex-direction: column;

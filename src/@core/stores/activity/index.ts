@@ -1,4 +1,5 @@
 import {
+  ActivityHistory,
   IActivity,
   IActivityDetails,
   IActivityReport,
@@ -68,6 +69,9 @@ export interface Filters {
 export const useActivityStore = defineStore("activity", {
   state: () => ({
     isReady: false,
+    activityHistories: [] as ActivityHistory[],
+    loadingHistory: false,
+    historyAssignmentId: null as number | null,
     hasActiveVisit: false,
     activeVisit: [] as IActivity[],
     tabs: [] as string[],
@@ -148,6 +152,38 @@ export const useActivityStore = defineStore("activity", {
   },
 
   actions: {
+    async fetchActivityHistory(id: number | string) {
+      const assignmentId = Number(id);
+
+      this.loadingHistory = true;
+      this.historyAssignmentId = assignmentId;
+      this.activityHistories = [];
+
+      try {
+        const { data, error } = await useApi<{
+          response_code: number;
+          message: string;
+          data: ActivityHistory[];
+        }>(`activity/${assignmentId}/history`);
+
+        if (error.value) {
+          throw new Error(
+            error.value?.message ?? "Failed to fetch activity history",
+          );
+        }
+
+        // Prevent previous request from overwriting another activity
+        if (this.historyAssignmentId === assignmentId) {
+          this.activityHistories = data.value?.data ?? [];
+        }
+      } catch (error) {
+        console.error("Error fetching activity history:", error);
+      } finally {
+        if (this.historyAssignmentId === assignmentId) {
+          this.loadingHistory = false;
+        }
+      }
+    },
     initReport() {
       if (!this.activityReport) {
         this.activityReport = this.createDefaultReport();
@@ -306,7 +342,7 @@ export const useActivityStore = defineStore("activity", {
           next_action: report.next_action,
           additional_note: report.additional_note,
           competitors: report.competitors ?? [],
-        };      
+        };
       }
 
       this.activity = {
@@ -499,7 +535,7 @@ export const useActivityStore = defineStore("activity", {
       );
       this.loading = false;
     },
-    async storeActivityReport(isDraft = false) {
+    async storeActivityReport(isDraft = false, autosave = false) {
       this.loading = true;
       const statStore = useStatisticStore();
 
@@ -529,6 +565,7 @@ export const useActivityStore = defineStore("activity", {
         lng: this.activityReport.lng ?? this.activity.lng ?? null,
         accuracy:
           this.activityReport.accuracy ?? this.activity.accuracy ?? null,
+        autosave: autosave ? true : false,
       };
 
       const payload = JSON.stringify(reportPayload);

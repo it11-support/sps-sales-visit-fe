@@ -4,6 +4,7 @@ import { IActivityReport } from '@/@core/typedefs';
 import { VSheet } from 'vuetify/components';
 import { sortByCompanyPriority } from './functions';
 import ProductDisplay from './ProductDisplay.vue';
+import ActivityHistoryTimeline from './ActivityHistoryTimeline.vue';
 
 const COMPANY_PRIORITY = ['SPS']
 
@@ -27,8 +28,8 @@ const loading = ref(true)
 onMounted(async () => {
   await activityStore.fetchActivityReport(props.assignmentId)
   await statStore.fetchMonthlySales(props.assignmentId)
-
-  loading.value = false
+  // activityStore.fetchActivityHistory(props.assignmentId),
+    loading.value = false
 })
 
 watch(() => activityStore.activityReport, (newVal) => {
@@ -526,6 +527,11 @@ const handleExportReport = async () => {
             <ProductDisplay :assignment-id="String(props.assignmentId)" type="competitor"
               :existing-images="activityStore.activityReport.assignment_details?.competitor_product_displays ?? []"
               :read-only="true" />
+          </VCol>
+          <VCol cols="12">
+            <ActivityHistoryTimeline
+              :assignment-id="assignmentId"
+             /> 
           </VCol>
         </VRow>
       </VCardText>
