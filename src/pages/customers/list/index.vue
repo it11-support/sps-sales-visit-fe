@@ -255,7 +255,6 @@ watch(selectedCompanies,
   { deep: true }
 )
 
-console.log(customerStore)
 </script>
 
 <template>
