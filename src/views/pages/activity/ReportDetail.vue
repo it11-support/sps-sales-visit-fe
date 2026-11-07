@@ -2,9 +2,9 @@
 import { useActivityStore, useStatisticStore } from '@/@core/stores';
 import { IActivityReport } from '@/@core/typedefs';
 import { VSheet } from 'vuetify/components';
+import ActivityHistoryTimeline from './ActivityHistoryTimeline.vue';
 import { sortByCompanyPriority } from './functions';
 import ProductDisplay from './ProductDisplay.vue';
-import ActivityHistoryTimeline from './ActivityHistoryTimeline.vue';
 
 const COMPANY_PRIORITY = ['SPS']
 
@@ -24,12 +24,13 @@ const activityStore = useActivityStore()
 const statStore = useStatisticStore()
 const activityReport = ref<IActivityReport>()
 const loading = ref(true)
+const user = useCookie<any>('userData')
 
 onMounted(async () => {
   await activityStore.fetchActivityReport(props.assignmentId)
   await statStore.fetchMonthlySales(props.assignmentId)
   // activityStore.fetchActivityHistory(props.assignmentId),
-    loading.value = false
+  loading.value = false
 })
 
 watch(() => activityStore.activityReport, (newVal) => {
@@ -110,6 +111,11 @@ const sales = computed(() => {
 const handleExportReport = async () => {
   activityStore.exportReport(props.assignmentId, customer.value[0].CardName, details.value.check_in)
 }
+
+const isMt = computed(() => {
+  const salesType = user.value?.sales_type
+  return salesType.code.toUpperCase() === 'MT'
+})
 
 </script>
 <template>
@@ -516,7 +522,7 @@ const handleExportReport = async () => {
               Export Report
             </VBtn>
           </VCol>
-          <VCol class="text-no-wrap" cols="12">
+          <VCol v-if="isMt" class="text-no-wrap" cols="12">
             <div class="d-flex align-center justify-space-between my-4">
               <div class="text">PRODUCT DISPLAY</div>
             </div>
