@@ -2,6 +2,7 @@ import { ISalesPerson } from "../salesperson";
 
 export type ActivityHistoryEvent =
   | "created"
+  | "edited"
   | "updated"
   | "checked_in"
   | "checked_out"

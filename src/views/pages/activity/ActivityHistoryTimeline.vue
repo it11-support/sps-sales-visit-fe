@@ -18,6 +18,11 @@ const eventConfig: Record<
     icon: 'tabler-circle-plus',
     color: 'primary',
   },
+  edited: {
+    title: 'Activity Edited',
+    icon: 'tabler-edit',
+    color: 'warning',
+  },
   updated: {
     title: 'Schedule Updated',
     icon: 'tabler-calendar-time',
