@@ -18,8 +18,8 @@ importers:
         specifier: 1.8.0
         version: 1.8.0
       '@formkit/drag-and-drop':
-        specifier: 0.6.2
-        version: 0.6.2
+        specifier: 0.6.3
+        version: 0.6.3
       '@sindresorhus/is':
         specifier: 7.2.0
         version: 7.2.0
@@ -1038,8 +1038,8 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@formkit/drag-and-drop@0.6.2':
-    resolution: {integrity: sha512-pMyjGWfgoG7kk5v6BHmjzKJArFF8rWxON0WuvNKq7YmmOGiD9tE1ZYc1v5G0wfBr1hDtC4SLCxI7Pj01mWrDog==}
+  '@formkit/drag-and-drop@0.6.3':
+    resolution: {integrity: sha512-vFrYuFSGkE6enocW4+8OxlA8bUAnccESqqSlMEig2Uxx2gWC98BCGwZ5j9coWbNkUVJXpuCot1RmNLNLApVQJA==}
     peerDependencies:
       '@marko/runtime-tags': '>=6.0.166'
     peerDependenciesMeta:
@@ -5672,7 +5672,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@formkit/drag-and-drop@0.6.2': {}
+  '@formkit/drag-and-drop@0.6.3': {}
 
   '@fullcalendar/core@6.1.22':
     dependencies:
