@@ -522,7 +522,7 @@ const isMt = computed(() => {
               Export Report
             </VBtn>
           </VCol>
-          <VCol v-if="isMt" class="text-no-wrap" cols="12">
+          <VCol class="text-no-wrap" cols="12">
             <div class="d-flex align-center justify-space-between my-4">
               <div class="text">PRODUCT DISPLAY</div>
             </div>
