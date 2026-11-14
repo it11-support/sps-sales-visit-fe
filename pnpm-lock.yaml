@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@casl/ability':
-        specifier: 7.1.1
-        version: 7.1.1
+        specifier: 7.1.2
+        version: 7.1.2
       '@casl/vue':
         specifier: 3.1.0
-        version: 3.1.0(@casl/ability@7.1.1)(vue@3.5.45(typescript@5.9.3))
+        version: 3.1.0(@casl/ability@7.1.2)(vue@3.5.45(typescript@5.9.3))
       '@floating-ui/dom':
         specifier: 1.8.0
         version: 1.8.0
@@ -562,8 +562,8 @@ packages:
   '@cacheable/utils@2.5.0':
     resolution: {integrity: sha512-buipgOVDkkPXNR5+xBpDw7Zk2n1EvU7qBJCNUcL7rhQ//kfpOXPAvQ511Os0vpLYJ1pZnvudNytkQt2hst3wqA==}
 
-  '@casl/ability@7.1.1':
-    resolution: {integrity: sha512-1WL90aW65z7RyaoFhOrfUua6e8gk5I2DS7WDjTTI5/qtGnFcnesX4LvfXkqO21LexTswLq71s4Lfs93eI45z8A==}
+  '@casl/ability@7.1.2':
+    resolution: {integrity: sha512-7Bnd893os1JQ15U2hUUqFCQyT3HrREmroMaAPCdLkliitLpYi+GY4cyf/1q92IeWLxK0FxECVAMjELX86kxPtA==}
 
   '@casl/vue@3.1.0':
     resolution: {integrity: sha512-vX7VHeanuQfH9hLHnOzFVETFILGbkQaVHh5xAg41EyDItSTGssREpsbdVQ4SVZ1V+0CpL/YPLTMbJj9nW6fGjw==}
@@ -5387,13 +5387,13 @@ snapshots:
       hashery: 1.5.1
       keyv: 5.6.0
 
-  '@casl/ability@7.1.1':
+  '@casl/ability@7.1.2':
     dependencies:
       '@ucast/mongo2js': 2.0.0
 
-  '@casl/vue@3.1.0(@casl/ability@7.1.1)(vue@3.5.45(typescript@5.9.3))':
+  '@casl/vue@3.1.0(@casl/ability@7.1.2)(vue@3.5.45(typescript@5.9.3))':
     dependencies:
-      '@casl/ability': 7.1.1
+      '@casl/ability': 7.1.2
       vue: 3.5.45(typescript@5.9.3)
 
   '@clack/core@1.5.1':
