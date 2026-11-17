@@ -113,8 +113,9 @@ const handleExportReport = async () => {
 }
 
 const isMt = computed(() => {
-  const salesType = user.value?.sales_type
-  return salesType.code.toUpperCase() === 'MT'
+  const code = user.value?.sales_type?.code
+
+  return typeof code === 'string' && code.toUpperCase() === 'MT'
 })
 
 </script>
@@ -522,7 +523,7 @@ const isMt = computed(() => {
               Export Report
             </VBtn>
           </VCol>
-          <VCol class="text-no-wrap" cols="12">
+          <VCol v-if="isMt" class="text-no-wrap" cols="12">
             <div class="d-flex align-center justify-space-between my-4">
               <div class="text">PRODUCT DISPLAY</div>
             </div>
@@ -535,9 +536,7 @@ const isMt = computed(() => {
               :read-only="true" />
           </VCol>
           <VCol cols="12">
-            <ActivityHistoryTimeline
-              :assignment-id="assignmentId"
-             /> 
+            <ActivityHistoryTimeline :assignment-id="assignmentId" />
           </VCol>
         </VRow>
       </VCardText>

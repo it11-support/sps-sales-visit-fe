@@ -85,8 +85,9 @@ const handleCompetitorSearch = (
 }
 
 const isMt = computed(() => {
-  const salesType = user.value?.sales_type
-  return salesType.code.toUpperCase() === 'MT'
+  const code = user.value?.sales_type?.code
+
+  return typeof code === 'string' && code.toUpperCase() === 'MT'
 })
 
 const handleCompetitorChange = (
