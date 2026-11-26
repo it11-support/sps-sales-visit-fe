@@ -18,8 +18,8 @@ importers:
         specifier: 1.8.0
         version: 1.8.0
       '@formkit/drag-and-drop':
-        specifier: 0.7.0
-        version: 0.7.0
+        specifier: 0.8.0
+        version: 0.8.0
       '@sindresorhus/is':
         specifier: 7.2.0
         version: 7.2.0
@@ -1038,8 +1038,8 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@formkit/drag-and-drop@0.7.0':
-    resolution: {integrity: sha512-nKK0tdxa9cXgr7mpQHQ/1Z9wS/oe3gI57U8jNlWYsoges0eH2ah7Fa6PBltXkIHZlnkQXAFmKorwUBXq6jsBwA==}
+  '@formkit/drag-and-drop@0.8.0':
+    resolution: {integrity: sha512-up7c/QajtwlOCDmmCA112TY4imKjdJ8Gepv758eQUJq82sRMv+SoIF78juTSYVXFev3wXaSCnZyV/CKLIipRQw==}
     peerDependencies:
       '@marko/runtime-tags': '>=6.0.166'
     peerDependenciesMeta:
@@ -1210,10 +1210,13 @@ packages:
     engines: {node: '>= 22'}
     peerDependencies:
       '@intlify/shared': ^9.0.0 || ^10.0.0 || ^11.0.0
+      '@vue/compiler-dom': ^3.0.0
       vue: ^3.0.0
       vue-i18n: ^9.0.0 || ^10.0.0 || ^11.0.0
     peerDependenciesMeta:
       '@intlify/shared':
+        optional: true
+      '@vue/compiler-dom':
         optional: true
       vue:
         optional: true
@@ -5709,7 +5712,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@formkit/drag-and-drop@0.7.0': {}
+  '@formkit/drag-and-drop@0.8.0': {}
 
   '@fullcalendar/core@6.1.22':
     dependencies:
