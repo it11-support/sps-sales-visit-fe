@@ -108,8 +108,8 @@ importers:
         specifier: 3.5.46
         version: 3.5.46(typescript@5.9.3)
       vue-chartjs:
-        specifier: 5.3.4
-        version: 5.3.4(chart.js@4.6.1)(vue@3.5.46(typescript@5.9.3))
+        specifier: 5.3.7
+        version: 5.3.7(chart.js@4.6.1)(vue@3.5.46(typescript@5.9.3))
       vue-currency-input:
         specifier: 3.2.1
         version: 3.2.1(vue@3.5.46(typescript@5.9.3))
@@ -1210,10 +1210,13 @@ packages:
     engines: {node: '>= 22'}
     peerDependencies:
       '@intlify/shared': ^9.0.0 || ^10.0.0 || ^11.0.0
+      '@vue/compiler-dom': ^3.0.0
       vue: ^3.0.0
       vue-i18n: ^9.0.0 || ^10.0.0 || ^11.0.0
     peerDependenciesMeta:
       '@intlify/shared':
+        optional: true
+      '@vue/compiler-dom':
         optional: true
       vue:
         optional: true
@@ -4926,8 +4929,8 @@ packages:
   vscode-uri@3.2.0:
     resolution: {integrity: sha512-m2gXo3bn0G1kT9InzMf07fTbqMbGtyckj3bH5ktLO+1Ssv+yiATZ4dhwaQv9UZWxJh6E9IFGnQyjgWVDWVBDrg==}
 
-  vue-chartjs@5.3.4:
-    resolution: {integrity: sha512-x3Fqob8RQvrTdssfi9ecsCzEkFOd8JPmNwSkSQzdfKj/uBsRJs/Y88cZcZIEcPsTVfMGwMo4MOoihoDG2DoE/g==}
+  vue-chartjs@5.3.7:
+    resolution: {integrity: sha512-WzE556j2uKfJVlCDwfQIgTfrC9MDRCC+tlmY+VNA1nNIt0quomxJUBpVd0raT4e/ti9AfZH4u6VtSC76OKLUHg==}
     peerDependencies:
       chart.js: ^4.1.1
       vue: ^3.0.0-0 || ^2.7.0
@@ -10201,7 +10204,7 @@ snapshots:
 
   vscode-uri@3.2.0: {}
 
-  vue-chartjs@5.3.4(chart.js@4.6.1)(vue@3.5.46(typescript@5.9.3)):
+  vue-chartjs@5.3.7(chart.js@4.6.1)(vue@3.5.46(typescript@5.9.3)):
     dependencies:
       chart.js: 4.6.1
       vue: 3.5.46(typescript@5.9.3)
