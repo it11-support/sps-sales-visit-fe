@@ -54,8 +54,8 @@ importers:
         specifier: 3.54.1
         version: 3.54.1
       chart.js:
-        specifier: 4.6.1
-        version: 4.6.1
+        specifier: 4.6.2
+        version: 4.6.2
       cookie-es:
         specifier: 1.2.3
         version: 1.2.3
@@ -109,7 +109,7 @@ importers:
         version: 3.5.46(typescript@5.9.3)
       vue-chartjs:
         specifier: 5.3.7
-        version: 5.3.7(chart.js@4.6.1)(vue@3.5.46(typescript@5.9.3))
+        version: 5.3.7(chart.js@4.6.2)(vue@3.5.46(typescript@5.9.3))
       vue-currency-input:
         specifier: 3.2.1
         version: 3.2.1(vue@3.5.46(typescript@5.9.3))
@@ -315,8 +315,6 @@ importers:
       vue-tsc:
         specifier: 3.3.14
         version: 3.3.14(typescript@5.9.3)
-
-  src/plugins/iconify: {}
 
 packages:
 
@@ -1253,8 +1251,8 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@kurkle/color@0.3.4':
-    resolution: {integrity: sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w==}
+  '@kurkle/color@0.6.6':
+    resolution: {integrity: sha512-Bd1NjGyoe27ExXRIBu13YymFP6k/wFxpUkX97Z3RlofLFV43nECB2G8vETZzcZzz2Ct2oRzwYElX65lxyi5UNg==}
 
   '@mswjs/interceptors@0.41.9':
     resolution: {integrity: sha512-VVPPgHyQ6ShqnrmDWuxjmUIsO9gWyOZFmuOfLd9LfBGQJwZfy0gvv9pbHSJuoFNIYC7ZDX9aoFwowjcdSC4E8w==}
@@ -2468,9 +2466,9 @@ packages:
   character-entities@2.0.2:
     resolution: {integrity: sha512-shx7oQ0Awen/BRIdkjkvz54PnEEI/EjwXDSIZp86/KKdbafHh1Df/RYGBhn4hbe2+uKC9FnT5UCEdyPz3ai9hQ==}
 
-  chart.js@4.6.1:
-    resolution: {integrity: sha512-hJyniucsFmq//EvXYvJ6c6mahPoI3kaxdjVH8awTaJ/fDNWeSqqqArixMJWkWNN6fcYvPU3HneSANFNYtRi61g==}
-    engines: {pnpm: '>=8'}
+  chart.js@4.6.2:
+    resolution: {integrity: sha512-xachB+pPHjp0syJi7llUBA1w3kMYl6NF3o7eVrvjnWCT+IB2zMaF2pX5UYDiwbbfsioFEIRnAjreNOMsGj5TIA==}
+    engines: {pnpm: '>=12'}
 
   chokidar@5.0.0:
     resolution: {integrity: sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==}
@@ -5970,7 +5968,7 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@kurkle/color@0.3.4': {}
+  '@kurkle/color@0.6.6': {}
 
   '@mswjs/interceptors@0.41.9':
     dependencies:
@@ -7212,9 +7210,9 @@ snapshots:
 
   character-entities@2.0.2: {}
 
-  chart.js@4.6.1:
+  chart.js@4.6.2:
     dependencies:
-      '@kurkle/color': 0.3.4
+      '@kurkle/color': 0.6.6
 
   chokidar@5.0.0:
     dependencies:
@@ -10280,9 +10278,9 @@ snapshots:
 
   vscode-uri@3.2.0: {}
 
-  vue-chartjs@5.3.7(chart.js@4.6.1)(vue@3.5.46(typescript@5.9.3)):
+  vue-chartjs@5.3.7(chart.js@4.6.2)(vue@3.5.46(typescript@5.9.3)):
     dependencies:
-      chart.js: 4.6.1
+      chart.js: 4.6.2
       vue: 3.5.46(typescript@5.9.3)
 
   vue-currency-input@3.2.1(vue@3.5.46(typescript@5.9.3)):
